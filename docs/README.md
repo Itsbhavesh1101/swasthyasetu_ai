@@ -1,0 +1,26 @@
+# SwasthyaSetu AI Documentation
+
+## Foundation
+
+- `00_PROJECT_MASTER_SPEC.md`
+- `01_PRODUCT_REQUIREMENTS.md`
+- `02_SYSTEM_ARCHITECTURE.md`
+- `03_REPOSITORY_STRUCTURE.md`
+- `29_ENGINEERING_STANDARDS.md`
+- `34_MASTER_IMPLEMENTATION_PLAN.md`
+
+P0 control documents live under `codex/` and `implementation/`. Files marked **TO BE COMPLETED IN P0** are placeholders, not final specifications.
+
+## P0 implementation control
+
+- `implementation/35_PHASE_ACCEPTANCE_CRITERIA.md`
+- `implementation/36_DEPENDENCY_MAP.md`
+- `implementation/37_DECISION_LOG.md`
+- `implementation/38_PROGRESS_TRACKER.md`
+
+## Core domain/data/API contracts
+
+- `04_DOMAIN_MODEL.md`
+- `05_DATABASE_SCHEMA.md`
+- `06_API_CONTRACTS.md`
+
