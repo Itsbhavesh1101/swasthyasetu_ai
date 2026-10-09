@@ -28,7 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P1 — Repository + Tooling Foundation
-**Current recommended next action:** begin P1-B frontend workspaces + shared tooling.
+**Current recommended next action:** begin P1-C Docker / local PostgreSQL / CI / quality-gate foundation.
 
 ---
 
@@ -37,7 +37,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | Phase | Name | Status | Notes |
 |---|---|---|---|
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
-| P1 | Repository + Tooling Foundation | PARTIAL | P1-A backend engineering foundation complete; P1-B frontend and P1-C Docker/CI remain. |
+| P1 | Repository + Tooling Foundation | PARTIAL | P1-A backend and P1-B frontend engineering foundations complete; P1-C Docker/CI remains. |
 | P2 | Shared Platform Kernel | NOT STARTED | Depends on P1. |
 | P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
@@ -274,4 +274,37 @@ Tests: 17 passed.
 Remaining P1 subunits: P1-B frontend workspaces + shared tooling; P1-C Docker/CI + quality-gate scripts.
 Blockers: none for P1-A. Git-native diff/status verification is unavailable until .git metadata exists.
 Open decisions: none required for P1-A.
+```
+
+## P1-A provenance clarification
+
+The historical P1-A execution record above remains unchanged: `.git` metadata was unavailable during
+that execution. After P1-A completed, the repository was initialized and pushed with this baseline:
+
+```text
+Branch: main
+Commit: 1d299b7f4e7f95d634e5e4745b2d020b69a87b01
+```
+
+This note clarifies later repository provenance and does not change the P1-A status or original
+execution record.
+
+---
+
+# 11. P1-B Completion Record
+
+```text
+Phase/Sub-phase: P1-B — Frontend Workspaces + Shared Frontend Tooling
+Status: COMPLETE
+Date: 2026-10-10
+Branch: phase/p1-b-frontend-foundation
+Base commit: 1d299b7f4e7f95d634e5e4745b2d020b69a87b01
+Implementation commit: 283a40480bfe9d8bd8fc8376543119b0f6decfbf
+Requirement IDs: NFR-ACCESS-001, NFR-ACCESS-002, NFR-ACCESS-003, NFR-ACCESS-004, NFR-MAINT-002, NFR-MAINT-007, NFR-MAINT-008, NFR-SEC-005, NFR-TEST-001, NFR-UX-008
+Implemented scope: pnpm workspace; patient, clinician, and admin Next.js App Router applications; strict TypeScript; Tailwind CSS; shared UI package with accessible application shell and loading/error/empty states; Vitest/Testing Library unit tests; Playwright smoke-test skeleton; frontend developer documentation.
+Verification commands: pnpm install --frozen-lockfile; pnpm frontend:format-check; pnpm frontend:lint; pnpm frontend:typecheck; pnpm frontend:test; pnpm frontend:build; pnpm e2e:list; backend uv lock --check, Ruff lint/format, mypy, and pytest; git diff --check.
+Tests/builds: 5 frontend unit tests passed; patient, clinician, and admin production builds passed; 3 Playwright smoke tests discovered; 17 backend regression tests passed.
+Remaining P1 criteria: AC-P1-010 local PostgreSQL and AC-P1-011 CI workflow remain assigned to P1-C.
+Blockers: none for P1-B. Full Playwright browser execution is deferred to the browser-enabled P1-C/CI environment; configuration and discovery passed.
+Open decisions: none required for P1-B.
 ```
