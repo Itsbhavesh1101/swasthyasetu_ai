@@ -555,3 +555,27 @@ backend environment. The backend is an application project rather than a distrib
 - runtime and development dependencies remain separately declared;
 - Python 3.12+ is enforced by project metadata;
 - no second Python package manager or competing requirements file is maintained.
+
+---
+
+# ADR-042 — pnpm Manages the Frontend Workspace
+
+**Status:** ACCEPTED
+
+## Context
+
+P1-B introduces three Next.js applications and a shared UI package. The repository had no accepted
+JavaScript workspace manager, and maintaining separate dependency graphs would weaken reproducibility
+and shared-tooling consistency.
+
+## Decision
+
+Use pnpm `9.15.4`, pinned through the root `packageManager` field, with a single
+`pnpm-workspace.yaml` covering `apps/*` and `packages/*` and one root `pnpm-lock.yaml`.
+
+## Consequences
+
+- frontend dependencies install through one reproducible lockfile;
+- root commands run consistent lint, format, type, test, and build gates across workspaces;
+- applications remain independently runnable and buildable;
+- no npm, Yarn, or Bun lockfile is maintained alongside pnpm.
