@@ -28,8 +28,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P2 — Shared Platform Kernel — PARTIAL
-**Current recommended next action:** begin P2-C — Observability & Feature Flags in its governed
-phase unit.
+**Current recommended next action:** verify mandatory branch CI for P2-C — Observability & Feature
+Flags.
 
 ---
 
@@ -39,7 +39,7 @@ phase unit.
 |---|---|---|---|
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
-| P2 | Shared Platform Kernel | PARTIAL | P2-A and P2-B complete; P2-C not started. |
+| P2 | Shared Platform Kernel | PARTIAL | P2-A and P2-B complete; P2-C locally complete with remote CI verification pending. |
 | P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
@@ -384,4 +384,26 @@ CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/380862058
 Remaining P2 work: P2-C observability and feature flags.
 Blockers: none.
 Open decisions: none required for P2-B.
+```
+
+---
+
+# 15. P2-C Local Verification Record
+
+```text
+Phase/Sub-phase: P2-C — Observability & Feature Flags
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-11
+Branch: phase/p2-c-observability-feature-flags
+Base commit: 0533847ebeb8f9d0ae9ee3541130158d38a1c6f4
+Implementation commit: a04bffcfab70f71572c11e15e39493e6a01f47fe
+Requirement IDs: FR-CORE-004, FR-CORE-005, FR-CORE-009, FR-CORE-010, FR-EXT-005, NFR-OBS-001, NFR-OBS-011, PRIV-007; AC-P2-006, AC-P2-007, AC-P2-008, AC-P2-009
+Dependencies: opentelemetry-api>=1.45.1,<2.0 resolved 1.45.1; opentelemetry-sdk>=1.45.1,<2.0 resolved 1.45.1; R3 class CORE_RUNTIME; opentelemetry-semantic-conventions 0.66b1 is an SDK transitive.
+Implemented scope: immutable provider-neutral feature flags with safe/off absent behavior; configuration-backed provider and service composition; isolated per-application OTel tracer/meter providers; content-free route-template HTTP spans; bounded request count and duration metrics; safe request/trace/span log correlation; external export disabled and unsupported in P2-C.
+Local acceptance: AC-P2-006 PASS; AC-P2-007 PASS; AC-P2-008 PASS; AC-P2-009 PASS. AC-P2-001 through AC-P2-005 remain green in regression tests.
+Local verification: 84 backend tests passed; 35 targeted privacy/telemetry/feature-flag/error/request-context tests passed; locked sync, Ruff, format, strict mypy, compile/import smoke, backend quality gate, frontend quality gate, dependency diff, architecture audit, and git diff check passed.
+Remote CI: PENDING — mandatory Backend quality, Frontend quality, Docker and PostgreSQL, Playwright Chromium, and Security scans jobs have not yet been observed on this branch.
+Overall P2 status: PARTIAL
+Blockers: remote CI evidence only.
+Open decisions: none required for P2-C.
 ```
