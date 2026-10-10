@@ -27,8 +27,9 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P1 — Repository + Tooling Foundation
-**Current recommended next action:** begin P1-C Docker / local PostgreSQL / CI / quality-gate foundation.
+**Current macro stage:** P1 — Repository + Tooling Foundation — COMPLETE
+**Current recommended next action:** begin P2-A — Shared Platform Kernel primitives in its governed
+phase unit.
 
 ---
 
@@ -37,7 +38,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | Phase | Name | Status | Notes |
 |---|---|---|---|
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
-| P1 | Repository + Tooling Foundation | PARTIAL | P1-A backend and P1-B frontend engineering foundations complete; P1-C Docker/CI remains. |
+| P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | NOT STARTED | Depends on P1. |
 | P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
@@ -308,3 +309,34 @@ Remaining P1 criteria: AC-P1-010 local PostgreSQL and AC-P1-011 CI workflow rema
 Blockers: none for P1-B. Full Playwright browser execution is deferred to the browser-enabled P1-C/CI environment; configuration and discovery passed.
 Open decisions: none required for P1-B.
 ```
+
+---
+
+# 12. P1-C Completion Record
+
+```text
+Phase/Sub-phase: P1-C — Docker / Local PostgreSQL / CI / Quality-Gate Foundation
+Status: COMPLETE
+Date: 2026-10-10
+Branch: phase/p1-c-docker-ci-foundation
+Base commit: d79a9a9dd9a82764380c9706801d8a3f59de03ea
+Implementation commit: de3bd98ae9e859553efb368fcb8c3e544c5ae8a2
+Requirement IDs: AC-P1-001 through AC-P1-012; AC-G-001 through AC-G-014 as applicable.
+Implemented scope: pinned non-root backend image; two-service local Compose foundation; PostgreSQL 16.12 health and query verification; Node 24 alignment; cross-platform backend/frontend quality gate; GitHub Actions jobs for backend, frontend, Docker/PostgreSQL, Playwright, Gitleaks, and Trivy.
+Local verification: COMPLETE — Compose configuration, PostgreSQL health/pg_isready/SELECT 1, backend build/startup/health, combined quality gate, Chromium smoke tests, Gitleaks, and Trivy filesystem/image gates passed. Generated containers, database volume, scanner cache, and scan tar were removed.
+Acceptance evaluation: AC-P1-001 through AC-P1-012 COMPLETE.
+Remote CI: VERIFIED — GitHub Actions run 38041815538 on branch commit 9285aaa03165a5c978fe25ea84ea12f4b56414a8 passed Backend quality, Frontend quality, Docker and PostgreSQL, Playwright Chromium, and Security scans.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38041815538
+Overall P1 status: COMPLETE
+Blockers: none.
+Open decisions: none required for P1-C.
+```
+
+## Post-review Docker reproducibility remediation
+
+Review fix `SSAI-P1C-REVIEW-FIX-01` removed mutable `apk upgrade` operations from both backend image
+stages. The superseding official Python base is
+`python:3.12.15-alpine3.23@sha256:1fd55c2f838c4f76262f9eeed899ff9168ea96ac383c61667d6f204325e1f169`;
+the corrected image and CI security gate passed without vulnerability ignores. GitHub Actions run
+`38043640160` verified all five mandatory jobs on correction commit
+`bf03a1a1de34860c64a6f3162e78d13d41371a75`.

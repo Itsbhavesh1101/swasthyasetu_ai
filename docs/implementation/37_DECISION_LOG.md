@@ -579,3 +579,32 @@ Use pnpm `9.15.4`, pinned through the root `packageManager` field, with a single
 - root commands run consistent lint, format, type, test, and build gates across workspaces;
 - applications remain independently runnable and buildable;
 - no npm, Yarn, or Bun lockfile is maintained alongside pnpm.
+
+---
+
+# ADR-043 — P1 Infrastructure Runtime Baseline
+
+**Status:** ACCEPTED
+
+## Context
+
+P1-C requires reproducible local and CI runtimes without activating deferred production
+infrastructure. The frontend also needs one Node runtime that matches its type declarations.
+
+## Decision
+
+- use Node.js `24.18.1` and matching Node 24 type declarations for frontend tooling;
+- use PostgreSQL `16.12` as the local and CI database baseline;
+- use Docker Compose for the P1 local stack, limited to PostgreSQL and the backend API;
+- build the backend from the official Python `3.12.15-alpine3.23` image, pinned by digest, and use
+  the operating-system package state contained in that immutable image without build-time upgrades;
+- treat Gitleaks and Trivy as CI/operations tools only, not application dependencies.
+
+## Consequences
+
+- local and CI runtime versions are explicit and traceable;
+- PostgreSQL readiness is demonstrated without pulling persistence implementation into P1;
+- the backend runs as a non-root user from production-only locked dependencies;
+- Redis/Valkey, object storage, identity, observability stacks, and other phase-gated services remain
+  deferred;
+- image builds require access to the pinned image registries and Alpine package repositories.

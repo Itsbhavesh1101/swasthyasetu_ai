@@ -4,14 +4,16 @@ Unified multimodal clinical-intake, mental-health triage, document-intelligence,
 
 ## Current status
 
-**P1-A backend and P1-B frontend engineering foundations are complete; overall P1 remains partial.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 is next.**
 
 The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
 configuration, health endpoints, request correlation, structured logging, and backend quality
 checks. It also includes three strictly typed Next.js application workspaces, shared UI primitives,
 frontend unit testing, and a Playwright smoke-test skeleton. No clinical rules, product workflows,
 authentication, persistence, external providers, production credentials, or predictive models are
-implemented.
+implemented. P1-C adds a non-root backend container, a local PostgreSQL development service,
+cross-platform quality gates, real Chromium smoke execution, mandatory security scans, and the
+baseline GitHub Actions workflow.
 
 ## Read first
 
@@ -24,6 +26,7 @@ implemented.
 
 Backend setup and verification commands are documented in `backend/README.md`.
 Frontend setup and verification commands are documented in `docs/frontend/README.md`.
+Local container and PostgreSQL commands are documented in `deployments/local/README.md`.
 
-The next coding unit is **P1-C: Docker, local PostgreSQL, CI, and quality-gate foundation**. It
-remains separate and has not been implemented.
+The next coding unit is **P2-A — Shared Platform Kernel primitives**. It remains separate and has
+not been implemented.
