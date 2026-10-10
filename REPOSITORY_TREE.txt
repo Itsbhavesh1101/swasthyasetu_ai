@@ -149,13 +149,19 @@ swasthyasetu-ai/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── base.py
 │   │   │   │   └── codes.py
+│   │   │   ├── feature_flags/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── flags.py
+│   │   │   │   ├── provider.py
+│   │   │   │   └── service.py
 │   │   │   ├── modules/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── manifest.py
 │   │   │   │   └── registry.py
 │   │   │   ├── observability/
 │   │   │   │   ├── __init__.py
-│   │   │   │   └── logging.py
+│   │   │   │   ├── logging.py
+│   │   │   │   └── telemetry.py
 │   │   │   ├── security/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── actor.py
@@ -176,9 +182,11 @@ swasthyasetu-ai/
 │   │   ├── test_application.py
 │   │   ├── test_capability_registry.py
 │   │   ├── test_errors.py
+│   │   ├── test_feature_flags.py
 │   │   ├── test_health.py
 │   │   ├── test_logging.py
 │   │   ├── test_module_registry.py
+│   │   ├── test_observability.py
 │   │   ├── test_request_context.py
 │   │   ├── test_settings.py
 │   │   └── test_shared_types.py

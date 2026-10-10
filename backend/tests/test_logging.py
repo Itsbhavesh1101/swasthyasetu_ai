@@ -7,8 +7,9 @@ from io import StringIO
 from fastapi import APIRouter, Body
 from httpx import ASGITransport, AsyncClient
 
-from app.config import Settings
+from app.config import ObservabilitySettings, Settings
 from app.main import create_app
+from app.shared.observability import create_observability_runtime
 from app.shared.observability.logging import JsonFormatter, request_id_context
 
 
@@ -40,6 +41,28 @@ def test_json_formatter_includes_correlation_without_unapproved_fields() -> None
     assert "request_body" not in payload
     assert "secret-value" not in json.dumps(payload)
     assert "sensitive-body" not in json.dumps(payload)
+
+
+def test_json_formatter_adds_only_valid_recording_trace_context() -> None:
+    runtime = create_observability_runtime(ObservabilitySettings())
+    record = logging.LogRecord(
+        name="swasthyasetu.test",
+        level=logging.INFO,
+        pathname=__file__,
+        lineno=12,
+        msg="correlated",
+        args=(),
+        exc_info=None,
+    )
+
+    without_span = json.loads(JsonFormatter().format(record))
+    with runtime.tracer.start_as_current_span("synthetic"):
+        with_span = json.loads(JsonFormatter().format(record))
+
+    assert "trace_id" not in without_span
+    assert "span_id" not in without_span
+    assert len(with_span["trace_id"]) == 32
+    assert len(with_span["span_id"]) == 16
 
 
 async def test_access_log_excludes_request_body_and_carries_request_id() -> None:

@@ -6,6 +6,7 @@ from fastapi import APIRouter
 from app.config import Settings
 from app.main import APP_VERSION, create_app
 from app.shared.capabilities import CapabilityIdentifier, CapabilityKey
+from app.shared.feature_flags import FeatureFlag
 from app.shared.modules import (
     DuplicateModuleError,
     MissingRequiredCapabilityError,
@@ -29,6 +30,8 @@ def test_default_application_factory_succeeds() -> None:
     assert application.title == "SwasthyaSetu AI"
     assert application.state.module_registry.is_sealed is True
     assert application.state.capability_registry.is_sealed is True
+    assert application.state.feature_flags.is_enabled(FeatureFlag("example_feature")) is False
+    assert application.state.observability.span_exporter_configured is False
 
 
 def test_synthetic_module_is_composed_and_capability_is_resolvable() -> None:

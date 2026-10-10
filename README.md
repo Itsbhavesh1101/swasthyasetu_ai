@@ -4,7 +4,8 @@ Unified multimodal clinical-intake, mental-health triage, document-intelligence,
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2-B COMPLETE; overall P2 PARTIAL.**
+**P1 Repository + Tooling Foundation COMPLETE. P2-C is locally complete; overall P2 remains
+PARTIAL pending mandatory branch CI.**
 
 The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
 configuration, health endpoints, request correlation, structured logging, and backend quality
@@ -30,5 +31,6 @@ Local container and PostgreSQL commands are documented in `deployments/local/REA
 
 P2-A provides shared primitives, errors, and typed configuration. P2-B adds immutable module
 manifests, typed capability keys, explicit compile-time module/provider registration, dependency
-validation, and sealed per-application registries. All mandatory feature-branch CI jobs passed.
-The next coding unit is **P2-C — Observability & Feature Flags**; it is not implemented.
+validation, and sealed per-application registries. P2-C adds safe/off immutable feature flags and
+project-owned OpenTelemetry request tracing/metrics with no external export or telemetry
+infrastructure. P2 will be marked complete only after all mandatory P2-C branch CI jobs pass.
