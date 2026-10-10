@@ -5,6 +5,7 @@ from httpx import ASGITransport, AsyncClient
 
 from app.config import Settings
 from app.main import create_app
+from app.shared.modules import ModuleId, ModuleManifest, ModuleRegistration
 
 
 async def test_registered_module_router_is_mounted_below_v1_prefix() -> None:
@@ -19,6 +20,30 @@ async def test_registered_module_router_is_mounted_below_v1_prefix() -> None:
     async with AsyncClient(transport=transport, base_url="http://test") as test_client:
         versioned_response = await test_client.get("/api/v1/foundation-probe")
         unversioned_response = await test_client.get("/foundation-probe")
+
+    assert versioned_response.status_code == 200
+    assert unversioned_response.status_code == 404
+
+
+async def test_explicit_module_router_is_mounted_below_v1_prefix() -> None:
+    module_router = APIRouter()
+
+    @module_router.get("/module-probe")
+    async def module_probe() -> dict[str, str]:
+        return {"status": "ok"}
+
+    registration = ModuleRegistration(
+        manifest=ModuleManifest(module_id=ModuleId("example"), version=1),
+        routers=(module_router,),
+    )
+    application = create_app(
+        Settings(_env_file=None),
+        module_registrations=(registration,),
+    )
+    transport = ASGITransport(app=application)
+    async with AsyncClient(transport=transport, base_url="http://test") as test_client:
+        versioned_response = await test_client.get("/api/v1/module-probe")
+        unversioned_response = await test_client.get("/module-probe")
 
     assert versioned_response.status_code == 200
     assert unversioned_response.status_code == 404

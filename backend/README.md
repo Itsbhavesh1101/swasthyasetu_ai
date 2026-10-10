@@ -1,6 +1,6 @@
 # SwasthyaSetu backend
 
-This directory contains the FastAPI engineering foundation and P2-A shared-kernel primitives. It
+This directory contains the FastAPI engineering foundation and P2 shared-kernel foundations. It
 intentionally has no clinical logic, application persistence, or active external providers.
 
 ## Prerequisites
@@ -37,6 +37,18 @@ The foundation endpoints are:
 - `GET /health/ready`
 
 Normal product APIs will be registered below `/api/v1` in their owning phases.
+
+## Module composition
+
+Future module `public.py` boundaries can supply immutable `ModuleRegistration` values to
+`create_app(module_registrations=(...))`. Each registration explicitly declares its manifest,
+routers, and typed capability bindings. Application construction validates the complete required
+capability set, seals both registries, mounts supplied routers below `/api/v1`, and exposes the
+sealed composition metadata as `application.state.module_registry` and
+`application.state.capability_registry`.
+
+Registrations are explicit imports assembled at startup. Runtime plugin discovery, package
+scanning, global registries, and request-time provider mutation are intentionally unsupported.
 
 ## Quality checks
 

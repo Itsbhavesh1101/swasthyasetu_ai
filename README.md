@@ -4,7 +4,7 @@ Unified multimodal clinical-intake, mental-health triage, document-intelligence,
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2-A COMPLETE; overall P2 PARTIAL.**
+**P1 Repository + Tooling Foundation COMPLETE. P2-B COMPLETE; overall P2 PARTIAL.**
 
 The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
 configuration, health endpoints, request correlation, structured logging, and backend quality
@@ -28,7 +28,7 @@ Backend setup and verification commands are documented in `backend/README.md`.
 Frontend setup and verification commands are documented in `docs/frontend/README.md`.
 Local container and PostgreSQL commands are documented in `deployments/local/README.md`.
 
-P2-A provides shared IDs and UTC time, minimal actor context, canonical framework-independent
-errors, typed configuration namespaces, and preserved request/logging privacy behavior. All
-mandatory feature-branch CI jobs passed. The next coding unit is **P2-B — Module Manifest &
-Capability Registry**; P2-B and P2-C are not implemented.
+P2-A provides shared primitives, errors, and typed configuration. P2-B adds immutable module
+manifests, typed capability keys, explicit compile-time module/provider registration, dependency
+validation, and sealed per-application registries. All mandatory feature-branch CI jobs passed.
+The next coding unit is **P2-C — Observability & Feature Flags**; it is not implemented.
