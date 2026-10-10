@@ -1,0 +1,187 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "phase/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  NODE_VERSION: 24.18.1
+  PNPM_VERSION: 9.15.4
+  PYTHON_VERSION: 3.12.13
+  UV_VERSION: 0.12.20
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  backend:
+    name: Backend quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Run backend quality gate
+        run: python scripts/quality_gate.py backend
+
+  frontend:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${PNPM_VERSION} --activate
+
+      - name: Run frontend quality gate
+        run: python scripts/quality_gate.py frontend
+
+  docker-postgres:
+    name: Docker and PostgreSQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      POSTGRES_DB: swasthyasetu
+      POSTGRES_USER: swasthyasetu_dev
+      POSTGRES_PASSWORD: ci-only-synthetic-password
+      POSTGRES_PORT: "5432"
+      BACKEND_PORT: "8000"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Validate Compose configuration
+        run: docker compose -f deployments/local/compose.yaml config
+
+      - name: Start PostgreSQL
+        run: docker compose -f deployments/local/compose.yaml up -d postgres
+
+      - name: Verify PostgreSQL health and query
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            status="$(docker inspect --format='{{.State.Health.Status}}' swasthyasetu-local-postgres-1)"
+            if [ "$status" = "healthy" ]; then
+              break
+            fi
+            sleep 2
+          done
+          test "$status" = "healthy"
+          docker compose -f deployments/local/compose.yaml ps
+          docker compose -f deployments/local/compose.yaml exec -T postgres \
+            pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+          test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT 1')" = "1"
+
+      - name: Build and start backend image
+        run: docker compose -f deployments/local/compose.yaml up -d --build backend
+
+      - name: Verify backend image and health
+        shell: bash
+        run: |
+          test "$(docker image inspect swasthyasetu/backend:p1-c-local --format '{{.Config.User}}')" = "10001:10001"
+          docker image inspect swasthyasetu/backend:p1-c-local --format '{{json .Config.ExposedPorts}}' | grep -q '8000/tcp'
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health/live > /tmp/live.json; then
+              break
+            fi
+            sleep 2
+          done
+          grep -q '"status":"ok"' /tmp/live.json
+          curl --fail --silent http://127.0.0.1:8000/health/ready | grep -q '"status":"ready"'
+
+      - name: Clean up containers and volume
+        if: always()
+        run: docker compose -f deployments/local/compose.yaml down -v --remove-orphans
+
+  playwright:
+    name: Playwright Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Enable pinned pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@${PNPM_VERSION} --activate
+
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run browser smoke tests
+        run: pnpm e2e:test
+
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Scan committed secrets
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Scan repository dependencies and configuration
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+
+      - name: Build backend image for scanning
+        run: docker build --file infra/docker/backend.Dockerfile --tag swasthyasetu/backend:p1-c-ci .
+
+      - name: Scan backend image
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: swasthyasetu/backend:p1-c-ci
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: "1"

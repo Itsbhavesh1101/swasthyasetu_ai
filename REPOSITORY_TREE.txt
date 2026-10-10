@@ -1,7 +1,7 @@
 swasthyasetu-ai/
 ├── .github/
 │   └── workflows/
-│       └── .gitkeep
+│       └── ci.yml
 ├── apps/
 │   ├── admin-web/
 │   │   ├── app/
@@ -213,7 +213,9 @@ swasthyasetu-ai/
 │   └── README.md
 ├── deployments/
 │   ├── local/
-│   │   └── .gitkeep
+│   │   ├── .env.example
+│   │   ├── README.md
+│   │   └── compose.yaml
 │   ├── pilot/
 │   │   └── .gitkeep
 │   ├── production/
@@ -234,7 +236,8 @@ swasthyasetu-ai/
 │   ├── codex/
 │   │   ├── CODEX_PHASE_PROMPTS/
 │   │   │   ├── P1_A_REPOSITORY_BACKEND_TOOLING.md
-│   │   │   └── P1_B_FRONTEND_WORKSPACES.md
+│   │   │   ├── P1_B_FRONTEND_WORKSPACES.md
+│   │   │   └── P1_C_DOCKER_CI_FOUNDATION.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md
@@ -313,7 +316,7 @@ swasthyasetu-ai/
 │   └── README.md
 ├── infra/
 │   ├── docker/
-│   │   └── .gitkeep
+│   │   └── backend.Dockerfile
 │   ├── environments/
 │   │   └── .gitkeep
 │   ├── monitoring/
@@ -353,7 +356,7 @@ swasthyasetu-ai/
 │       ├── tsconfig.json
 │       └── vitest.config.ts
 ├── scripts/
-│   └── .gitkeep
+│   └── quality_gate.py
 ├── tests/
 │   ├── contracts/
 │   │   └── .gitkeep
@@ -376,8 +379,10 @@ swasthyasetu-ai/
 │       └── .gitkeep
 ├── workers/
 │   └── .gitkeep
+├── .dockerignore
 ├── .editorconfig
 ├── .gitignore
+├── .node-version
 ├── .prettierignore
 ├── CONTRIBUTING.md
 ├── README.md
