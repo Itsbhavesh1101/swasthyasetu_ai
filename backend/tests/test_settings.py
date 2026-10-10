@@ -52,7 +52,11 @@ def test_settings_expose_typed_inactive_sections() -> None:
     assert settings.speech.enabled is False
     assert settings.fhir.enabled is False
     assert settings.abdm.enabled is False
+    assert settings.observability.tracing_enabled is True
+    assert settings.observability.metrics_enabled is True
     assert settings.observability.external_export_enabled is False
+    assert settings.observability.service_name == "swasthyasetu-backend"
+    assert settings.features.enabled == ()
 
 
 def test_settings_accept_environment_overrides(monkeypatch: pytest.MonkeyPatch) -> None:

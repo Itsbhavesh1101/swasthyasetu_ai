@@ -1,6 +1,8 @@
 """Frozen, provider-neutral configuration sections for the platform."""
 
-from pydantic import BaseModel, ConfigDict, SecretStr
+from pydantic import BaseModel, ConfigDict, SecretStr, field_validator
+
+from app.shared.feature_flags import FeatureFlag
 
 
 class ConfigurationSection(BaseModel):
@@ -78,10 +80,41 @@ class AbdmSettings(ConfigurationSection):
 
 
 class ObservabilitySettings(ConfigurationSection):
-    """P1 logging-preserving boundary; exporters remain disabled until P2-C."""
+    """In-process observability settings with no P2-C exporter support."""
 
+    tracing_enabled: bool = True
+    metrics_enabled: bool = True
     external_export_enabled: bool = False
+    service_name: str = "swasthyasetu-backend"
+
+    @field_validator("external_export_enabled")
+    @classmethod
+    def reject_unsupported_external_export(cls, value: bool) -> bool:
+        """Fail fast instead of pretending an unavailable exporter is active."""
+        if value:
+            raise ValueError("external telemetry export is not supported in P2-C")
+        return value
+
+    @field_validator("service_name")
+    @classmethod
+    def validate_service_name(cls, value: str) -> str:
+        """Require a stable, non-empty service identity."""
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("observability service name must not be empty")
+        return normalized
 
 
 class FeaturesSettings(ConfigurationSection):
-    """Empty namespace reserved for P2-C feature-flag configuration."""
+    """Immutable names of explicitly enabled optional features."""
+
+    enabled: tuple[str, ...] = ()
+
+    @field_validator("enabled")
+    @classmethod
+    def validate_enabled_flags(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        """Validate names and reject duplicates for unambiguous configuration."""
+        validated = tuple(str(FeatureFlag(name)) for name in value)
+        if len(validated) != len(set(validated)):
+            raise ValueError("enabled feature flags must not contain duplicates")
+        return validated

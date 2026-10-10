@@ -6,6 +6,8 @@ from contextvars import ContextVar
 from datetime import UTC, datetime
 from typing import Final
 
+from opentelemetry import trace
+
 from app.config import LogLevel
 
 request_id_context: ContextVar[str | None] = ContextVar("request_id", default=None)
@@ -34,6 +36,11 @@ class JsonFormatter(logging.Formatter):
         request_id = request_id_context.get()
         if request_id is not None:
             payload["request_id"] = request_id
+        current_span = trace.get_current_span()
+        span_context = current_span.get_span_context()
+        if current_span.is_recording() and span_context.is_valid:
+            payload["trace_id"] = format(span_context.trace_id, "032x")
+            payload["span_id"] = format(span_context.span_id, "016x")
         for field_name in _EXTRA_FIELDS:
             field_value = getattr(record, field_name, None)
             if isinstance(field_value, (str, int, float)):

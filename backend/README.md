@@ -23,7 +23,9 @@ The original P1 variables remain supported: `SWASTHYASETU_APP_NAME`,
 `SWASTHYASETU_ENVIRONMENT`, `SWASTHYASETU_DEBUG`, `SWASTHYASETU_API_V1_PREFIX`, and
 `SWASTHYASETU_LOG_LEVEL`. Minimal future-integration sections can be supplied as JSON environment
 values such as `SWASTHYASETU_DATABASE`, but all integrations default disabled or unconfigured and
-P2-A performs no connectivity checks.
+P2-A performs no connectivity checks. P2-C feature configuration accepts immutable JSON using
+synthetic names, for example `SWASTHYASETU_FEATURES={"enabled":["example_feature"]}`. No feature
+is enabled by default.
 
 ## Run the API
 
@@ -49,6 +51,21 @@ sealed composition metadata as `application.state.module_registry` and
 
 Registrations are explicit imports assembled at startup. Runtime plugin discovery, package
 scanning, global registries, and request-time provider mutation are intentionally unsupported.
+
+## Feature flags and observability
+
+`application.state.feature_flags` exposes the provider-neutral `FeatureFlagService`. Valid but
+absent flags evaluate to `False`; configuration is immutable for the process lifetime. Flags do
+not provide authorization and must not encode clinical policy. Manifest flag names remain
+declaration metadata and do not alter module registration.
+
+`application.state.observability` owns isolated OpenTelemetry tracer and meter providers. Manual
+HTTP instrumentation emits `swasthyasetu.http.server.requests` and
+`swasthyasetu.http.server.duration` (milliseconds) with bounded method, route-template, and status
+attributes. Spans and JSON logs can correlate request, trace, and span identifiers without raw
+bodies, query strings, credentials, cookies, or exception details. External export is disabled by
+default and enabling it is rejected because P2-C installs no exporter. No Collector or monitoring
+service is required.
 
 ## Quality checks
 
