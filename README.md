@@ -4,8 +4,7 @@ Unified multimodal clinical-intake, mental-health triage, document-intelligence,
 
 ## Current status
 
-**P1-C implementation is complete locally; remote CI verification is pending and overall P1
-remains partial.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 is next.**
 
 The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
 configuration, health endpoints, request correlation, structured logging, and backend quality
@@ -29,5 +28,5 @@ Backend setup and verification commands are documented in `backend/README.md`.
 Frontend setup and verification commands are documented in `docs/frontend/README.md`.
 Local container and PostgreSQL commands are documented in `deployments/local/README.md`.
 
-The next unit is remote CI verification and P1 closure. P2 must not begin until all mandatory P1-C
-jobs have been observed passing on the feature branch.
+The next coding unit is **P2-A — Shared Platform Kernel primitives**. It remains separate and has
+not been implemented.
