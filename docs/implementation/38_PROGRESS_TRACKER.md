@@ -27,9 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P1 — Repository + Tooling Foundation — COMPLETE
-**Current recommended next action:** begin P2-A — Shared Platform Kernel primitives in its governed
-phase unit.
+**Current macro stage:** P2 — Shared Platform Kernel — PARTIAL
+**Current recommended next action:** complete P2-A remote CI verification before beginning P2-B.
 
 ---
 
@@ -39,7 +38,7 @@ phase unit.
 |---|---|---|---|
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
-| P2 | Shared Platform Kernel | NOT STARTED | Depends on P1. |
+| P2 | Shared Platform Kernel | PARTIAL | P2-A implementation complete locally; remote CI pending. P2-B/P2-C not started. |
 | P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
@@ -340,3 +339,25 @@ stages. The superseding official Python base is
 the corrected image and CI security gate passed without vulnerability ignores. GitHub Actions run
 `38043640160` verified all five mandatory jobs on correction commit
 `bf03a1a1de34860c64a6f3162e78d13d41371a75`.
+
+---
+
+# 13. P2-A Implementation Record
+
+```text
+Phase/Sub-phase: P2-A — Shared Kernel Types, Errors & Configuration
+Status: PARTIAL
+Date: 2026-10-10
+Branch: phase/p2-a-shared-kernel-primitives
+Base commit: a531305c4693e2acd7dc92d58bab1b0c3e0178b5
+Implementation commit: pending (this record is included in the implementation commit)
+Requirement IDs: FR-CORE-004, FR-CORE-005, FR-CORE-006, FR-CORE-009, FR-CORE-010, FR-EXT-003, FR-EXT-004, FR-EXT-005, FR-EXT-011, NFR-OBS-011, PRIV-007
+Acceptance criteria: AC-P2-001, AC-P2-002, AC-P2-003, AC-P2-008, and AC-P2-009 pass locally; AC-P2-004 through AC-P2-007 remain assigned to P2-B/P2-C.
+Implemented scope: opaque UUID identifiers; timezone-aware UTC helper; safe request-ID primitive; immutable identity-neutral actor context; framework-independent error hierarchy and complete canonical error-code registry; explicit FastAPI status translation and unchanged public error envelope; frozen typed settings sections with P1 environment compatibility and inactive future integrations; privacy-safe logging regression coverage.
+Verification: 38 backend tests passed; backend and frontend quality gates passed, including locked dependency checks, Ruff, format, mypy, compile/import smoke, frontend lint/typecheck/tests/builds, and Playwright test discovery.
+Remote CI: NOT VERIFIED — branch has not yet been pushed.
+Specification reconciliation: dependency-map section 2 now aligns P2 Shared Platform Kernel and P3 Persistence/migrations/events/jobs/adapter foundation with the canonical master plan, acceptance criteria, and tracker.
+Remaining P2 work: P2-B module manifest/capability registry and P2-C observability/feature flags.
+Blockers: remote CI evidence required for COMPLETE status.
+Open decisions: none required for P2-A; dependency timeouts map conservatively to HTTP 503.
+```
