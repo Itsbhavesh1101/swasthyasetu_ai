@@ -45,6 +45,7 @@ def backend_gate() -> None:
         [*uv, "run", "ruff", "check", "."],
         [*uv, "run", "ruff", "format", "--check", "."],
         [*uv, "run", "mypy"],
+        [*uv, "run", "alembic", "-c", "alembic.ini", "heads"],
         [*uv, "run", "pytest"],
         [*uv, "run", "python", "-m", "compileall", "-q", "app", "tests"],
         [

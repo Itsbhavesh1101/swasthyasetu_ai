@@ -32,6 +32,8 @@ WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 COPY --chown=10001:10001 backend/app ./app
+COPY --chown=10001:10001 backend/alembic.ini ./alembic.ini
+COPY --chown=10001:10001 backend/migrations ./migrations
 
 USER 10001:10001
 

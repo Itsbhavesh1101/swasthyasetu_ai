@@ -1,8 +1,8 @@
-"""Dependency-free process health endpoints."""
+"""Process liveness and dependency-aware readiness endpoints."""
 
 from enum import StrEnum
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, Response, status
 from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/health", tags=["health"])
@@ -18,6 +18,7 @@ class ReadinessStatus(StrEnum):
     """Readiness state returned by the application."""
 
     READY = "ready"
+    NOT_READY = "not_ready"
 
 
 class DependencyStatus(StrEnum):
@@ -49,6 +50,22 @@ async def liveness() -> LivenessResponse:
 
 
 @router.get("/ready", response_model=ReadinessResponse)
-async def readiness() -> ReadinessResponse:
-    """Report readiness using only dependencies that exist in P1-A."""
-    return ReadinessResponse(status=ReadinessStatus.READY)
+async def readiness(request: Request, response: Response) -> ReadinessResponse:
+    """Report one bounded, privacy-safe check for every required dependency."""
+    database = getattr(request.app.state, "database", None)
+    if database is None:
+        return ReadinessResponse(status=ReadinessStatus.READY)
+
+    try:
+        await database.ping()
+    except Exception:  # noqa: BLE001 - dependency details must not cross this boundary
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return ReadinessResponse(
+            status=ReadinessStatus.NOT_READY,
+            required={"database": DependencyStatus.UNAVAILABLE},
+        )
+
+    return ReadinessResponse(
+        status=ReadinessStatus.READY,
+        required={"database": DependencyStatus.OK},
+    )

@@ -20,7 +20,7 @@ services:
       start_period: 5s
 
   backend:
-    image: swasthyasetu/backend:p1-c-local
+    image: swasthyasetu/backend:p3-a-local
     build:
       context: ../..
       dockerfile: infra/docker/backend.Dockerfile
@@ -29,6 +29,8 @@ services:
       SWASTHYASETU_DEBUG: "false"
       SWASTHYASETU_ENVIRONMENT: local
       SWASTHYASETU_LOG_LEVEL: INFO
+      SWASTHYASETU_DATABASE__ENABLED: "true"
+      SWASTHYASETU_DATABASE__URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB must be set}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
