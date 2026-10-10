@@ -337,5 +337,6 @@ Open decisions: none required for P1-C.
 Review fix `SSAI-P1C-REVIEW-FIX-01` removed mutable `apk upgrade` operations from both backend image
 stages. The superseding official Python base is
 `python:3.12.15-alpine3.23@sha256:1fd55c2f838c4f76262f9eeed899ff9168ea96ac383c61667d6f204325e1f169`;
-the corrected image passes the local security gate without vulnerability ignores; remote CI
-verification is pending.
+the corrected image and CI security gate passed without vulnerability ignores. GitHub Actions run
+`38043640160` verified all five mandatory jobs on correction commit
+`bf03a1a1de34860c64a6f3162e78d13d41371a75`.
