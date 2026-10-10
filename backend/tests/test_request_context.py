@@ -17,3 +17,9 @@ async def test_invalid_request_id_is_replaced(client: AsyncClient) -> None:
     response = await client.get("/health/live", headers={REQUEST_ID_HEADER: "invalid value"})
 
     assert re.fullmatch(r"req_[0-9a-f]{32}", response.headers[REQUEST_ID_HEADER])
+
+
+async def test_missing_request_id_is_generated(client: AsyncClient) -> None:
+    response = await client.get("/health/live")
+
+    assert re.fullmatch(r"req_[0-9a-f]{32}", response.headers[REQUEST_ID_HEADER])

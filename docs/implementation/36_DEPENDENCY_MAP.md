@@ -27,11 +27,11 @@ No phase becomes eligible merely because its number is next.
 ```text
 P0 Governance / repository foundation
  |
-P1 Backend engineering foundation
+P1 Repository + tooling foundation
  |
-P2 Persistence / migrations / API conventions
+P2 Shared Platform Kernel
  |
-P3 Events / jobs / adapter foundation
+P3 Persistence / migrations / events / jobs / adapter foundation
  |
 P4 Identity / pseudonymous session / consent
  |

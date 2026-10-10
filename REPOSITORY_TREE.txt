@@ -90,6 +90,7 @@ swasthyasetu-ai/
 │   │   │   └── health.py
 │   │   ├── config/
 │   │   │   ├── __init__.py
+│   │   │   ├── sections.py
 │   │   │   └── settings.py
 │   │   ├── events/
 │   │   │   └── .gitkeep
@@ -141,14 +142,20 @@ swasthyasetu-ai/
 │   │   │   ├── domain/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── errors/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── base.py
+│   │   │   │   └── codes.py
 │   │   │   ├── observability/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── logging.py
 │   │   │   ├── security/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── actor.py
 │   │   │   ├── types/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── ids.py
+│   │   │   │   ├── request_id.py
+│   │   │   │   └── time.py
 │   │   │   ├── utils/
 │   │   │   │   └── .gitkeep
 │   │   │   └── __init__.py
@@ -156,13 +163,15 @@ swasthyasetu-ai/
 │   │   └── main.py
 │   ├── tests/
 │   │   ├── conftest.py
+│   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
 │   │   ├── test_application.py
 │   │   ├── test_errors.py
 │   │   ├── test_health.py
 │   │   ├── test_logging.py
 │   │   ├── test_request_context.py
-│   │   └── test_settings.py
+│   │   ├── test_settings.py
+│   │   └── test_shared_types.py
 │   ├── .env.example
 │   ├── README.md
 │   ├── pyproject.toml
@@ -238,7 +247,8 @@ swasthyasetu-ai/
 │   │   │   ├── P1_A_REPOSITORY_BACKEND_TOOLING.md
 │   │   │   ├── P1_B_FRONTEND_WORKSPACES.md
 │   │   │   ├── P1_C_DOCKER_CI_FOUNDATION.md
-│   │   │   └── P1_C_REVIEW_FIX_01_DOCKER_REPRODUCIBILITY.md
+│   │   │   ├── P1_C_REVIEW_FIX_01_DOCKER_REPRODUCIBILITY.md
+│   │   │   └── P2_A_SHARED_KERNEL_PRIMITIVES.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md

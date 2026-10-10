@@ -1,7 +1,7 @@
 # SwasthyaSetu backend
 
-This directory contains the P1-A FastAPI engineering foundation. It intentionally has no
-clinical logic, persistence, external providers, or deployment infrastructure.
+This directory contains the FastAPI engineering foundation and P2-A shared-kernel primitives. It
+intentionally has no clinical logic, application persistence, or active external providers.
 
 ## Prerequisites
 
@@ -18,6 +18,12 @@ Copy-Item .env.example .env
 ```
 
 The `.env` file is ignored by Git. The committed example contains no secrets.
+
+The original P1 variables remain supported: `SWASTHYASETU_APP_NAME`,
+`SWASTHYASETU_ENVIRONMENT`, `SWASTHYASETU_DEBUG`, `SWASTHYASETU_API_V1_PREFIX`, and
+`SWASTHYASETU_LOG_LEVEL`. Minimal future-integration sections can be supplied as JSON environment
+values such as `SWASTHYASETU_DATABASE`, but all integrations default disabled or unconfigured and
+P2-A performs no connectivity checks.
 
 ## Run the API
 
@@ -50,4 +56,3 @@ To format backend Python files:
 ```powershell
 uv run ruff format .
 ```
-
