@@ -139,12 +139,20 @@ swasthyasetu-ai/
 │   │   │   └── summaries/
 │   │   │       └── .gitkeep
 │   │   ├── shared/
+│   │   │   ├── capabilities/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── keys.py
+│   │   │   │   └── registry.py
 │   │   │   ├── domain/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── errors/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── base.py
 │   │   │   │   └── codes.py
+│   │   │   ├── modules/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── manifest.py
+│   │   │   │   └── registry.py
 │   │   │   ├── observability/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── logging.py
@@ -166,9 +174,11 @@ swasthyasetu-ai/
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
 │   │   ├── test_application.py
+│   │   ├── test_capability_registry.py
 │   │   ├── test_errors.py
 │   │   ├── test_health.py
 │   │   ├── test_logging.py
+│   │   ├── test_module_registry.py
 │   │   ├── test_request_context.py
 │   │   ├── test_settings.py
 │   │   └── test_shared_types.py
@@ -248,7 +258,8 @@ swasthyasetu-ai/
 │   │   │   ├── P1_B_FRONTEND_WORKSPACES.md
 │   │   │   ├── P1_C_DOCKER_CI_FOUNDATION.md
 │   │   │   ├── P1_C_REVIEW_FIX_01_DOCKER_REPRODUCIBILITY.md
-│   │   │   └── P2_A_SHARED_KERNEL_PRIMITIVES.md
+│   │   │   ├── P2_A_SHARED_KERNEL_PRIMITIVES.md
+│   │   │   └── P2_B_MODULE_CAPABILITY_REGISTRY.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md

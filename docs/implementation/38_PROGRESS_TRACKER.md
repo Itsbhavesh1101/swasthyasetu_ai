@@ -28,8 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P2 — Shared Platform Kernel — PARTIAL
-**Current recommended next action:** begin P2-B — Module Manifest & Capability Registry in its
-governed phase unit.
+**Current recommended next action:** complete P2-B remote CI verification before beginning P2-C.
 
 ---
 
@@ -39,7 +38,7 @@ governed phase unit.
 |---|---|---|---|
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
-| P2 | Shared Platform Kernel | PARTIAL | P2-A complete; P2-B/P2-C not started. |
+| P2 | Shared Platform Kernel | PARTIAL | P2-A complete; P2-B implementation passes locally with remote CI pending; P2-C not started. |
 | P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
@@ -362,4 +361,25 @@ Specification reconciliation: dependency-map section 2 now aligns P2 Shared Plat
 Remaining P2 work: P2-B module manifest/capability registry and P2-C observability/feature flags.
 Blockers: none.
 Open decisions: none required for P2-A; dependency timeouts map conservatively to HTTP 503.
+```
+
+---
+
+# 14. P2-B Implementation Record
+
+```text
+Phase/Sub-phase: P2-B — Module Manifest & Capability Registry
+Status: PARTIAL
+Date: 2026-10-11
+Branch: phase/p2-b-module-capability-registry
+Base commit: 6c8fe9f54fc16788acc9c478638864a5a69eb988
+Implementation commit: pending (this record is included in the implementation commit)
+Requirement IDs: FR-CORE-004, FR-CORE-005, FR-CORE-006, FR-CORE-010, FR-EXT-003, FR-EXT-004, FR-EXT-008, FR-EXT-011; ARCH-P-002, ARCH-P-007, ARCH-P-010, ARCH-P-012
+Acceptance criteria: AC-P2-004, AC-P2-005, and AC-P2-009 pass locally; AC-P2-006 and AC-P2-007 remain assigned to P2-C; P2-A acceptance remains green.
+Implemented scope: immutable versioned module manifests; typed capability identifiers and keys; explicit provider/module/router bindings; deterministic duplicate, declaration-integrity, missing-capability, and sealed-registry failures; registration-order-independent finalization; sealed per-application composition state; synthetic module router integration below /api/v1.
+Verification: 65 backend tests passed; backend and frontend quality gates passed, including locked dependency checks, Ruff, format, mypy, compile/import smoke, frontend lint/typecheck/tests/builds, and Playwright test discovery.
+Remote CI: NOT VERIFIED — branch has not yet been pushed.
+Remaining P2 work: P2-C observability and feature flags.
+Blockers: remote CI evidence required for COMPLETE status.
+Open decisions: none required for P2-B.
 ```
