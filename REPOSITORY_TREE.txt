@@ -237,7 +237,8 @@ swasthyasetu-ai/
 │   │   ├── CODEX_PHASE_PROMPTS/
 │   │   │   ├── P1_A_REPOSITORY_BACKEND_TOOLING.md
 │   │   │   ├── P1_B_FRONTEND_WORKSPACES.md
-│   │   │   └── P1_C_DOCKER_CI_FOUNDATION.md
+│   │   │   ├── P1_C_DOCKER_CI_FOUNDATION.md
+│   │   │   └── P1_C_REVIEW_FIX_01_DOCKER_REPRODUCIBILITY.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md

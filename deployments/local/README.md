@@ -42,6 +42,9 @@ Invoke-RestMethod http://127.0.0.1:8000/health/ready
 ```
 
 The backend image runs as non-root user `10001:10001` and exposes port 8000 locally.
+It uses the official immutable
+`python:3.12.15-alpine3.23@sha256:1fd55c2f838c4f76262f9eeed899ff9168ea96ac383c61667d6f204325e1f169`
+base without mutating its operating-system package set during the build.
 
 ## Stop or reset
 

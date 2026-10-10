@@ -596,8 +596,8 @@ infrastructure. The frontend also needs one Node runtime that matches its type d
 - use Node.js `24.18.1` and matching Node 24 type declarations for frontend tooling;
 - use PostgreSQL `16.12` as the local and CI database baseline;
 - use Docker Compose for the P1 local stack, limited to PostgreSQL and the backend API;
-- build the backend from the official Python `3.12.13-alpine3.23` image, pinned by digest and
-  upgraded from the signed Alpine repositories during the build;
+- build the backend from the official Python `3.12.15-alpine3.23` image, pinned by digest, and use
+  the operating-system package state contained in that immutable image without build-time upgrades;
 - treat Gitleaks and Trivy as CI/operations tools only, not application dependencies.
 
 ## Consequences
