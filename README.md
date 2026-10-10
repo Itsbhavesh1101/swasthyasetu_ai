@@ -4,8 +4,7 @@ Unified multimodal clinical-intake, mental-health triage, document-intelligence,
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2-C is locally complete; overall P2 remains
-PARTIAL pending mandatory branch CI.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE.**
 
 The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
 configuration, health endpoints, request correlation, structured logging, and backend quality
@@ -33,4 +32,5 @@ P2-A provides shared primitives, errors, and typed configuration. P2-B adds immu
 manifests, typed capability keys, explicit compile-time module/provider registration, dependency
 validation, and sealed per-application registries. P2-C adds safe/off immutable feature flags and
 project-owned OpenTelemetry request tracing/metrics with no external export or telemetry
-infrastructure. P2 will be marked complete only after all mandatory P2-C branch CI jobs pass.
+infrastructure. All mandatory P2-C branch CI jobs passed. The next governed unit is
+**P3-A — SQLAlchemy & Alembic Persistence Foundation**; it is not implemented.
