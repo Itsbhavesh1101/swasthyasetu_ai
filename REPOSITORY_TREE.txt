@@ -4,11 +4,50 @@ swasthyasetu-ai/
 │       └── .gitkeep
 ├── apps/
 │   ├── admin-web/
-│   │   └── .gitkeep
+│   │   ├── app/
+│   │   │   ├── error.tsx
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── loading.tsx
+│   │   │   └── page.tsx
+│   │   ├── tests/
+│   │   │   └── page.test.tsx
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.ts
+│   │   ├── package.json
+│   │   ├── postcss.config.mjs
+│   │   ├── tsconfig.json
+│   │   └── vitest.config.ts
 │   ├── clinician-web/
-│   │   └── .gitkeep
+│   │   ├── app/
+│   │   │   ├── error.tsx
+│   │   │   ├── globals.css
+│   │   │   ├── layout.tsx
+│   │   │   ├── loading.tsx
+│   │   │   └── page.tsx
+│   │   ├── tests/
+│   │   │   └── page.test.tsx
+│   │   ├── next-env.d.ts
+│   │   ├── next.config.ts
+│   │   ├── package.json
+│   │   ├── postcss.config.mjs
+│   │   ├── tsconfig.json
+│   │   └── vitest.config.ts
 │   └── patient-web/
-│       └── .gitkeep
+│       ├── app/
+│       │   ├── error.tsx
+│       │   ├── globals.css
+│       │   ├── layout.tsx
+│       │   ├── loading.tsx
+│       │   └── page.tsx
+│       ├── tests/
+│       │   └── page.test.tsx
+│       ├── next-env.d.ts
+│       ├── next.config.ts
+│       ├── package.json
+│       ├── postcss.config.mjs
+│       ├── tsconfig.json
+│       └── vitest.config.ts
 ├── artifacts/
 │   └── README.md
 ├── backend/
@@ -194,7 +233,8 @@ swasthyasetu-ai/
 │   │   └── .gitkeep
 │   ├── codex/
 │   │   ├── CODEX_PHASE_PROMPTS/
-│   │   │   └── .gitkeep
+│   │   │   ├── P1_A_REPOSITORY_BACKEND_TOOLING.md
+│   │   │   └── P1_B_FRONTEND_WORKSPACES.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md
@@ -202,7 +242,7 @@ swasthyasetu-ai/
 │   ├── engineering/
 │   │   └── .gitkeep
 │   ├── frontend/
-│   │   └── .gitkeep
+│   │   └── README.md
 │   ├── implementation/
 │   │   ├── 35_PHASE_ACCEPTANCE_CRITERIA.md
 │   │   ├── 36_DEPENDENCY_MAP.md
@@ -300,14 +340,30 @@ swasthyasetu-ai/
 │   ├── contracts/
 │   │   └── .gitkeep
 │   └── ui/
-│       └── .gitkeep
+│       ├── src/
+│       │   ├── app-shell.tsx
+│       │   ├── empty-state.tsx
+│       │   ├── error-state.tsx
+│       │   ├── index.ts
+│       │   ├── loading-state.tsx
+│       │   └── styles.css
+│       ├── tests/
+│       │   └── states.test.tsx
+│       ├── package.json
+│       ├── tsconfig.json
+│       └── vitest.config.ts
 ├── scripts/
 │   └── .gitkeep
 ├── tests/
 │   ├── contracts/
 │   │   └── .gitkeep
 │   ├── e2e/
-│   │   └── .gitkeep
+│   │   ├── admin.spec.ts
+│   │   ├── clinician.spec.ts
+│   │   ├── patient.spec.ts
+│   │   └── playwright.config.ts
+│   ├── frontend/
+│   │   └── setup.ts
 │   ├── fixtures/
 │   │   └── .gitkeep
 │   ├── integration/
@@ -322,6 +378,13 @@ swasthyasetu-ai/
 │   └── .gitkeep
 ├── .editorconfig
 ├── .gitignore
+├── .prettierignore
 ├── CONTRIBUTING.md
 ├── README.md
-└── REPOSITORY_TREE.txt
+├── REPOSITORY_TREE.txt
+├── eslint.config.mjs
+├── package.json
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── prettier.config.mjs
+└── tsconfig.base.json
