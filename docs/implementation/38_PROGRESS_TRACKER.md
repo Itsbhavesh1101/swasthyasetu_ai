@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P4 — Identity + Sessions + Consent — PARTIAL
-**Current recommended next action:** verify P4-C remote CI; do not begin P5.
+**Current macro stage:** P4 — Identity + Sessions + Consent — COMPLETE
+**Current recommended next action:** begin P5-A — Patient / Encounter Domain Types & Entities.
 
 ---
 
@@ -40,7 +40,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
-| P4 | Identity + Sessions + Consent | PARTIAL | P4-A and P4-B complete; P4-C implemented locally with remote CI pending. |
+| P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
@@ -545,11 +545,12 @@ Next recommended unit: P4-C — Consent Domain & APIs.
 
 ```text
 Phase/Sub-phase: P4-C — Consent Domain & APIs
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-11
 Branch: phase/p4-c-consent-domain-apis
 Base commit: f81bac4d24c6073c7ffcf3c3ec7ceab58cdc150e
-Implementation commit: pending
+Implementation commit: 4679c14a17250224c53fff007bbc7885fdca4170
+CI repair commit: 381a0739be00bcb45408f6adc38224142b925e43
 Requirement IDs: FR-IDENT-006, FR-IDENT-007, FR-REF-003, PRIV-003, PRIV-004, PRIV-006, PRIV-007; AC-P4-007, AC-P4-008, AC-P4-009
 Specification reconciliation: ConsentRecord now canonically uses subject_type/subject_id/actor_id, matching API and persistence; machine-coded revocation_reason is persisted with revoked_at.
 Implemented scope: canonical consent values and immutable record; SESSION authorization through sessions.validate; ACTOR self-authorization through trusted ActorContext; PATIENT deferral; purpose-exact/scope-subset consent checks; grant/revoke/subject-scoped list APIs; atomic minimal ConsentGranted/ConsentRevoked outbox events.
@@ -558,7 +559,9 @@ Dependencies: unchanged.
 Local PostgreSQL evidence: fresh upgrade/current/check, downgrade to p4b_0004 and re-upgrade, seven consent integration/API tests, and 25 PostgreSQL-marked regression tests passed with zero skips.
 Local test evidence: 261 passed and one unrelated Windows symlink-capability skip with PostgreSQL enabled; network-free regression 236 passed and 26 PostgreSQL skips.
 Local acceptance: AC-P4-007 PASS; AC-P4-008 PASS; AC-P4-009 PASS. AC-P4-001 through AC-P4-006 and AC-P4-010 remain green in regression verification.
-Overall P4 status: PARTIAL pending remote CI verification.
-Remote CI: NOT YET VERIFIED.
-Next required action: complete local quality/security/Docker verification, push the feature branch, and observe all six mandatory CI jobs on the final SHA.
+Remote CI: VERIFIED — GitHub Actions run 38157106550 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on head commit 381a0739be00bcb45408f6adc38224142b925e43.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38157106550
+P4 final acceptance: AC-P4-001 PASS; AC-P4-002 PASS; AC-P4-003 PASS; AC-P4-004 PASS; AC-P4-005 PASS; AC-P4-006 PASS; AC-P4-007 PASS; AC-P4-008 PASS; AC-P4-009 PASS; AC-P4-010 PASS.
+Overall P4 status: COMPLETE.
+Next recommended unit: P5-A — Patient / Encounter Domain Types & Entities.
 ```
