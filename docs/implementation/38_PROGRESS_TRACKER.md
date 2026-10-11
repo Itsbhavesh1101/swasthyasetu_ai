@@ -28,8 +28,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P3 — Persistence + Events + Jobs — PARTIAL
-**Current recommended next action:** complete remote CI verification for P3-B — Event Envelope &
-Transactional Outbox.
+**Current recommended next action:** begin P3-C — Jobs, Worker Abstraction & Object Storage in its
+governed phase unit.
 
 ---
 
@@ -40,7 +40,7 @@ Transactional Outbox.
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
-| P3 | Persistence + Events + Jobs | PARTIAL | P3-A complete; P3-B passes locally with remote CI pending; P3-C not started. |
+| P3 | Persistence + Events + Jobs | PARTIAL | P3-A and P3-B complete; P3-C not started. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
@@ -436,15 +436,15 @@ Next recommended unit: P3-B — Event Envelope & Transactional Outbox.
 
 ---
 
-# 17. P3-B Local Verification Record
+# 17. P3-B Completion Record
 
 ```text
 Phase/Sub-phase: P3-B — Event Envelope & Transactional Outbox
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-11
 Branch: phase/p3-b-event-outbox
 Base commit: b33fcd23bff023fd539984d1f7f2862cc3c52fc1
-Implementation commit: pending creation after final local audit
+Implementation commit: ed103319016b9e3ab50471b5a92aa9e5b551a096
 Requirement IDs: FR-CORE-005, FR-CORE-006, FR-CORE-009; AC-P3-004, AC-P3-005, AC-P3-006, AC-P3-010
 Implemented scope: immutable versioned event envelope; explicit deterministic in-process publisher; PostgreSQL transactional outbox; caller-session repository; manual bounded dispatcher; deterministic retry/status lifecycle; handler-side idempotency fixture.
 Migration revision: p3b_0002; parent p3a_0001; creates only outbox_events with three required secondary indexes and named invariant checks.
@@ -454,7 +454,10 @@ Local PostgreSQL results: 9 executed, 9 passed, 0 skipped (7 new P3-B and 2 P3-A
 Backend results: 137 collected; 137 passed with the explicit PostgreSQL test URL. Backend quality gate passed; frontend regression quality gate passed.
 Local acceptance: AC-P3-004 PASS; AC-P3-005 PASS; AC-P3-006 PASS; AC-P3-010 PASS by architecture/regression inspection.
 Delivery semantics: at-least-once; consumer side effects require idempotency; no exactly-once claim.
-Remote CI: PENDING — all six mandatory branch jobs must pass before P3-B becomes COMPLETE.
+Remote CI: VERIFIED — GitHub Actions run 38110783677 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit ed103319016b9e3ab50471b5a92aa9e5b551a096.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38110783677
+Acceptance: AC-P3-004 PASS; AC-P3-005 PASS; AC-P3-006 PASS. P3-A acceptance remains green; P3-C criteria remain not implemented.
 Overall P3 status: PARTIAL.
 Remaining P3 work: P3-C jobs, worker abstraction, and object storage.
+Next recommended unit: P3-C — Jobs, Worker Abstraction & Object Storage.
 ```
