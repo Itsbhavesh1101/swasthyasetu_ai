@@ -10,6 +10,7 @@ from app.api.health import router as health_router
 from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
+from app.modules.sessions.public import build_sessions_registration
 from app.shared.feature_flags import ConfigurationFeatureFlagProvider, FeatureFlagService
 from app.shared.modules import ModuleRegistration, ModuleRegistry
 from app.shared.observability import (
@@ -26,7 +27,7 @@ def create_app(
     settings: Settings | None = None,
     *,
     api_v1_routers: Sequence[APIRouter] = (),
-    module_registrations: Sequence[ModuleRegistration[APIRouter]] = (),
+    module_registrations: Sequence[ModuleRegistration[APIRouter]] | None = None,
     observability: ObservabilityRuntime | None = None,
     feature_flags: FeatureFlagService | None = None,
     database: DatabaseRuntime | None = None,
@@ -53,8 +54,18 @@ def create_app(
             if resolved_database is not None:
                 await resolved_database.dispose()
 
+    resolved_module_registrations = (
+        (
+            build_sessions_registration(
+                settings=resolved_settings.sessions,
+                database=resolved_database,
+            ),
+        )
+        if module_registrations is None
+        else module_registrations
+    )
     module_registry = ModuleRegistry[APIRouter]()
-    for registration in module_registrations:
+    for registration in resolved_module_registrations:
         module_registry.register(registration)
     module_registry.finalize()
 

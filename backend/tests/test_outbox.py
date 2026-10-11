@@ -27,11 +27,11 @@ def event() -> EventEnvelope:
     )
 
 
-def test_outbox_is_the_only_platform_table_and_has_required_schema() -> None:
+def test_outbox_has_required_schema_alongside_registered_module_tables() -> None:
     table = OutboxEventRecord.__table__
     assert isinstance(table, Table)
 
-    assert tuple(Base.metadata.tables) == ("outbox_events",)
+    assert set(Base.metadata.tables) == {"outbox_events", "sessions"}
     assert tuple(table.columns) == tuple(
         table.c[name]
         for name in (

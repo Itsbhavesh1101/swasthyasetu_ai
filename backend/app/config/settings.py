@@ -16,6 +16,7 @@ from app.config.sections import (
     ObservabilitySettings,
     OcrSettings,
     SecuritySettings,
+    SessionsSettings,
     SpeechSettings,
 )
 
@@ -61,6 +62,7 @@ class Settings(BaseSettings):
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
+    sessions: SessionsSettings = Field(default_factory=SessionsSettings)
     object_storage: ObjectStorageSettings = Field(default_factory=ObjectStorageSettings)
     llm: LlmSettings = Field(default_factory=LlmSettings)
     ocr: OcrSettings = Field(default_factory=OcrSettings)

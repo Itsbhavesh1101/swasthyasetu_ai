@@ -201,7 +201,7 @@ Optional AI/QML dependencies should not block readiness unless an enabled critic
 
 ## POST `/api/v1/sessions`
 
-Purpose: create pseudonymous/authenticated/kiosk session.
+Purpose: create a pseudonymous or kiosk session in P4-A. Authenticated creation is deferred to P4-B.
 
 Request:
 
@@ -227,15 +227,26 @@ Response `201`:
 Rules:
 
 - pseudonymous session must not require a name;
-- raw token hashes are never returned.
+- request objects reject unrecognized identity fields such as `name`;
+- the opaque token is returned only by this creation response;
+- active and recovery token hashes are never returned;
+- all session responses use `Cache-Control: no-store`.
 
 ## GET `/api/v1/sessions/{session_id}`
 
 Returns authorized session metadata.
 
+Requires `Authorization: Bearer <session_token>`. Unknown IDs, wrong tokens, and cross-session
+tokens return the same `AUTHENTICATION_REQUIRED` response. Expired sessions return
+`SESSION_EXPIRED`; closed/revoked sessions are not treated as active. Tokens are not accepted in
+paths, query parameters, or cookies.
+
 ## POST `/api/v1/sessions/{session_id}/close`
 
 Transitions session to closed state.
+
+Requires the exact session bearer token. Only `ACTIVE -> CLOSED` is valid. Repeat close returns
+`INVALID_STATE_TRANSITION`; an expired close returns `SESSION_EXPIRED`.
 
 ---
 

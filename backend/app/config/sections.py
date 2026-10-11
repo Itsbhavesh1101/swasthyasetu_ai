@@ -49,6 +49,13 @@ class SecuritySettings(ConfigurationSection):
     secret_key: SecretStr | None = None
 
 
+class SessionsSettings(ConfigurationSection):
+    """Foundation TTLs; production values require later security/privacy review."""
+
+    pseudonymous_ttl_minutes: int = Field(default=60, ge=1, le=10_080)
+    kiosk_ttl_minutes: int = Field(default=30, ge=1, le=10_080)
+
+
 class ObjectStorageSettings(ConfigurationSection):
     """Inactive provider-neutral object-storage boundary."""
 

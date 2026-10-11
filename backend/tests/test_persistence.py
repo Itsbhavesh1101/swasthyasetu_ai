@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.config import DatabaseSettings
 from app.events.outbox import OutboxEventRecord
+from app.modules.sessions.infrastructure import SessionRecord
 from app.shared.persistence import NAMING_CONVENTION, Base, DatabaseRuntime
 from app.shared.persistence.runtime import create_database_runtime
 
@@ -33,8 +34,11 @@ async def test_runtime_constructs_lazily_with_async_engine_and_session_factory()
         await runtime.dispose()
 
 
-def test_metadata_contains_only_the_platform_outbox_table() -> None:
-    assert tuple(Base.metadata.tables) == (OutboxEventRecord.__tablename__,)
+def test_metadata_contains_only_outbox_and_sessions_tables() -> None:
+    assert set(Base.metadata.tables) == {
+        OutboxEventRecord.__tablename__,
+        SessionRecord.__tablename__,
+    }
     assert Base.metadata.naming_convention == NAMING_CONVENTION
 
 

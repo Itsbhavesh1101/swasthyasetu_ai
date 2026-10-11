@@ -15,6 +15,7 @@ from app.config import (
     ObservabilitySettings,
     OcrSettings,
     SecuritySettings,
+    SessionsSettings,
     Settings,
     SpeechSettings,
 )
@@ -37,6 +38,7 @@ def test_settings_expose_typed_inactive_sections() -> None:
     assert isinstance(settings.app, AppSettings)
     assert isinstance(settings.database, DatabaseSettings)
     assert isinstance(settings.security, SecuritySettings)
+    assert isinstance(settings.sessions, SessionsSettings)
     assert isinstance(settings.object_storage, ObjectStorageSettings)
     assert isinstance(settings.llm, LlmSettings)
     assert isinstance(settings.ocr, OcrSettings)
@@ -110,6 +112,8 @@ def test_settings_and_nested_sections_are_frozen() -> None:
         settings.debug = True  # type: ignore[misc]
     with pytest.raises(ValidationError):
         settings.database.enabled = True  # type: ignore[misc]
+    with pytest.raises(ValidationError):
+        settings.sessions.kiosk_ttl_minutes = 10  # type: ignore[misc]
 
 
 def test_secret_values_are_masked_in_representations() -> None:
@@ -139,6 +143,16 @@ def test_database_nested_environment_configuration(monkeypatch: pytest.MonkeyPat
     assert settings.database.url.get_secret_value() == url
     assert settings.database.connect_timeout_seconds == 2
     assert url not in repr(settings)
+
+
+def test_sessions_nested_environment_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("SWASTHYASETU_SESSIONS__PSEUDONYMOUS_TTL_MINUTES", "75")
+    monkeypatch.setenv("SWASTHYASETU_SESSIONS__KIOSK_TTL_MINUTES", "20")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.sessions.pseudonymous_ttl_minutes == 75
+    assert settings.sessions.kiosk_ttl_minutes == 20
 
 
 def test_nested_environment_support_preserves_json_sections(

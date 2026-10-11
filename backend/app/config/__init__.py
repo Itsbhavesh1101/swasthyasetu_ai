@@ -11,6 +11,7 @@ from app.config.sections import (
     ObservabilitySettings,
     OcrSettings,
     SecuritySettings,
+    SessionsSettings,
     SpeechSettings,
 )
 from app.config.settings import Environment, LogLevel, Settings
@@ -28,6 +29,7 @@ __all__ = [
     "ObservabilitySettings",
     "OcrSettings",
     "SecuritySettings",
+    "SessionsSettings",
     "Settings",
     "SpeechSettings",
 ]

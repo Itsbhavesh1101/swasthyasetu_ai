@@ -131,6 +131,29 @@ process-only and never exposes connection details.
 
 Normal product APIs will be registered below `/api/v1` in their owning phases.
 
+## Sessions
+
+The default application explicitly registers the `sessions` module through the sealed module and
+capability registries. With PostgreSQL enabled and migrated, P4-A exposes:
+
+- `POST /api/v1/sessions`
+- `GET /api/v1/sessions/{session_id}`
+- `POST /api/v1/sessions/{session_id}/close`
+
+Creation supports only `PSEUDONYMOUS` and `KIOSK`. It returns a high-entropy opaque bearer token
+once and stores only its SHA-256 hash. Subsequent read/close calls require
+`Authorization: Bearer <session_token>`. Responses use `Cache-Control: no-store`; token/hash values
+are excluded from normal views and logs. PostgreSQL remains authoritative for expiry and close
+state. Token expiry is not a data-retention or deletion policy, and P4-A implements no purge or
+lost-token recovery flow.
+
+Foundation TTL defaults are 60 minutes for pseudonymous sessions and 30 minutes for kiosk
+sessions. Override them with `SWASTHYASETU_SESSIONS__PSEUDONYMOUS_TTL_MINUTES` and
+`SWASTHYASETU_SESSIONS__KIOSK_TTL_MINUTES`. Production values require security/privacy review.
+
+Migration `p4a_0003` (parent `p3b_0002`) creates only `sessions` and its constraints/indexes.
+Migrations remain an explicit deployment step and are never run by API startup.
+
 ## Module composition
 
 Future module `public.py` boundaries can supply immutable `ModuleRegistration` values to

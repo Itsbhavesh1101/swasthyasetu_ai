@@ -136,7 +136,13 @@ swasthyasetu-ai/
 │   │   │   ├── self_care/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── sessions/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── contracts.py
+│   │   │   │   ├── domain.py
+│   │   │   │   ├── infrastructure.py
+│   │   │   │   └── public.py
 │   │   │   └── summaries/
 │   │   │       └── .gitkeep
 │   │   ├── shared/
@@ -182,12 +188,16 @@ swasthyasetu-ai/
 │   │   └── main.py
 │   ├── migrations/
 │   │   ├── versions/
-│   │   │   └── 0001_persistence_baseline.py
+│   │   │   ├── 0001_persistence_baseline.py
+│   │   │   ├── 0002_transactional_outbox.py
+│   │   │   └── 0003_sessions.py
 │   │   ├── env.py
 │   │   └── script.py.mako
 │   ├── tests/
 │   │   ├── integration/
-│   │   │   └── test_postgres_persistence.py
+│   │   │   ├── test_postgres_outbox.py
+│   │   │   ├── test_postgres_persistence.py
+│   │   │   └── test_postgres_sessions.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
@@ -202,6 +212,7 @@ swasthyasetu-ai/
 │   │   ├── test_persistence.py
 │   │   ├── test_request_context.py
 │   │   ├── test_settings.py
+│   │   ├── test_sessions.py
 │   │   └── test_shared_types.py
 │   ├── .env.example
 │   ├── README.md

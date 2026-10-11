@@ -111,6 +111,7 @@ actor_id UUID NULL
 patient_id UUID NULL
 language_preference VARCHAR NULL
 status VARCHAR NOT NULL
+token_hash VARCHAR(64) NOT NULL UNIQUE
 recovery_token_hash TEXT NULL
 created_at TIMESTAMPTZ NOT NULL
 expires_at TIMESTAMPTZ NOT NULL
@@ -126,7 +127,9 @@ patient_id
 actor_id
 ```
 
-Never store raw recovery tokens.
+`token_hash` is the SHA-256 hex verifier for the active opaque bearer token. The raw active token is
+never stored. `recovery_token_hash` is a distinct future recovery verifier and remains NULL in
+P4-A; it must not be overloaded for active access.
 
 ---
 
