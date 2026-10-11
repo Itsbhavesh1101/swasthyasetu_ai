@@ -100,6 +100,31 @@ class FailingOutbox(OutboxRepository):
         raise RuntimeError("synthetic outbox rollback")
 
 
+class FailOnConsentRevokedOutbox(OutboxRepository):
+    async def enqueue(
+        self,
+        session: AsyncSession,
+        event: EventEnvelope,
+        *,
+        aggregate_type: str | None = None,
+        aggregate_id: OpaqueId | None = None,
+        available_at: datetime | None = None,
+        created_at: datetime | None = None,
+    ) -> OutboxEventRecord:
+        record = await super().enqueue(
+            session,
+            event,
+            aggregate_type=aggregate_type,
+            aggregate_id=aggregate_id,
+            available_at=available_at,
+            created_at=created_at,
+        )
+        if str(event.event_type) == "ConsentRevoked":
+            await session.flush()
+            raise RuntimeError("synthetic revoke outbox rollback")
+        return record
+
+
 def _service(
     runtime: DatabaseRuntime,
     *,
@@ -244,6 +269,53 @@ async def test_grant_and_outbox_roll_back_together(database_runtime: DatabaseRun
     async with database_runtime.engine.connect() as connection:
         assert await connection.scalar(text("SELECT count(*) FROM consent_records")) == 0
         assert await connection.scalar(text("SELECT count(*) FROM outbox_events")) == 0
+
+
+async def test_revoke_and_outbox_roll_back_together_after_flushed_event(
+    database_runtime: DatabaseRuntime,
+) -> None:
+    granted = await _service(database_runtime).grant_consent(
+        subject_type=ConsentSubjectType.SESSION,
+        subject_id=OpaqueId.new(),
+        actor_id=None,
+        purpose=ConsentPurpose.GENERAL_PRODUCT_USE,
+        scope=ConsentScope(("clinical_intake",)),
+        notice_version=NoticeVersion("privacy-v1"),
+    )
+
+    async with database_runtime.session_factory() as session:
+        before_failure = await session.get(ConsentOrmRecord, granted.consent_id.value)
+        assert before_failure is not None
+        assert before_failure.status == "GRANTED"
+
+    failing_service = _service(
+        database_runtime,
+        outbox=FailOnConsentRevokedOutbox(),
+    )
+    with pytest.raises(RuntimeError, match="synthetic revoke outbox rollback"):
+        await failing_service.revoke_consent(
+            consent_id=granted.consent_id,
+            reason=RevocationReason("user_requested"),
+        )
+
+    async with database_runtime.session_factory() as session:
+        after_failure = await session.get(ConsentOrmRecord, granted.consent_id.value)
+        event_types = tuple(
+            (
+                await session.execute(
+                    select(OutboxEventRecord.event_type).where(
+                        OutboxEventRecord.aggregate_id == granted.consent_id.value
+                    )
+                )
+            ).scalars()
+        )
+
+    assert after_failure is not None
+    assert after_failure.status == "GRANTED"
+    assert after_failure.revoked_at is None
+    assert after_failure.revocation_reason is None
+    assert event_types.count("ConsentGranted") == 1
+    assert event_types.count("ConsentRevoked") == 0
 
 
 async def test_expiry_boundaries_and_repeat_revoke_fail_closed(

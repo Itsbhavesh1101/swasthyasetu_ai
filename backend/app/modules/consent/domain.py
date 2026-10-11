@@ -12,6 +12,7 @@ from types import MappingProxyType
 from app.shared.types import OpaqueId
 
 _SCOPE_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
+_NOTICE_VERSION_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _REVOCATION_REASON_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 MAX_SCOPE_ITEMS = 32
 MAX_NOTICE_VERSION_LENGTH = 64
@@ -65,13 +66,8 @@ class NoticeVersion:
     value: str
 
     def __post_init__(self) -> None:
-        if (
-            not self.value
-            or self.value != self.value.strip()
-            or len(self.value) > MAX_NOTICE_VERSION_LENGTH
-            or not self.value.isprintable()
-        ):
-            raise ValueError("notice version must be non-empty and at most 64 characters")
+        if _NOTICE_VERSION_PATTERN.fullmatch(self.value) is None:
+            raise ValueError("notice version must be a bounded ASCII machine-readable code")
 
     def __str__(self) -> str:
         return self.value

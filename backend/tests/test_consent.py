@@ -100,15 +100,48 @@ def test_scope_is_nonempty_unique_bounded_nonwildcard_and_deterministic() -> Non
 
 
 def test_notice_version_and_revocation_reason_are_bounded_machine_values() -> None:
-    assert str(NoticeVersion("privacy-v1")) == "privacy-v1"
+    for value in ("privacy-v1", "privacy_v2", "notice.2026-10", "V1"):
+        assert str(NoticeVersion(value)) == value
     assert str(RevocationReason("user_requested")) == "user_requested"
 
-    for value in ("", " privacy-v1", "x" * 65):
+    for value in (
+        "",
+        "privacy v1",
+        " privacy-v1",
+        "privacy-v1 ",
+        "privacy/v1",
+        "privacy\nv1",
+        "privacy\u00a0v1",
+        "नोटिस-v1",
+        "x" * 65,
+    ):
         with pytest.raises(ValueError):
             NoticeVersion(value)
     for value in ("", "User requested", "user-requested", "x" * 65):
         with pytest.raises(ValueError):
             RevocationReason(value)
+
+
+async def test_invalid_notice_version_returns_safe_validation_error() -> None:
+    marker = "private notice value"
+    application = create_app(Settings(_env_file=None))
+    transport = ASGITransport(app=application)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/consents",
+            json={
+                "subject_type": "SESSION",
+                "subject_id": str(OpaqueId.new()),
+                "purpose": "GENERAL_PRODUCT_USE",
+                "scope": ["clinical_intake"],
+                "notice_version": marker,
+            },
+        )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"
+    assert marker not in response.text
+    assert response.headers["cache-control"] == "no-store"
 
 
 def test_record_enforces_lifecycle_expiry_and_utc_invariants() -> None:

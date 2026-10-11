@@ -565,3 +565,21 @@ P4 final acceptance: AC-P4-001 PASS; AC-P4-002 PASS; AC-P4-003 PASS; AC-P4-004 P
 Overall P4 status: COMPLETE.
 Next recommended unit: P5-A — Patient / Encounter Domain Types & Entities.
 ```
+
+---
+
+# 22. P4-C Review Fix 01 — Notice and Revoke Atomicity
+
+```text
+Review repair: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-11
+Branch: phase/p4-c-consent-domain-apis
+Reviewed head: 81e19218b4210210d78c0a88b21f6dece2e46139
+Repair commit: pending
+NoticeVersion: strict ASCII machine-code grammar ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$; malformed values fail domain and HTTP validation without echo.
+Atomicity evidence: real PostgreSQL test flushes the ConsentRevoked outbox row, injects failure, and verifies rollback to GRANTED with null revocation fields, one committed ConsentGranted, and zero ConsentRevoked events.
+Schema/migrations/dependencies/APIs/authorization/Docker/Compose/frontend: unchanged.
+P4-C status: COMPLETE at the previously verified head; repaired SHA is not final closure evidence until its new six-job CI run passes.
+P4 status: COMPLETE.
+Next required action: run all local repair verification, push the same branch, and observe all six mandatory CI jobs on the repaired head.
+```
