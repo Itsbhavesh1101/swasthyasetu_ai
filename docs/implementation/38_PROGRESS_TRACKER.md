@@ -28,7 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P4 — Identity + Sessions + Consent — PARTIAL
-**Current recommended next action:** complete P4-A remote CI verification.
+**Current recommended next action:** begin P4-B — Identity & Authorization Baseline in its governed phase unit.
 
 ---
 
@@ -40,7 +40,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
-| P4 | Identity + Sessions + Consent | PARTIAL | P4-A sessions implemented locally; remote CI verification pending. |
+| P4 | Identity + Sessions + Consent | PARTIAL | P4-A sessions complete; P4-B identity/authz and P4-C consent remain. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
@@ -496,10 +496,11 @@ Next recommended unit: P4-A — Sessions.
 
 ```text
 Phase/Sub-phase: P4-A — Sessions
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-11
 Branch: phase/p4-a-sessions
 Base commit: 455436c8c863a6bcd5df286a81974e6811fca02a
+Implementation commit: ea7ae29cf1f619afef790c145e4076e5f4864e66
 Requirement IDs: FR-IDENT-001, FR-IDENT-003, FR-IDENT-004, FR-IDENT-005, FR-IDENT-006, FR-IDENT-007, NFR-SEC-009, NFR-SEC-014, PRIV-001, PRIV-003, PRIV-006, PRIV-007; AC-P4-001 through AC-P4-004
 Implemented scope: PostgreSQL-authoritative pseudonymous/kiosk sessions; one-time opaque bearer token; SHA-256 verifier at rest; typed TTL settings; expiry/close enforcement; strict versioned HTTP API; explicit sessions manifest and capabilities.
 Migration revision: p4a_0003; parent p3b_0002; creates only sessions with named constraints and required indexes.
@@ -508,6 +509,7 @@ Local acceptance: AC-P4-001 PASS; AC-P4-002 PASS; AC-P4-003 PASS; AC-P4-004 PASS
 Local test evidence: 198 backend tests collected; combined real-PostgreSQL run 197 passed/1 host symlink-capability skip; PostgreSQL-marked regression 14 passed/0 skipped; 20 network-free session tests and 5 real PostgreSQL/session HTTP tests passed.
 Local verification: locked dependencies, Ruff, format, strict mypy, compile/import smoke, fresh migration, downgrade/re-upgrade, Alembic drift check, backend/frontend quality gates, Docker build/migration/health, privacy/security audit, and no-change dependency/frontend/infrastructure diffs passed.
 Overall P4 status: PARTIAL.
-Remote CI: PENDING.
-Next recommended unit after verified P4-A closure: P4-B — Identity & Authorization Baseline.
+Remote CI: VERIFIED — GitHub Actions run 38131187740 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit ea7ae29cf1f619afef790c145e4076e5f4864e66.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38131187740
+Next recommended unit: P4-B — Identity & Authorization Baseline.
 ```
