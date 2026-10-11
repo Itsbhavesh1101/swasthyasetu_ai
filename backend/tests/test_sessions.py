@@ -123,7 +123,7 @@ def test_sessions_manifest_and_capabilities_are_explicit() -> None:
 def test_default_application_registers_sessions_and_seals_capabilities() -> None:
     application = create_app(Settings(_env_file=None))
 
-    assert application.state.module_registry.module_ids == ("sessions",)
+    assert application.state.module_registry.module_ids == ("identity", "sessions")
     assert application.state.module_registry.is_sealed is True
     assert application.state.capability_registry.is_sealed is True
     for key in (SESSIONS_CREATE, SESSIONS_READ, SESSIONS_CLOSE, SESSIONS_VALIDATE):

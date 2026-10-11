@@ -154,6 +154,28 @@ sessions. Override them with `SWASTHYASETU_SESSIONS__PSEUDONYMOUS_TTL_MINUTES` a
 Migration `p4a_0003` (parent `p3b_0002`) creates only `sessions` and its constraints/indexes.
 Migrations remain an explicit deployment step and are never run by API startup.
 
+## Identity and authorization
+
+The default application explicitly registers the router-free `identity` module alongside
+`sessions`. It owns `actors` and `actor_roles` and provides `identity.authenticate`,
+`identity.current_actor`, and `identity.authorize` through the sealed capability registry. There is
+no HTTP login, logout, actor-management, role-management, or `/me` API in P4-B.
+
+External authentication is provider-neutral and unconfigured by default. Authentication attempts
+therefore fail honestly as unavailable; production code contains no synthetic provider, JWT/OIDC
+parser, or client-controlled actor/role/MFA headers. Keycloak and alternative IdPs remain subject
+to the required future spike. Test-only providers exercise the trusted principal boundary.
+
+Authorization is server-side and deny-by-default. Persisted roles, not actor type or external token
+role claims, drive the immutable `p4b-v1` policy. Administrative roles (`resource_admin`,
+`clinical_reviewer`, `system_admin`) require a trusted principal with `mfa_verified=True`; the real
+MFA claim/assurance mapping remains deferred to the selected production IdP. Frontend visibility
+never substitutes for backend authorization.
+
+Migration `p4b_0004` (parent `p4a_0003`) creates only `actors` and `actor_roles` and adds the nullable
+`sessions.actor_id -> actors.id` foreign key. `sessions.patient_id` remains staged without a patient
+foreign key. Identity code does not mutate session state.
+
 ## Module composition
 
 Future module `public.py` boundaries can supply immutable `ModuleRegistration` values to

@@ -1023,6 +1023,15 @@ clinician overview -> encounter:read:assigned
 provider admin -> provider:manage
 ```
 
+The backend guard is authoritative: `401 AUTHENTICATION_REQUIRED` means there is no valid trusted
+authenticated actor, while `403 AUTHORIZATION_DENIED` means an authenticated actor lacks the
+permission, object scope, or required authentication strength. Frontend visibility is not a
+security boundary. Administrative authorization requires a trusted provider principal indicating
+MFA was satisfied; client headers cannot supply actor identity, roles, or MFA state.
+
+P4-B adds no identity HTTP endpoint. The external IdP remains unconfigured and replaceable behind
+the provider-neutral authentication contract.
+
 ---
 
 # 35. Feature Disabled Behavior

@@ -207,6 +207,11 @@ P4-A implements `backend/app/modules/sessions/` with cohesive `domain.py`, `cont
 manifest, typed capabilities, and explicit registration builder; ORM/repository details remain
 module-private.
 
+P4-B implements `backend/app/modules/identity/` with cohesive domain, provider-neutral contracts,
+application service, immutable authorization policy, SQLAlchemy persistence, and explicit
+`public.py` registration. FastAPI-specific permission and self-subject guards live in
+`backend/app/api/security/`; identity exposes no production router.
+
 ---
 
 # 6. Backend Platform Areas

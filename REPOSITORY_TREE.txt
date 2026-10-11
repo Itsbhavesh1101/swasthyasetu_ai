@@ -84,6 +84,9 @@ swasthyasetu-ai/
 │   │   │   ├── middleware/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── request_context.py
+│   │   │   ├── security/
+│   │   │   │   ├── __init__.py
+│   │   │   │   └── authorization.py
 │   │   │   ├── v1/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── router.py
@@ -109,7 +112,13 @@ swasthyasetu-ai/
 │   │   │   ├── feature_management/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── identity/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── authorization.py
+│   │   │   │   ├── contracts.py
+│   │   │   │   ├── domain.py
+│   │   │   │   ├── infrastructure.py
+│   │   │   │   └── public.py
 │   │   │   ├── interoperability/
 │   │   │   │   ├── abdm/
 │   │   │   │   │   └── .gitkeep
@@ -190,13 +199,15 @@ swasthyasetu-ai/
 │   │   ├── versions/
 │   │   │   ├── 0001_persistence_baseline.py
 │   │   │   ├── 0002_transactional_outbox.py
-│   │   │   └── 0003_sessions.py
+│   │   │   ├── 0003_sessions.py
+│   │   │   └── 0004_identity_authorization.py
 │   │   ├── env.py
 │   │   └── script.py.mako
 │   ├── tests/
 │   │   ├── integration/
 │   │   │   ├── test_postgres_outbox.py
 │   │   │   ├── test_postgres_persistence.py
+│   │   │   ├── test_postgres_identity.py
 │   │   │   └── test_postgres_sessions.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
@@ -206,6 +217,7 @@ swasthyasetu-ai/
 │   │   ├── test_errors.py
 │   │   ├── test_feature_flags.py
 │   │   ├── test_health.py
+│   │   ├── test_identity.py
 │   │   ├── test_logging.py
 │   │   ├── test_module_registry.py
 │   │   ├── test_observability.py

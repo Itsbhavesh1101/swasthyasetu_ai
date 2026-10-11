@@ -91,6 +91,10 @@ created_at TIMESTAMPTZ NOT NULL
 updated_at TIMESTAMPTZ NOT NULL
 ```
 
+`status` is constrained to `ACTIVE` or `DISABLED`. `actor_type` is constrained to the canonical
+ActorType values. This table contains authorization identity metadata only, not names, email,
+phone, passwords, credentials, tokens, or raw provider claims.
+
 ## 5.2 `actor_roles`
 
 ```text
@@ -99,6 +103,10 @@ role_code VARCHAR NOT NULL
 created_at TIMESTAMPTZ NOT NULL
 PRIMARY KEY (actor_id, role_code)
 ```
+
+Baseline role codes are `patient`, `pseudonymous_user`, `clinician`, `resource_admin`,
+`clinical_reviewer`, `system_admin`, and `researcher`. The foreign key uses `ON DELETE CASCADE` for
+role rows, although P4-B exposes no actor deletion operation.
 
 ## 5.3 `sessions`
 
@@ -126,6 +134,10 @@ Indexes:
 patient_id
 actor_id
 ```
+
+As of P4-B, nullable `sessions.actor_id` references `actors.id`. `sessions.patient_id` remains
+nullable without a patient foreign key until P5. This integrity constraint does not transfer
+session-table write ownership to identity.
 
 `token_hash` is the SHA-256 hex verifier for the active opaque bearer token. The raw active token is
 never stored. `recovery_token_hash` is a distinct future recovery verifier and remains NULL in
