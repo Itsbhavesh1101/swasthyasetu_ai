@@ -5,19 +5,23 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4-A Sessions is in progress pending remote CI verification.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4-A Sessions COMPLETE. P4-B Identity & Authorization is pending remote CI verification.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
 explicit Alembic migrations, and backend quality checks. It also includes three strictly typed
 Next.js application workspaces, shared UI primitives, frontend unit testing, and Playwright smoke
-tests. No clinical rules, product workflows, authentication, domain tables, external providers,
-production credentials, or predictive models are implemented.
+tests. No clinical rules, patient/consent domain, real external identity provider, production
+credentials, or predictive models are implemented.
 
 P4-A adds the sessions bounded context: pseudonymous and kiosk session creation, opaque bearer
 tokens protected by SHA-256 verifiers at rest, PostgreSQL-authoritative expiry/close state, and
 versioned `/api/v1/sessions` create/read/close endpoints. It does not add authenticated identity,
-actors, roles, consent, patients, recovery, JWT, cookies, or frontend token storage.
+authenticated identity activation, consent, patients, recovery, JWT, cookies, or frontend token
+storage. P4-B adds PII-free actors and authoritative roles, provider-neutral authentication
+contracts, trusted actor context resolution, and deny-by-default server-side authorization with
+explicit MFA and self-subject gates. The real IdP remains unconfigured and replaceable; no login or
+identity-management HTTP API is exposed.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

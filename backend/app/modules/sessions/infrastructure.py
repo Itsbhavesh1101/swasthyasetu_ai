@@ -3,7 +3,17 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, DateTime, Index, String, Text, Uuid, select, text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    Text,
+    Uuid,
+    select,
+    text,
+)
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -34,7 +44,11 @@ class SessionRecord(Base):
 
     id: Mapped[UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True)
     session_type: Mapped[str] = mapped_column(String(32), nullable=False)
-    actor_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
+    actor_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("actors.id", name="fk_sessions_actor_id_actors"),
+        nullable=True,
+    )
     patient_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
     language_preference: Mapped[str | None] = mapped_column(String(35), nullable=True)
     status: Mapped[str] = mapped_column(

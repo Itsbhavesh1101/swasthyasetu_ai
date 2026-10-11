@@ -64,7 +64,9 @@ actor_type
 roles[]
 subject_id?
 institution_id?
-session_id?
+status
+created_at
+updated_at
 ```
 
 Actor types may include:
@@ -83,11 +85,22 @@ RESEARCHER
 SERVICE_ACCOUNT
 ```
 
+Lifecycle status:
+
+```text
+ACTIVE
+DISABLED
+```
+
 Rules:
 
 - actor != patient;
+- actor type != role code;
+- role code != permission code;
+- actor type never grants a role or permission;
 - caregiver does not inherit patient permission automatically;
-- pseudonymous actor may have no direct identity.
+- pseudonymous actor may have no direct identity;
+- disabled actors cannot resolve to an authenticated current actor.
 
 Owner: `identity`.
 
