@@ -198,7 +198,7 @@ def test_identity_manifest_and_default_composition_are_explicit_and_router_free(
     assert IDENTITY_MANIFEST.api_prefixes == ()
     assert IDENTITY_MANIFEST.data_ownership == ("actors", "actor_roles")
     assert registration.routers == ()
-    assert app.state.module_registry.module_ids == ("identity", "sessions")
+    assert app.state.module_registry.module_ids == ("consent", "identity", "sessions")
     assert app.state.module_registry.is_sealed
     for key in (IDENTITY_AUTHENTICATE, IDENTITY_CURRENT_ACTOR, IDENTITY_AUTHORIZE):
         assert app.state.capability_registry.resolve(key) is not None

@@ -104,7 +104,14 @@ swasthyasetu-ai/
 │   │   │   ├── clinical_intake/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── consent/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── contracts.py
+│   │   │   │   ├── domain.py
+│   │   │   │   ├── events.py
+│   │   │   │   ├── infrastructure.py
+│   │   │   │   └── public.py
 │   │   │   ├── documents/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── encounters/
@@ -200,7 +207,8 @@ swasthyasetu-ai/
 │   │   │   ├── 0001_persistence_baseline.py
 │   │   │   ├── 0002_transactional_outbox.py
 │   │   │   ├── 0003_sessions.py
-│   │   │   └── 0004_identity_authorization.py
+│   │   │   ├── 0004_identity_authorization.py
+│   │   │   └── 0005_consent.py
 │   │   ├── env.py
 │   │   └── script.py.mako
 │   ├── tests/
@@ -208,12 +216,15 @@ swasthyasetu-ai/
 │   │   │   ├── test_postgres_outbox.py
 │   │   │   ├── test_postgres_persistence.py
 │   │   │   ├── test_postgres_identity.py
-│   │   │   └── test_postgres_sessions.py
+│   │   │   ├── test_postgres_sessions.py
+│   │   │   └── test_postgres_consent.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
 │   │   ├── test_application.py
 │   │   ├── test_capability_registry.py
+│   │   ├── test_consent.py
+│   │   ├── test_consent_service.py
 │   │   ├── test_errors.py
 │   │   ├── test_feature_flags.py
 │   │   ├── test_health.py

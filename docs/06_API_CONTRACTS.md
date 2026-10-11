@@ -254,6 +254,11 @@ Requires the exact session bearer token. Only `ACTIVE -> CLOSED` is valid. Repea
 
 ## POST `/api/v1/consents`
 
+Creates a purpose-specific consent grant. SESSION subjects require the exact session bearer token
+and validation through `sessions.validate`. ACTOR subjects require a trusted server-side
+`ActorContext` for the same actor. PATIENT subjects return `VALIDATION_ERROR` until P5. The server
+derives actor attribution; `actor_id`, metadata, and arbitrary extra fields are rejected.
+
 Request:
 
 ```json
@@ -280,6 +285,10 @@ Response:
 
 ## POST `/api/v1/consents/{consent_id}/revoke`
 
+Revokes an authorized active grant. Repeat revocation fails with `INVALID_STATE_TRANSITION` and
+time-expired consent cannot be revoked as active consent. The reason is a bounded machine code,
+not free text.
+
 Request:
 
 ```json
@@ -290,7 +299,15 @@ Request:
 
 ## GET `/api/v1/consents`
 
-Authorized filtering by subject/purpose/status.
+Requires both `subject_type` and `subject_id`; unscoped listing is rejected. Optional purpose and
+status filters may further narrow the authorized subject-scoped result. SESSION and ACTOR subject
+authorization follows the same rules as grant/revoke, and cross-subject access fails closed.
+
+All consent success and error responses use `Cache-Control: no-store`. No public consent-check,
+get-by-ID, update, or delete endpoint exists. Internal callers use the centralized `consent.check`
+capability, which requires exact subject and purpose plus requested-scope subset coverage. General
+product consent never implies `REFERRAL_SHARING`; referral workflows must request that purpose
+explicitly when they are implemented.
 
 ---
 
