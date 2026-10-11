@@ -472,16 +472,18 @@ Date: 2026-10-11
 Branch: phase/p3-c-jobs-object-storage
 Base commit: 040888179a43af56328fde57954bf4cd4cdc0b3f
 Implementation commit: 5db265406fd23ab030ef57c0d83ef5cd8d6067bf
+Review fix commit: df4597a48082e816f634052f2bf8fd9a16a0e176
 Requirement IDs: AC-P3-007, AC-P3-008, AC-P3-009, AC-P3-010
 Job scope: immutable provider-neutral contracts; non-durable process-local dispatcher/backend; explicit deterministic run_once worker; safe failure state; synthetic worker smoke.
+Worker timestamp invariant: naive injected clock values are deliberately rejected before state mutation; aware non-UTC values are normalized to UTC; started_at/completed_at remain aware UTC; invalid clocks leave jobs QUEUED.
 Storage scope: provider-neutral port/key/errors; root-contained local-filesystem development/test adapter; exact-byte roundtrip; typed missing/duplicate behavior; traversal and symlink-escape protection.
 Dependencies: unchanged; dependency diff empty.
 Migrations: unchanged; Alembic head remains p3b_0002; no jobs or storage table.
-Local test counts: 166 backend tests collected; combined run with explicit test DB 165 passed/1 host symlink-capability skip; explicit PostgreSQL run 9 passed/0 skipped; P3-C focused run 28 passed/1 host symlink-capability skip; Playwright Chromium 3 passed.
+Local repair verification: 23 targeted job tests passed; 172 backend tests collected with 162 passed/10 PostgreSQL-or-host-capability skips; explicit PostgreSQL run 9 passed/0 skipped; frontend quality regression passed.
 Local verification: locked sync, Ruff, format, strict mypy, compile/import smoke, backend/frontend quality gates, Docker image/build/health, PostgreSQL migration regression, and required no-change diffs passed.
 Local acceptance: AC-P3-007 PASS; AC-P3-008 PASS; AC-P3-009 PASS; AC-P3-010 PASS by architecture inspection.
-Remote CI: VERIFIED — GitHub Actions run 38116882118 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit 5db265406fd23ab030ef57c0d83ef5cd8d6067bf.
-CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38116882118
+Remote CI: VERIFIED — GitHub Actions run 38117592284 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on review fix commit df4597a48082e816f634052f2bf8fd9a16a0e176.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38117592284
 Final P3 acceptance: AC-P3-001 PASS; AC-P3-002 PASS; AC-P3-003 PASS; AC-P3-004 PASS; AC-P3-005 PASS; AC-P3-006 PASS; AC-P3-007 PASS; AC-P3-008 PASS; AC-P3-009 PASS; AC-P3-010 PASS.
 Overall P3 status: COMPLETE.
 Deferred non-blockers: Procrastinate durable-job spike; production/self-hosted object-storage adapter.
