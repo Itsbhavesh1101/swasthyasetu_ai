@@ -214,6 +214,9 @@ Transport-level HTTP concerns only: router registration, request/response mappin
 
 Small shared kernel only: generic IDs, time helpers, error bases, actor context, pagination, observability primitives, security helpers, and genuinely generic types. Domain rules do not belong here.
 
+`backend/app/shared/storage/` contains only provider-neutral object-storage contracts, validated
+technical keys, and generic result/error types. It has no filesystem or vendor implementation.
+
 ## `backend/app/adapters/`
 
 External implementations by capability:
@@ -230,6 +233,10 @@ abdm/
 model_inference/
 quantum/
 ```
+
+`backend/app/adapters/storage/` contains storage implementations. P3-C provides only the
+root-contained local-filesystem development/test adapter; production/self-hosted adapters remain
+phase-gated.
 
 ## `backend/app/events/`
 
@@ -251,9 +258,17 @@ Typed configuration for application, database, security, features, object storag
 
 # 7. Background Work
 
+## `backend/app/jobs/`
+
+Provider-neutral background-job contracts plus the explicit, non-durable process-local dispatcher
+and deterministic `run_once` worker scaffold. It is local/test infrastructure, does not persist or
+share queue state, and does not auto-start from FastAPI.
+
 ## `workers/`
 
-Worker bootstrapping and process entry points. Business logic remains in modules and is called from jobs. Likely workloads include OCR, parsing, embeddings, notifications, referral delivery, retention purge, FHIR sync, and long-running model jobs.
+Reserved for future standalone worker process bootstrapping once a durable/shared job backend is
+activated. A standalone process must not be backed by P3-C's process-local queue. Business logic
+remains in modules and is called from jobs.
 
 ---
 

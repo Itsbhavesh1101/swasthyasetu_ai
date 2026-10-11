@@ -1,8 +1,9 @@
 # SwasthyaSetu backend
 
 This directory contains the FastAPI engineering foundation, P2 shared kernel, P3-A PostgreSQL
-persistence substrate, and the P3-B platform event/outbox foundation. It intentionally has no
-clinical logic, domain ORM models, jobs, object storage, or active external providers.
+persistence substrate, P3-B platform event/outbox foundation, and P3-C job/object-storage
+contracts and local scaffolds. It intentionally has no clinical logic, domain ORM models, durable
+job backend, production object storage, or active external providers.
 
 ## Prerequisites
 
@@ -87,6 +88,31 @@ changes do not alter the immutable historical envelope.
 
 Migration `p3b_0002` (parent `p3a_0001`) creates only `outbox_events`. Apply it through the same
 explicit Alembic deployment commands above; API startup never runs migrations or the dispatcher.
+
+## Jobs and worker scaffold
+
+`app.jobs` owns immutable `JobType`, `JobRequest`, `JobHandle`, and `JobStatus` contracts plus the
+provider-neutral `JobDispatcher` protocol. `InProcessJobDispatcher` and its shared backend are
+non-durable, process-local development/test scaffolding: queued state is lost on restart and cannot
+be shared across processes. Enqueue only records a job; execution happens separately and only when
+`InProcessWorker.run_once()` is explicitly called. Handlers are registered explicitly and frozen
+at worker construction.
+
+No daemon, process loop, or FastAPI background worker starts automatically. Failures retain only
+generic codes, never payloads, raw exception messages, or stack traces. This scaffold makes no
+exactly-once claim. A PostgreSQL-native durable-job spike, with Procrastinate as the preferred
+candidate, remains deferred until durability is required.
+
+## Object storage
+
+`app.shared.storage` owns the provider-neutral `ObjectStoragePort`, validated `ObjectKey`, result
+metadata, and typed errors. `app.adapters.storage.LocalFilesystemObjectStorage` implements exact
+byte put/get/exists/delete behavior under an explicitly injected root, using semantic path
+containment, symlink-escape checks, atomic local replacement, and thread-offloaded filesystem I/O.
+
+The local adapter is development/test only. It is not production object storage or an untrusted
+medical-upload boundary and makes no encryption, malware scanning, quarantine, medical-grade
+durability, or compliance claim. SeaweedFS and S3 adapters remain deferred; MinIO is not selected.
 
 ## Run the API
 
