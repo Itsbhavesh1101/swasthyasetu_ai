@@ -122,7 +122,10 @@ jobs:
           uv run alembic -c alembic.ini upgrade head
           uv run alembic -c alembic.ini current
           uv run alembic -c alembic.ini check
-          uv run alembic -c alembic.ini downgrade base
+          uv run alembic -c alembic.ini downgrade p3a_0001
+          test -z "$(docker compose -f ../deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
+            "SELECT to_regclass('public.outbox_events')")"
           uv run alembic -c alembic.ini upgrade head
 
       - name: Run PostgreSQL integration tests
@@ -132,7 +135,13 @@ jobs:
       - name: Inspect migration revision
         run: |
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
-            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p3a_0001"
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p3b_0002"
+          test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
+            "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='outbox_events'")" = "16"
+          test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
+            "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND tablename='outbox_events' AND indexname IN ('ix_outbox_events_status_available_at','ix_outbox_events_event_type','ix_outbox_events_aggregate_id')")" = "3"
 
       - name: Clean up PostgreSQL and volume
         if: always()

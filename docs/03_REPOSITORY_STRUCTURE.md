@@ -235,6 +235,14 @@ quantum/
 
 Platform event envelope, dispatcher interfaces, outbox integration, serialization, and version handling. Module-specific event payloads remain with owning modules/contracts.
 
+```text
+backend/app/events/
+  envelope.py       # immutable versioned transport contract
+  publisher.py      # publisher port and explicit in-process handlers
+  outbox.py         # platform ORM record and caller-transaction repository
+  dispatcher.py     # bounded, manual retry/status dispatcher foundation
+```
+
 ## `backend/app/config/`
 
 Typed configuration for application, database, security, features, object storage, AI, OCR, speech, FHIR, ABDM, and observability. Secrets are injected externally.
