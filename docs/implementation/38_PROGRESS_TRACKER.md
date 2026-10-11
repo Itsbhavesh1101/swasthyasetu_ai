@@ -571,15 +571,19 @@ Next recommended unit: P5-A — Patient / Encounter Domain Types & Entities.
 # 22. P4-C Review Fix 01 — Notice and Revoke Atomicity
 
 ```text
-Review repair: PARTIAL — REMOTE CI VERIFICATION PENDING
+Review repair: VERIFIED
 Date: 2026-10-11
 Branch: phase/p4-c-consent-domain-apis
 Reviewed head: 81e19218b4210210d78c0a88b21f6dece2e46139
-Repair commit: pending
+Repair commit: 2b863b247c0b1d462146148738b435fae408c08d
 NoticeVersion: strict ASCII machine-code grammar ^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$; malformed values fail domain and HTTP validation without echo.
 Atomicity evidence: real PostgreSQL test flushes the ConsentRevoked outbox row, injects failure, and verifies rollback to GRANTED with null revocation fields, one committed ConsentGranted, and zero ConsentRevoked events.
 Schema/migrations/dependencies/APIs/authorization/Docker/Compose/frontend: unchanged.
-P4-C status: COMPLETE at the previously verified head; repaired SHA is not final closure evidence until its new six-job CI run passes.
+Remote CI: VERIFIED — GitHub Actions run 38161569705 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on repaired code head 2b863b247c0b1d462146148738b435fae408c08d.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38161569705
+Local evidence: 26 focused consent tests; 237 network-free backend tests with 27 expected skips; 26 real PostgreSQL tests with zero skips; Alembic p4c_0005 head/check; backend and frontend quality gates.
+P4-C status: COMPLETE.
 P4 status: COMPLETE.
-Next required action: run all local repair verification, push the same branch, and observe all six mandatory CI jobs on the repaired head.
+P4 final acceptance: AC-P4-001 through AC-P4-010 remain PASS.
+Next recommended unit remains P5-A — Patient / Encounter Domain Types & Entities.
 ```
