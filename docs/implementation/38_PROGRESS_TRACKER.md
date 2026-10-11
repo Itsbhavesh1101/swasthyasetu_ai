@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P3 — Persistence + Events + Jobs — PARTIAL (remote CI verification pending)
-**Current recommended next action:** complete P3-C remote CI verification; do not begin P4 yet.
+**Current macro stage:** P3 — Persistence + Events + Jobs — COMPLETE
+**Current recommended next action:** begin P4-A — Sessions in its governed phase unit.
 
 ---
 
@@ -39,7 +39,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
-| P3 | Persistence + Events + Jobs | PARTIAL | P3-A and P3-B complete; P3-C implemented locally with remote CI verification pending. |
+| P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
@@ -463,15 +463,15 @@ Next recommended unit: P3-C — Jobs, Worker Abstraction & Object Storage.
 
 ---
 
-# 18. P3-C Local Verification Record
+# 18. P3-C Completion Record
 
 ```text
 Phase/Sub-phase: P3-C — Jobs, Worker Abstraction & Object Storage
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-11
 Branch: phase/p3-c-jobs-object-storage
 Base commit: 040888179a43af56328fde57954bf4cd4cdc0b3f
-Implementation commit: pending local verification commit
+Implementation commit: 5db265406fd23ab030ef57c0d83ef5cd8d6067bf
 Requirement IDs: AC-P3-007, AC-P3-008, AC-P3-009, AC-P3-010
 Job scope: immutable provider-neutral contracts; non-durable process-local dispatcher/backend; explicit deterministic run_once worker; safe failure state; synthetic worker smoke.
 Storage scope: provider-neutral port/key/errors; root-contained local-filesystem development/test adapter; exact-byte roundtrip; typed missing/duplicate behavior; traversal and symlink-escape protection.
@@ -480,6 +480,10 @@ Migrations: unchanged; Alembic head remains p3b_0002; no jobs or storage table.
 Local test counts: 166 backend tests collected; combined run with explicit test DB 165 passed/1 host symlink-capability skip; explicit PostgreSQL run 9 passed/0 skipped; P3-C focused run 28 passed/1 host symlink-capability skip; Playwright Chromium 3 passed.
 Local verification: locked sync, Ruff, format, strict mypy, compile/import smoke, backend/frontend quality gates, Docker image/build/health, PostgreSQL migration regression, and required no-change diffs passed.
 Local acceptance: AC-P3-007 PASS; AC-P3-008 PASS; AC-P3-009 PASS; AC-P3-010 PASS by architecture inspection.
-Overall P3 status: PARTIAL pending all six mandatory remote CI jobs.
-Next recommended unit: none until P3-C CI closure; then P4-A — Sessions.
+Remote CI: VERIFIED — GitHub Actions run 38116882118 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit 5db265406fd23ab030ef57c0d83ef5cd8d6067bf.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38116882118
+Final P3 acceptance: AC-P3-001 PASS; AC-P3-002 PASS; AC-P3-003 PASS; AC-P3-004 PASS; AC-P3-005 PASS; AC-P3-006 PASS; AC-P3-007 PASS; AC-P3-008 PASS; AC-P3-009 PASS; AC-P3-010 PASS.
+Overall P3 status: COMPLETE.
+Deferred non-blockers: Procrastinate durable-job spike; production/self-hosted object-storage adapter.
+Next recommended unit: P4-A — Sessions.
 ```
