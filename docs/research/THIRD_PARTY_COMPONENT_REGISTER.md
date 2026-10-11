@@ -386,3 +386,16 @@ R3 overrides ambiguous earlier shorthand such as "ADOPT" when that could be inte
 ### R3 precedence
 
 Where an earlier register row says `ADOPT BEHIND ADAPTER` but R3 says `BENCHMARK-GATED`, `RESEARCH`, `LATER` or `DEFER`, the R3 lifecycle classification controls implementation timing.
+
+---
+
+## P3-A persistence activation — 2026-10-11
+
+| Component | Locked version | License | R3 class | Activated scope |
+|---|---:|---|---|---|
+| SQLAlchemy | 2.1.4 | MIT | CORE_RUNTIME | Async PostgreSQL engine, sessions, metadata, transactions |
+| Alembic | 1.20.0 | MIT | CORE_RUNTIME | Explicit reviewed migration lineage and drift checks |
+| Psycopg / psycopg-binary | 3.3.6 | LGPL-3.0-only | CORE_RUNTIME | PostgreSQL driver with binary wheels for host/container runtime |
+
+No database extension, external exporter, cache, broker, worker, or object-storage service was
+activated with these components.

@@ -1,6 +1,7 @@
 """FastAPI application construction and Uvicorn entry point."""
 
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Sequence
+from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
@@ -16,6 +17,7 @@ from app.shared.observability import (
     configure_logging,
     create_observability_runtime,
 )
+from app.shared.persistence import DatabaseRuntime, create_database_runtime
 
 APP_VERSION = "0.1.0"
 
@@ -27,6 +29,7 @@ def create_app(
     module_registrations: Sequence[ModuleRegistration[APIRouter]] = (),
     observability: ObservabilityRuntime | None = None,
     feature_flags: FeatureFlagService | None = None,
+    database: DatabaseRuntime | None = None,
 ) -> FastAPI:
     """Create an application from explicitly supplied, compile-time registrations."""
     resolved_settings = settings or Settings()
@@ -37,6 +40,18 @@ def create_app(
     resolved_feature_flags = feature_flags or FeatureFlagService(
         ConfigurationFeatureFlagProvider.from_names(resolved_settings.features.enabled)
     )
+    resolved_database = (
+        database if database is not None else create_database_runtime(resolved_settings.database)
+    )
+
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        """Dispose the application-owned database runtime on shutdown."""
+        try:
+            yield
+        finally:
+            if resolved_database is not None:
+                await resolved_database.dispose()
 
     module_registry = ModuleRegistry[APIRouter]()
     for registration in module_registrations:
@@ -47,12 +62,14 @@ def create_app(
         title=resolved_settings.app_name,
         version=APP_VERSION,
         debug=resolved_settings.debug,
+        lifespan=lifespan,
     )
     application.state.settings = resolved_settings
     application.state.module_registry = module_registry
     application.state.capability_registry = module_registry.capability_registry
     application.state.feature_flags = resolved_feature_flags
     application.state.observability = resolved_observability
+    application.state.database = resolved_database
 
     register_error_handlers(application)
     application.add_middleware(RequestContextMiddleware, observability=resolved_observability)

@@ -66,6 +66,78 @@ jobs:
       - name: Run frontend quality gate
         run: python scripts/quality_gate.py frontend
 
+  persistence:
+    name: Persistence integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      POSTGRES_DB: swasthyasetu
+      POSTGRES_USER: swasthyasetu_dev
+      POSTGRES_PASSWORD: ci-only-synthetic-password
+      POSTGRES_PORT: "5432"
+      BACKEND_PORT: "8000"
+      SWASTHYASETU_DATABASE__ENABLED: "true"
+      SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
+      SWASTHYASETU_TEST_DATABASE_URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - name: Start fresh PostgreSQL
+        run: docker compose -f deployments/local/compose.yaml up -d postgres
+
+      - name: Wait for PostgreSQL
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if docker compose -f deployments/local/compose.yaml exec -T postgres \
+              pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Install locked backend dependencies
+        working-directory: backend
+        run: uv sync --locked --dev
+
+      - name: Verify migrations from clean database
+        working-directory: backend
+        shell: bash
+        run: |
+          test "$(uv run alembic -c alembic.ini heads | grep -c '(head)')" = "1"
+          uv run alembic -c alembic.ini upgrade head
+          uv run alembic -c alembic.ini current
+          uv run alembic -c alembic.ini check
+          uv run alembic -c alembic.ini downgrade base
+          uv run alembic -c alembic.ini upgrade head
+
+      - name: Run PostgreSQL integration tests
+        working-directory: backend
+        run: uv run pytest -m postgres
+
+      - name: Inspect migration revision
+        run: |
+          test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p3a_0001"
+
+      - name: Clean up PostgreSQL and volume
+        if: always()
+        run: docker compose -f deployments/local/compose.yaml down -v --remove-orphans
+
   docker-postgres:
     name: Docker and PostgreSQL
     runs-on: ubuntu-latest
@@ -103,14 +175,22 @@ jobs:
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT 1')" = "1"
 
-      - name: Build and start backend image
-        run: docker compose -f deployments/local/compose.yaml up -d --build backend
+      - name: Build backend image
+        run: docker compose -f deployments/local/compose.yaml build backend
+
+      - name: Run explicit container migration
+        run: docker compose -f deployments/local/compose.yaml run --rm backend alembic -c /app/alembic.ini upgrade head
+
+      - name: Start backend
+        run: docker compose -f deployments/local/compose.yaml up -d backend
 
       - name: Verify backend image and health
         shell: bash
         run: |
-          test "$(docker image inspect swasthyasetu/backend:p1-c-local --format '{{.Config.User}}')" = "10001:10001"
-          docker image inspect swasthyasetu/backend:p1-c-local --format '{{json .Config.ExposedPorts}}' | grep -q '8000/tcp'
+          test "$(docker image inspect swasthyasetu/backend:p3-a-local --format '{{.Config.User}}')" = "10001:10001"
+          docker image inspect swasthyasetu/backend:p3-a-local --format '{{json .Config.ExposedPorts}}' | grep -q '8000/tcp'
+          docker compose -f deployments/local/compose.yaml run --rm backend python -c \
+            "import alembic, psycopg, sqlalchemy; print(alembic.__version__, psycopg.__version__, sqlalchemy.__version__)"
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8000/health/live > /tmp/live.json; then
               break
@@ -118,7 +198,9 @@ jobs:
             sleep 2
           done
           grep -q '"status":"ok"' /tmp/live.json
-          curl --fail --silent http://127.0.0.1:8000/health/ready | grep -q '"status":"ready"'
+          curl --fail --silent http://127.0.0.1:8000/health/ready > /tmp/ready.json
+          grep -q '"status":"ready"' /tmp/ready.json
+          grep -q '"database":"ok"' /tmp/ready.json
 
       - name: Clean up containers and volume
         if: always()
@@ -176,12 +258,12 @@ jobs:
           exit-code: "1"
 
       - name: Build backend image for scanning
-        run: docker build --file infra/docker/backend.Dockerfile --tag swasthyasetu/backend:p1-c-ci .
+        run: docker build --file infra/docker/backend.Dockerfile --tag swasthyasetu/backend:p3-a-ci .
 
       - name: Scan backend image
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: swasthyasetu/backend:p1-c-ci
+          image-ref: swasthyasetu/backend:p3-a-ci
           format: table
           severity: HIGH,CRITICAL
           exit-code: "1"

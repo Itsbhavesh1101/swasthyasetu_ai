@@ -1,5 +1,7 @@
 """Application construction and module-composition tests."""
 
+from unittest.mock import AsyncMock
+
 import pytest
 from fastapi import APIRouter
 
@@ -32,6 +34,19 @@ def test_default_application_factory_succeeds() -> None:
     assert application.state.capability_registry.is_sealed is True
     assert application.state.feature_flags.is_enabled(FeatureFlag("example_feature")) is False
     assert application.state.observability.span_exporter_configured is False
+    assert application.state.database is None
+
+
+async def test_application_disposes_injected_database_runtime_once(
+    test_settings: Settings,
+) -> None:
+    database = AsyncMock()
+    application = create_app(test_settings, database=database)
+
+    async with application.router.lifespan_context(application):
+        assert application.state.database is database
+
+    database.dispose.assert_awaited_once_with()
 
 
 def test_synthetic_module_is_composed_and_capability_is_resolvable() -> None:

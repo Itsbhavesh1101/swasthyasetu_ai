@@ -51,6 +51,7 @@ swasthyasetu-ai/
 ├── artifacts/
 │   └── README.md
 ├── backend/
+│   ├── alembic.ini
 │   ├── app/
 │   │   ├── adapters/
 │   │   │   ├── abdm/
@@ -162,6 +163,10 @@ swasthyasetu-ai/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── logging.py
 │   │   │   │   └── telemetry.py
+│   │   │   ├── persistence/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── base.py
+│   │   │   │   └── runtime.py
 │   │   │   ├── security/
 │   │   │   │   ├── __init__.py
 │   │   │   │   └── actor.py
@@ -175,7 +180,14 @@ swasthyasetu-ai/
 │   │   │   └── __init__.py
 │   │   ├── __init__.py
 │   │   └── main.py
+│   ├── migrations/
+│   │   ├── versions/
+│   │   │   └── 0001_persistence_baseline.py
+│   │   ├── env.py
+│   │   └── script.py.mako
 │   ├── tests/
+│   │   ├── integration/
+│   │   │   └── test_postgres_persistence.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
@@ -187,6 +199,7 @@ swasthyasetu-ai/
 │   │   ├── test_logging.py
 │   │   ├── test_module_registry.py
 │   │   ├── test_observability.py
+│   │   ├── test_persistence.py
 │   │   ├── test_request_context.py
 │   │   ├── test_settings.py
 │   │   └── test_shared_types.py
@@ -267,7 +280,9 @@ swasthyasetu-ai/
 │   │   │   ├── P1_C_DOCKER_CI_FOUNDATION.md
 │   │   │   ├── P1_C_REVIEW_FIX_01_DOCKER_REPRODUCIBILITY.md
 │   │   │   ├── P2_A_SHARED_KERNEL_PRIMITIVES.md
-│   │   │   └── P2_B_MODULE_CAPABILITY_REGISTRY.md
+│   │   │   ├── P2_B_MODULE_CAPABILITY_REGISTRY.md
+│   │   │   ├── P2_C_OBSERVABILITY_FEATURE_FLAGS.md
+│   │   │   └── P3_A_SQLALCHEMY_ALEMBIC_FOUNDATION.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md

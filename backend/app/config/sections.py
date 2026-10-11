@@ -1,6 +1,8 @@
 """Frozen, provider-neutral configuration sections for the platform."""
 
-from pydantic import BaseModel, ConfigDict, SecretStr, field_validator
+from urllib.parse import urlsplit
+
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from app.shared.feature_flags import FeatureFlag
 
@@ -22,10 +24,23 @@ class AppSettings(ConfigurationSection):
 
 
 class DatabaseSettings(ConfigurationSection):
-    """Inactive persistence configuration boundary for P3."""
+    """PostgreSQL persistence settings with safe disabled defaults."""
 
     enabled: bool = False
     url: SecretStr | None = None
+    connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    pool_timeout_seconds: int = Field(default=5, ge=1, le=60)
+
+    @model_validator(mode="after")
+    def validate_database_configuration(self) -> "DatabaseSettings":
+        """Require an explicit PostgreSQL Psycopg URL whenever configured."""
+        if self.enabled and self.url is None:
+            raise ValueError("database URL is required when database is enabled")
+        if self.url is not None:
+            scheme = urlsplit(self.url.get_secret_value()).scheme.lower()
+            if scheme != "postgresql+psycopg":
+                raise ValueError("database URL must use the postgresql+psycopg driver")
+        return self
 
 
 class SecuritySettings(ConfigurationSection):

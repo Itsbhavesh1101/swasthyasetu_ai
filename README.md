@@ -1,19 +1,25 @@
 # SwasthyaSetu AI
 
-Unified multimodal clinical-intake, mental-health triage, document-intelligence, care-navigation, self-care governance, interoperability, and ML/QML research platform.
+Unified multimodal clinical-intake, mental-health triage, document-intelligence, care-navigation,
+self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3-A SQLAlchemy & Alembic Persistence Foundation COMPLETE.**
 
-The repository now includes a locked Python 3.12+/FastAPI backend foundation with typed
-configuration, health endpoints, request correlation, structured logging, and backend quality
-checks. It also includes three strictly typed Next.js application workspaces, shared UI primitives,
-frontend unit testing, and a Playwright smoke-test skeleton. No clinical rules, product workflows,
-authentication, persistence, external providers, production credentials, or predictive models are
-implemented. P1-C adds a non-root backend container, a local PostgreSQL development service,
-cross-platform quality gates, real Chromium smoke execution, mandatory security scans, and the
-baseline GitHub Actions workflow.
+The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
+endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
+explicit Alembic migrations, and backend quality checks. It also includes three strictly typed
+Next.js application workspaces, shared UI primitives, frontend unit testing, and Playwright smoke
+tests. No clinical rules, product workflows, authentication, domain tables, external providers,
+production credentials, or predictive models are implemented.
+
+P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
+gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
+types/errors/configuration, compile-time module and capability registration, safe/off feature flags,
+and privacy-safe in-process OpenTelemetry. P3-A adds only the persistence substrate: zero domain
+models, one empty baseline migration, explicit migration commands, PostgreSQL transaction tests,
+and database-aware readiness. P3-B events/outbox and P3-C jobs/object storage remain unimplemented.
 
 ## Read first
 
@@ -27,10 +33,3 @@ baseline GitHub Actions workflow.
 Backend setup and verification commands are documented in `backend/README.md`.
 Frontend setup and verification commands are documented in `docs/frontend/README.md`.
 Local container and PostgreSQL commands are documented in `deployments/local/README.md`.
-
-P2-A provides shared primitives, errors, and typed configuration. P2-B adds immutable module
-manifests, typed capability keys, explicit compile-time module/provider registration, dependency
-validation, and sealed per-application registries. P2-C adds safe/off immutable feature flags and
-project-owned OpenTelemetry request tracing/metrics with no external export or telemetry
-infrastructure. All mandatory P2-C branch CI jobs passed. The next governed unit is
-**P3-A — SQLAlchemy & Alembic Persistence Foundation**; it is not implemented.

@@ -27,9 +27,9 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P2 — Shared Platform Kernel — COMPLETE
-**Current recommended next action:** begin P3-A — SQLAlchemy & Alembic Persistence Foundation in
-its governed phase unit.
+**Current macro stage:** P3 — Persistence + Events + Jobs — PARTIAL
+**Current recommended next action:** begin P3-B — Event Envelope & Transactional Outbox in its
+governed phase unit.
 
 ---
 
@@ -40,7 +40,7 @@ its governed phase unit.
 | P0 | Documentation + Codex Governance | COMPLETE | Foundation, repository structure, Codex governance, acceptance criteria, dependency map, decision log, progress tracker created. |
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
-| P3 | Persistence + Events + Jobs | NOT STARTED | Depends on P1–P2. |
+| P3 | Persistence + Events + Jobs | PARTIAL | P3-A complete; P3-B/P3-C not started. |
 | P4 | Identity + Sessions + Consent | NOT STARTED | Requires data/API specs. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
@@ -409,4 +409,27 @@ Overall P2 status: COMPLETE
 Next recommended unit: P3-A — SQLAlchemy & Alembic Persistence Foundation
 Blockers: none.
 Open decisions: none required for P2-C.
+```
+
+---
+
+# 16. P3-A Implementation Record
+
+```text
+Phase/Sub-phase: P3-A — SQLAlchemy & Alembic Persistence Foundation
+Status: COMPLETE
+Date: 2026-10-11
+Branch: phase/p3-a-sqlalchemy-alembic-foundation
+Base commit: 2b3dcfed0c90d1bb1d3a7153d3b67cae52080091
+Implementation commit: 346035cd91bd9451c465ac4118f4ba72ca390066
+Requirement IDs: FR-CORE-005, FR-CORE-009, NFR-MAINT-004, NFR-RES-006; AC-P3-001, AC-P3-002, AC-P3-003, AC-P3-010
+Dependencies: SQLAlchemy[asyncio]>=2.1.4,<2.2; Alembic>=1.20,<2.0; psycopg[binary]>=3.3.6,<4.0; all R3 CORE_RUNTIME.
+Migration revision: p3a_0001; down_revision=None; empty application-schema baseline.
+Local migration evidence: fresh PostgreSQL 16.12 volume upgraded to one head; current/check passed; downgrade base and re-upgrade passed; public schema contained only alembic_version.
+PostgreSQL integration evidence: 2 executed, 2 passed, 0 skipped; SELECT 1, commit, rollback, subsequent pool use, cleanup, and disposal verified.
+Docker evidence: non-root image built; dependency imports and Alembic CLI passed; explicit container migration passed; live=200; ready=200 with required.database=ok; DB outage kept live=200 and returned ready=503 without connection details.
+Acceptance: AC-P3-001 PASS; AC-P3-002 PASS; AC-P3-003 PASS; AC-P3-004 through AC-P3-009 NOT YET IMPLEMENTED; AC-P3-010 PASS by architecture/regression inspection.
+Remaining P3 work: P3-B event envelope/transactional outbox; P3-C jobs/object storage.
+Remote CI: PASS — run 38092648858; https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38092648858; head 346035cd91bd9451c465ac4118f4ba72ca390066; all six mandatory jobs green.
+Next recommended unit: P3-B — Event Envelope & Transactional Outbox.
 ```

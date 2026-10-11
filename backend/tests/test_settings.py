@@ -114,8 +114,9 @@ def test_settings_and_nested_sections_are_frozen() -> None:
 
 def test_secret_values_are_masked_in_representations() -> None:
     secret = "synthetic-secret-value"
+    database_url = f"postgresql+psycopg://user:{secret}@localhost/synthetic"
     settings = Settings(
-        database=DatabaseSettings(url=SecretStr(secret)),
+        database=DatabaseSettings(url=SecretStr(database_url)),
         llm=LlmSettings(api_key=SecretStr(secret)),
         _env_file=None,
     )
@@ -123,3 +124,60 @@ def test_secret_values_are_masked_in_representations() -> None:
     assert secret not in repr(settings)
     assert secret not in repr(settings.database)
     assert secret not in repr(settings.llm)
+
+
+def test_database_nested_environment_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    url = "postgresql+psycopg://synthetic-user:synthetic-password@localhost/test_db"
+    monkeypatch.setenv("SWASTHYASETU_DATABASE__ENABLED", "true")
+    monkeypatch.setenv("SWASTHYASETU_DATABASE__URL", url)
+    monkeypatch.setenv("SWASTHYASETU_DATABASE__CONNECT_TIMEOUT_SECONDS", "2")
+
+    settings = Settings(_env_file=None)
+
+    assert settings.database.enabled is True
+    assert settings.database.url is not None
+    assert settings.database.url.get_secret_value() == url
+    assert settings.database.connect_timeout_seconds == 2
+    assert url not in repr(settings)
+
+
+def test_nested_environment_support_preserves_json_sections(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SWASTHYASETU_FEATURES", '{"enabled":["example_feature"]}')
+    monkeypatch.setenv(
+        "SWASTHYASETU_OBSERVABILITY",
+        '{"tracing_enabled":false,"metrics_enabled":true}',
+    )
+
+    settings = Settings(_env_file=None)
+
+    assert settings.features.enabled == ("example_feature",)
+    assert settings.observability.tracing_enabled is False
+    assert settings.observability.metrics_enabled is True
+
+
+def test_database_enabled_requires_url() -> None:
+    with pytest.raises(ValidationError, match="database URL is required"):
+        DatabaseSettings(enabled=True)
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "sqlite+aiosqlite:///synthetic.db",
+        "mysql+asyncmy://localhost/synthetic",
+        "postgresql://localhost/synthetic",
+    ],
+)
+def test_database_rejects_non_explicit_psycopg_urls(url: str) -> None:
+    with pytest.raises(ValidationError, match=r"postgresql\+psycopg"):
+        DatabaseSettings(enabled=True, url=SecretStr(url))
+
+
+def test_database_validation_error_masks_url_secret() -> None:
+    secret = "validation-secret"
+    with pytest.raises(ValidationError) as error:
+        DatabaseSettings(enabled=True, url=SecretStr(f"postgresql://user:{secret}@localhost/db"))
+
+    assert secret not in str(error.value)

@@ -1,8 +1,7 @@
 # Local container foundation
 
-This P1-C environment contains only PostgreSQL and the backend container. PostgreSQL is available
-for future persistence phases, but the backend does not connect to it yet and readiness does not
-claim database integration.
+This environment contains only PostgreSQL and the backend container. P3-A enables backend database
+connectivity using the committed synthetic local credentials; migrations remain an explicit command.
 
 ## Prerequisites
 
@@ -36,10 +35,15 @@ bound to loopback rather than exposed publicly.
 ## Start the backend container
 
 ```powershell
-docker compose --env-file deployments/local/.env -f deployments/local/compose.yaml up -d --build backend
+docker compose --env-file deployments/local/.env -f deployments/local/compose.yaml build backend
+docker compose --env-file deployments/local/.env -f deployments/local/compose.yaml run --rm backend alembic -c /app/alembic.ini upgrade head
+docker compose --env-file deployments/local/.env -f deployments/local/compose.yaml up -d backend
 Invoke-RestMethod http://127.0.0.1:8000/health/live
 Invoke-RestMethod http://127.0.0.1:8000/health/ready
 ```
+
+The ready response must contain `required.database = "ok"`. API startup never runs migrations, so
+deployments must execute the Alembic command once before starting or updating application replicas.
 
 The backend image runs as non-root user `10001:10001` and exposes port 8000 locally.
 It uses the official immutable
