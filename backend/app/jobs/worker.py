@@ -1,7 +1,7 @@
 """Explicit deterministic worker for the process-local job backend."""
 
 from collections.abc import Callable, Mapping
-from datetime import datetime
+from datetime import UTC, datetime
 from types import MappingProxyType
 
 from app.jobs.contracts import JobHandle, JobHandler, JobType
@@ -29,9 +29,15 @@ class InProcessWorker:
         )
         self._clock = clock
 
+    def _now(self) -> datetime:
+        value = self._clock()
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("worker clock must return a timezone-aware datetime")
+        return value.astimezone(UTC)
+
     async def run_once(self) -> JobHandle | None:
         """Process the first due job and retain only generic failure codes."""
-        request = await self._backend.claim_first_due(self._clock())
+        request = await self._backend.claim_first_due(self._now())
         if request is None:
             return None
 
@@ -40,7 +46,7 @@ class InProcessWorker:
         if handler is None:
             await self._backend.mark_failed(
                 request.job_id,
-                self._clock(),
+                self._now(),
                 error_code=JOB_HANDLER_NOT_FOUND,
             )
             return handle
@@ -50,9 +56,9 @@ class InProcessWorker:
         except Exception:
             await self._backend.mark_failed(
                 request.job_id,
-                self._clock(),
+                self._now(),
                 error_code=JOB_EXECUTION_FAILED,
             )
         else:
-            await self._backend.mark_succeeded(request.job_id, self._clock())
+            await self._backend.mark_succeeded(request.job_id, self._now())
         return handle

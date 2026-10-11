@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.jobs.contracts import (
     DuplicateJobError,
@@ -20,6 +20,12 @@ from app.shared.types import OpaqueId
 JOB_HANDLER_NOT_FOUND = "JOB_HANDLER_NOT_FOUND"
 JOB_EXECUTION_FAILED = "JOB_EXECUTION_FAILED"
 _FAILURE_CODES = frozenset({JOB_HANDLER_NOT_FOUND, JOB_EXECUTION_FAILED})
+
+
+def _aware_utc(name: str, value: datetime) -> datetime:
+    if value.tzinfo is None or value.utcoffset() is None:
+        raise ValueError(f"{name} must be timezone-aware")
+    return value.astimezone(UTC)
 
 
 @dataclass(slots=True)
@@ -50,32 +56,38 @@ class InProcessJobBackend:
 
     async def claim_first_due(self, now: datetime) -> JobRequest | None:
         """Claim the first due queued request while preserving FIFO among due jobs."""
+        normalized_now = _aware_utc("now", now)
         async with self._lock:
             for job_id in self._queue:
                 record = self._records[job_id]
-                if record.status is JobStatus.QUEUED and record.request.scheduled_at <= now:
+                if (
+                    record.status is JobStatus.QUEUED
+                    and record.request.scheduled_at <= normalized_now
+                ):
                     record.status = JobStatus.RUNNING
-                    record.started_at = now
+                    record.started_at = normalized_now
                     return record.request
         return None
 
     async def mark_succeeded(self, job_id: OpaqueId, completed_at: datetime) -> None:
+        normalized_completed_at = _aware_utc("completed_at", completed_at)
         async with self._lock:
             record = self._records[job_id]
             record.status = JobStatus.SUCCEEDED
             record.error_code = None
-            record.completed_at = completed_at
+            record.completed_at = normalized_completed_at
 
     async def mark_failed(
         self, job_id: OpaqueId, completed_at: datetime, *, error_code: str
     ) -> None:
+        normalized_completed_at = _aware_utc("completed_at", completed_at)
         if error_code not in _FAILURE_CODES:
             raise ValueError("error_code must be an approved safe job failure code")
         async with self._lock:
             record = self._records[job_id]
             record.status = JobStatus.FAILED
             record.error_code = error_code
-            record.completed_at = completed_at
+            record.completed_at = normalized_completed_at
 
     async def inspect(self, handle: JobHandle) -> JobSnapshot:
         """Return only safe immutable metadata for a known process-local job."""
