@@ -1,8 +1,8 @@
 # SwasthyaSetu backend
 
-This directory contains the FastAPI engineering foundation, P2 shared kernel, and P3-A PostgreSQL
-persistence substrate. It intentionally has no clinical logic, domain ORM models, outbox, jobs,
-object storage, or active external providers.
+This directory contains the FastAPI engineering foundation, P2 shared kernel, P3-A PostgreSQL
+persistence substrate, and the P3-B platform event/outbox foundation. It intentionally has no
+clinical logic, domain ORM models, jobs, object storage, or active external providers.
 
 ## Prerequisites
 
@@ -61,8 +61,32 @@ $env:SWASTHYASETU_TEST_DATABASE_URL = $env:SWASTHYASETU_DATABASE__URL
 uv run pytest -m postgres
 ```
 
-These tests use and remove only the synthetic `p3a_transaction_probe` table. Do not point this
-variable at an unapproved or production database.
+These tests use and remove only synthetic `p3a_transaction_probe` / `p3b_atomicity_probe` tables
+and P3-B synthetic outbox rows. Do not point this variable at an unapproved or production database.
+
+## Events and transactional outbox
+
+`app.events` owns the immutable versioned envelope, provider-neutral publisher contract, explicit
+in-process publisher, `outbox_events` model/repository, and manually invoked `OutboxDispatcher`.
+Module-specific payload schemas and handlers stay with future owning modules. Payloads must be
+privacy-minimized JSON metadata; they are not transcript archives, document dumps, or substitutes
+for canonical domain storage. Event types, correlation IDs, causation IDs, actor references, and
+aggregate types use bounded 128-character storage; actor references remain opaque and
+non-authoritative.
+
+Callers enqueue through `OutboxRepository` using the same caller-owned `AsyncSession` and
+transaction as their state change. Enqueue never commits. The dispatcher selects due `PENDING`
+rows in `available_at`, `created_at`, `id` order using `FOR UPDATE SKIP LOCKED`, holds the row lock
+through publication, then commits one row outcome per transaction. It is a manual service only and
+is never auto-started by FastAPI.
+
+Delivery is at-least-once: a crash after handler side effects but before the status commit can
+redeliver an event. Side-effecting consumers must therefore implement idempotency. Failures persist
+only the generic `EVENT_DELIVERY_FAILED` code, never exception text or payload data. Retry metadata
+changes do not alter the immutable historical envelope.
+
+Migration `p3b_0002` (parent `p3a_0001`) creates only `outbox_events`. Apply it through the same
+explicit Alembic deployment commands above; API startup never runs migrations or the dispatcher.
 
 ## Run the API
 

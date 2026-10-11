@@ -13,6 +13,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import Settings
+from app.events.outbox import OutboxEventRecord  # noqa: F401 - registers Alembic metadata
 from app.shared.persistence import Base
 
 config = context.config

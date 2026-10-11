@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3-A SQLAlchemy & Alembic Persistence Foundation COMPLETE.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3-A SQLAlchemy & Alembic Persistence Foundation COMPLETE. P3-B Event Envelope & Transactional Outbox COMPLETE.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -19,7 +19,10 @@ gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2
 types/errors/configuration, compile-time module and capability registration, safe/off feature flags,
 and privacy-safe in-process OpenTelemetry. P3-A adds only the persistence substrate: zero domain
 models, one empty baseline migration, explicit migration commands, PostgreSQL transaction tests,
-and database-aware readiness. P3-B events/outbox and P3-C jobs/object storage remain unimplemented.
+and database-aware readiness. P3-B adds a versioned internal event envelope, explicit in-process
+publisher, PostgreSQL transactional outbox, and manually invoked retry/status dispatcher. It uses
+at-least-once delivery semantics, so consumers with side effects remain responsible for
+idempotency. No dispatcher starts with FastAPI. P3-C jobs/object storage remains unimplemented.
 
 ## Read first
 

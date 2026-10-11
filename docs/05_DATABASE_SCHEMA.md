@@ -1074,6 +1074,8 @@ aggregate_type VARCHAR NULL
 aggregate_id UUID NULL
 correlation_id VARCHAR NULL
 causation_id VARCHAR NULL
+actor_ref VARCHAR NULL
+occurred_at TIMESTAMPTZ NOT NULL
 payload JSONB NOT NULL
 status VARCHAR NOT NULL
 attempt_count INTEGER NOT NULL DEFAULT 0
