@@ -202,6 +202,11 @@ A mature module should eventually resemble:
 
 Do not create empty ceremony for every subfolder on day one; create them when the implementation phase needs them.
 
+P4-A implements `backend/app/modules/sessions/` with cohesive `domain.py`, `contracts.py`,
+`application.py`, `infrastructure.py`, `api.py`, and `public.py` files. The public boundary owns the
+manifest, typed capabilities, and explicit registration builder; ORM/repository details remain
+module-private.
+
 ---
 
 # 6. Backend Platform Areas

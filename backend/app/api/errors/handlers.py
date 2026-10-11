@@ -34,16 +34,27 @@ def _request_id(request: Request) -> str:
     return str(getattr(request.state, "request_id", "unavailable"))
 
 
+def _protect_session_response(request: Request, response: JSONResponse) -> JSONResponse:
+    """Prevent storage of session-route errors without inspecting request secrets."""
+    route = str(getattr(request.scope.get("route"), "path", ""))
+    if route == "/sessions" or route.startswith("/sessions/"):
+        response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 async def application_error_handler(request: Request, exc: Exception) -> JSONResponse:
     """Translate a typed application error into the canonical envelope."""
     if not isinstance(exc, SwasthyaSetuError):
         raise TypeError("application_error_handler received an unexpected exception")
-    return build_error_response(
-        status_code=HTTP_STATUS_BY_ERROR_CODE[exc.code],
-        code=exc.code,
-        message=exc.message,
-        request_id=_request_id(request),
-        details=exc.details,
+    return _protect_session_response(
+        request,
+        build_error_response(
+            status_code=HTTP_STATUS_BY_ERROR_CODE[exc.code],
+            code=exc.code,
+            message=exc.message,
+            request_id=_request_id(request),
+            details=exc.details,
+        ),
     )
 
 
@@ -51,11 +62,14 @@ async def validation_error_handler(request: Request, exc: Exception) -> JSONResp
     """Return a stable validation response without echoing submitted values."""
     if not isinstance(exc, RequestValidationError):
         raise TypeError("validation_error_handler received an unexpected exception")
-    return build_error_response(
-        status_code=422,
-        code=ErrorCode.VALIDATION_ERROR,
-        message="The request did not pass validation.",
-        request_id=_request_id(request),
+    return _protect_session_response(
+        request,
+        build_error_response(
+            status_code=422,
+            code=ErrorCode.VALIDATION_ERROR,
+            message="The request did not pass validation.",
+            request_id=_request_id(request),
+        ),
     )
 
 
@@ -87,11 +101,14 @@ async def http_error_handler(request: Request, exc: Exception) -> JSONResponse:
         429: "Too many requests.",
         503: "This service is temporarily unavailable.",
     }
-    return build_error_response(
-        status_code=exc.status_code,
-        code=code_by_status.get(exc.status_code, ErrorCode.PROCESSING_FAILED),
-        message=message_by_status.get(exc.status_code, "The request could not be completed."),
-        request_id=_request_id(request),
+    return _protect_session_response(
+        request,
+        build_error_response(
+            status_code=exc.status_code,
+            code=code_by_status.get(exc.status_code, ErrorCode.PROCESSING_FAILED),
+            message=message_by_status.get(exc.status_code, "The request could not be completed."),
+            request_id=_request_id(request),
+        ),
     )
 
 
