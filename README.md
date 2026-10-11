@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4-A Sessions COMPLETE. P4-B Identity & Authorization is pending remote CI verification.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4-A Sessions COMPLETE. P4-B Identity & Authorization COMPLETE. P4 remains PARTIAL pending P4-C Consent.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,

@@ -28,7 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P4 — Identity + Sessions + Consent — PARTIAL
-**Current recommended next action:** complete remote CI verification for P4-B — Identity & Authorization Baseline.
+**Current recommended next action:** begin P4-C — Consent Domain & APIs.
 
 ---
 
@@ -40,7 +40,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P1 | Repository + Tooling Foundation | COMPLETE | P1-A, P1-B, and P1-C complete; all mandatory P1-C feature-branch CI jobs passed. |
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
-| P4 | Identity + Sessions + Consent | PARTIAL | P4-A sessions complete; P4-B identity/authz is locally implemented pending remote CI; P4-C consent remains. |
+| P4 | Identity + Sessions + Consent | PARTIAL | P4-A sessions and P4-B identity/authz complete; P4-C consent remains. |
 | P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
@@ -520,11 +520,11 @@ Next recommended unit: P4-B — Identity & Authorization Baseline.
 
 ```text
 Phase/Sub-phase: P4-B — Identity & Authorization Baseline
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-11
 Branch: phase/p4-b-identity-authorization
 Base commit: bb9a0522f13bbfb496d74d99a1655bc9d5117e58
-Implementation commit: pending creation after final local verification
+Implementation commit: 26a9b57f8ccb57db60e14548d8b02ef9652bcdad
 Requirement IDs: FR-IDENT-002, FR-IDENT-007, NFR-SEC-003, NFR-SEC-004, NFR-SEC-014; AC-P4-005, AC-P4-006, AC-P4-010
 Migration revision: p4b_0004; parent p4a_0003; creates actors/actor_roles and adds only sessions.actor_id -> actors.id.
 Actor/policy scope: canonical ActorType; ActorStatus ACTIVE/DISABLED; baseline persisted roles; extensible validated PermissionCode; immutable p4b-v1 explicit role-permission mapping; no wildcard or actor-type inference.
@@ -534,6 +534,7 @@ Persistence evidence: 18 PostgreSQL-marked tests passed with zero skips, includi
 Dependencies: unchanged. Docker/Compose: unchanged. Frontend authentication: not implemented.
 Local acceptance: AC-P4-005 PASS; AC-P4-006 PASS; AC-P4-010 PASS. AC-P4-007 through AC-P4-009 remain not implemented for P4-C.
 Overall P4 status: PARTIAL.
-Remote CI: NOT YET VERIFIED.
-Next recommended unit after remote CI closure: P4-C — Consent Domain & APIs.
+Remote CI: VERIFIED — GitHub Actions run 38145524529 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit 26a9b57f8ccb57db60e14548d8b02ef9652bcdad.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38145524529
+Next recommended unit: P4-C — Consent Domain & APIs.
 ```
