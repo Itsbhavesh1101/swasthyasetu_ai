@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation PARTIAL (P6-A COMPLETE).**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -45,6 +45,12 @@ self-owned encounters; pseudonymous encounters remain bound to an exact session 
 longitudinal timeline merges bounded fact and encounter reads through public capabilities in
 `occurred_at DESC, entry_type ASC, entry_id ASC` order with a versioned opaque cursor. No schema,
 migration, dependency, frontend, or PATIENT-consent activation is included.
+
+P6-A replaces the patient placeholder with a responsive, patient-specific application shell,
+accessible UI states, honest planned-route shells, and a persistent urgent-help entry point. The
+urgent route contains no invented helpline or provider data. This unit adds no backend calls,
+browser persistence, working language/consent flow, authentication, PWA behavior, or dependencies;
+those capabilities remain phase-gated.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

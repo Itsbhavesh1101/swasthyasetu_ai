@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P5 — Patient + Encounter + Provenance — COMPLETE
-**Current recommended next action:** begin P6-A — Patient Web Design System / App Shell.
+**Current macro stage:** P6 — Patient Web Foundation — PARTIAL (P6-A COMPLETE)
+**Current recommended next action:** begin P6-B — Patient Onboarding / Session / Consent.
 
 ---
 
@@ -42,7 +42,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
-| P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
+| P6 | Patient Web Foundation | PARTIAL | P6-A complete; P6-B and P6-C not started. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
@@ -660,4 +660,25 @@ Remote CI: VERIFIED — GitHub Actions run 38228256117 passed Backend quality, F
 P5 final acceptance: AC-P5-001..008 PASS.
 Overall P5 status: COMPLETE.
 Next recommended unit after CI completion: P6-A — Patient Web Design System / App Shell.
+```
+
+---
+
+# 26. P6-A Patient Web Design System / App Shell
+
+```text
+Phase/Sub-phase: P6-A — Patient Web Design System / App Shell
+Status: COMPLETE
+Date: 2026-10-12
+Branch: phase/p6-a-patient-web-shell
+Base commit: f8634bea8876ea800b06527c4328c0c24873a661
+Shell scope: responsive patient header, navigation, skip link, content and footer landmarks, patient-facing tokens/primitives, loading/error/unavailable states, and route titles.
+Routes: /, /start, /consent, /language, /encounter, /documents, /results, /urgent-help, and /referrals; future capabilities remain honestly unavailable.
+Urgent help: persistently visible and keyboard reachable; generic safe wording only; no invented numbers, providers, contacts, or routing decisions.
+Privacy/boundaries: no browser storage, Cache API, service worker, cookies, backend requests, authentication, working language persistence, or PWA activation.
+Dependencies/backend/migrations/Docker: unchanged. Alembic head remains p5b_0006.
+Local acceptance: AC-P6-001 PASS; AC-P6-004 PASS; AC-P6-006 PASS; AC-P6-007 PASS; AC-P6-008 PASS; AC-P6-005 PARTIAL (shell keyboard path passes; connected onboarding remains P6-B); AC-P6-002 and AC-P6-003 NOT YET IMPLEMENTED.
+Overall P6 status: PARTIAL.
+Remote CI: PENDING.
+Next recommended unit after P6-A completion: P6-B — Patient Onboarding / Session / Consent.
 ```

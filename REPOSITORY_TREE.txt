@@ -35,13 +35,38 @@ swasthyasetu-ai/
 │   │   └── vitest.config.ts
 │   └── patient-web/
 │       ├── app/
+│       │   ├── consent/
+│       │   │   └── page.tsx
+│       │   ├── documents/
+│       │   │   └── page.tsx
+│       │   ├── encounter/
+│       │   │   └── page.tsx
+│       │   ├── language/
+│       │   │   └── page.tsx
+│       │   ├── referrals/
+│       │   │   └── page.tsx
+│       │   ├── results/
+│       │   │   └── page.tsx
+│       │   ├── start/
+│       │   │   └── page.tsx
+│       │   ├── urgent-help/
+│       │   │   └── page.tsx
 │       │   ├── error.tsx
 │       │   ├── globals.css
 │       │   ├── layout.tsx
 │       │   ├── loading.tsx
 │       │   └── page.tsx
+│       ├── components/
+│       │   ├── patient-navigation.tsx
+│       │   ├── patient-shell.tsx
+│       │   ├── route-unavailable.tsx
+│       │   ├── ui-primitives.tsx
+│       │   └── urgent-help-link.tsx
 │       ├── tests/
-│       │   └── page.test.tsx
+│       │   ├── browser-boundaries.test.ts
+│       │   ├── page.test.tsx
+│       │   ├── routes.test.tsx
+│       │   └── shell.test.tsx
 │       ├── next-env.d.ts
 │       ├── next.config.ts
 │       ├── package.json
