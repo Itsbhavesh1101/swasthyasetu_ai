@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P4 — Identity + Sessions + Consent — COMPLETE
-**Current recommended next action:** begin P5-A — Patient / Encounter Domain Types & Entities.
+**Current macro stage:** P5 — Patient + Encounter + Provenance — PARTIAL
+**Current recommended next action:** verify P5-A remote CI before beginning P5-B.
 
 ---
 
@@ -41,7 +41,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
-| P5 | Patient + Encounter + Provenance | NOT STARTED | Requires domain/database/API specs. |
+| P5 | Patient + Encounter + Provenance | PARTIAL | P5-A domain implementation is locally verified; remote CI verification is pending. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
@@ -586,4 +586,27 @@ P4-C status: COMPLETE.
 P4 status: COMPLETE.
 P4 final acceptance: AC-P4-001 through AC-P4-010 remain PASS.
 Next recommended unit remains P5-A — Patient / Encounter Domain Types & Entities.
+```
+
+---
+
+# 23. P5-A Patient / Encounter Domain Types & Entities
+
+```text
+Phase/Sub-phase: P5-A — Patient / Encounter Domain Types & Entities
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-12
+Branch: phase/p5-a-domain-types-entities
+Base commit: f852ff7ca4cd70528f7e280bad5294ea2ed4a803
+Implementation commit: 307237b332d3228f223f9a0504c899976356271e
+Domain concepts: immutable Patient, PatientIdentifier, PatientDemographics, Encounter, FactProvenance, ClinicalFact, and typed Problem/Medication/Allergy/Procedure/Observation/Investigation values.
+Encounter lifecycle: explicit canonical transition matrix; COMPLETED/ABANDONED/CANCELLED terminal; completed_at only for COMPLETED; pseudonymous session-bound encounters supported.
+Provenance evidence: all canonical source and verification values tested; confidence bounds and finite decimal checks; aware timestamps normalized to UTC; raw source content excluded.
+Supersession evidence: explicit immutable correction operation preserves the historical fact and provenance; clinician-confirmed facts reject extracted, low-confidence, needs-confirmation, and patient-confirmed replacements; clinician-confirmed correction remains explicit.
+Local acceptance: AC-P5-001 PASS; AC-P5-002 PASS; AC-P5-003 PASS; AC-P5-004 PASS; AC-P5-005 PASS; AC-P5-006 PASS; AC-P5-007 NOT YET IMPLEMENTED; AC-P5-008 NOT YET IMPLEMENTED.
+Local tests: 329 passed with 27 expected PostgreSQL skips; real PostgreSQL regression 26 passed with zero skips; backend and frontend quality gates passed.
+Migration/schema: unchanged; Alembic head p4c_0005; drift check passed; zero P5 tables.
+Overall P5 status: PARTIAL.
+Remote CI: PENDING.
+Next recommended unit after P5-A completion: P5-B — Patient / Encounter Persistence & Migrations.
 ```
