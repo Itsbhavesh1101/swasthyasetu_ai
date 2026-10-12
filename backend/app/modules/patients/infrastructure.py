@@ -41,6 +41,7 @@ from app.modules.patients.public import (
     PatientDemographics,
     PatientIdentifier,
     PatientStatus,
+    supersede_fact,
 )
 from app.modules.provenance.public import (
     FactProvenance,
@@ -580,20 +581,24 @@ class PostgresClinicalFactRepository:
         self, session: AsyncSession, supersession: FactSupersession
     ) -> FactSupersession:
         existing = await session.get(
-            ClinicalFactRecord, supersession.superseded.fact_id.value, with_for_update=True
+            ClinicalFactRecord,
+            supersession.superseded.fact_id.value,
+            options=(selectinload(ClinicalFactRecord.provenance_records),),
+            with_for_update=True,
         )
         if existing is None:
             raise LookupError("clinical fact record does not exist")
-        await self.add(session, supersession.replacement)
-        existing.verification_state = supersession.superseded.verification_state.value
+        validated = supersede_fact(self.to_domain(existing), supersession.replacement)
+        await self.add(session, validated.replacement)
+        existing.verification_state = validated.superseded.verification_state.value
         existing.structured_value = serialize_clinical_value(
-            supersession.superseded.fact_type, supersession.superseded.value
+            validated.superseded.fact_type, validated.superseded.value
         )
-        existing.superseded_by_fact_id = supersession.replacement.fact_id.value
-        existing.updated_at = supersession.replacement.recorded_at
-        await self._update_projection(session, supersession.superseded)
+        existing.superseded_by_fact_id = validated.replacement.fact_id.value
+        existing.updated_at = validated.replacement.recorded_at
+        await self._update_projection(session, validated.superseded)
         await session.flush()
-        return supersession
+        return validated
 
     async def _update_projection(self, session: AsyncSession, fact: ClinicalFact) -> None:
         if fact.fact_type is FactType.MEDICATION:

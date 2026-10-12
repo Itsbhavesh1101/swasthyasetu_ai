@@ -34,7 +34,9 @@ from app.modules.patients.infrastructure import (
 from app.modules.patients.public import (
     AllergyRecord,
     ClinicalFact,
+    FactSupersession,
     FactType,
+    InvalidFactSupersessionError,
     InvestigationRecord,
     MedicationRecord,
     MedicationStatus,
@@ -529,6 +531,188 @@ async def test_supersession_update_and_replacement_insert_are_atomic(
         persisted_replacement = await fact_repository.get(session, replacement.fact_id)
     assert historical == supersession.superseded
     assert persisted_replacement == replacement
+
+
+async def test_manual_supersession_cannot_replace_clinician_fact_with_extracted_fact(
+    database_runtime: DatabaseRuntime,
+) -> None:
+    patient = _patient()
+    existing = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic clinician fact",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        ),
+        FactType.PROBLEM,
+    )
+    valid_candidate = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic valid candidate",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        ),
+        FactType.PROBLEM,
+    )
+    lower_trust_replacement = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic extracted replacement",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.EXTRACTED,
+        ),
+        FactType.PROBLEM,
+    )
+    bypass = FactSupersession(
+        superseded=supersede_fact(existing, valid_candidate).superseded,
+        replacement=lower_trust_replacement,
+    )
+    repository = PostgresClinicalFactRepository()
+    async with database_runtime.transaction() as session:
+        await PostgresPatientRepository().add(session, patient)
+        await repository.add(session, existing)
+
+    with pytest.raises(InvalidFactSupersessionError, match="clinician-confirmed"):
+        async with database_runtime.transaction() as session:
+            await repository.persist_supersession(session, bypass)
+
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, existing.fact_id) == existing
+        assert await repository.get(session, lower_trust_replacement.fact_id) is None
+
+
+@pytest.mark.parametrize("mismatch", ["patient", "encounter", "fact_type"])
+async def test_manual_supersession_cannot_change_authoritative_scope_or_type(
+    database_runtime: DatabaseRuntime, mismatch: str
+) -> None:
+    patient = _patient()
+    existing = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic authoritative fact",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        ),
+        FactType.PROBLEM,
+    )
+    valid_candidate = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic valid candidate",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        ),
+        FactType.PROBLEM,
+    )
+    if mismatch == "fact_type":
+        replacement = _fact(
+            patient.patient_id,
+            MedicationRecord(
+                name="Synthetic mismatched medication",
+                status=MedicationStatus.ACTIVE,
+                verification_state=VerificationState.CLINICIAN_CONFIRMED,
+            ),
+            FactType.MEDICATION,
+        )
+    else:
+        replacement = replace(
+            valid_candidate,
+            fact_id=OpaqueId.new(),
+            patient_id=(OpaqueId.new() if mismatch == "patient" else patient.patient_id),
+            encounter_id=(OpaqueId.new() if mismatch == "encounter" else None),
+        )
+    bypass = FactSupersession(
+        superseded=supersede_fact(existing, valid_candidate).superseded,
+        replacement=replacement,
+    )
+    repository = PostgresClinicalFactRepository()
+    async with database_runtime.transaction() as session:
+        await PostgresPatientRepository().add(session, patient)
+        await repository.add(session, existing)
+
+    with pytest.raises(InvalidFactSupersessionError):
+        async with database_runtime.transaction() as session:
+            await repository.persist_supersession(session, bypass)
+
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, existing.fact_id) == existing
+        assert await repository.get(session, replacement.fact_id) is None
+
+
+@pytest.mark.parametrize("violation", ["self_id", "terminal_existing", "terminal_replacement"])
+async def test_manual_supersession_rejects_self_id_and_terminal_states(
+    database_runtime: DatabaseRuntime, violation: str
+) -> None:
+    patient = _patient()
+    existing_state = (
+        VerificationState.REJECTED
+        if violation == "terminal_existing"
+        else VerificationState.CLINICIAN_CONFIRMED
+    )
+    existing = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic authoritative fact",
+            status=ProblemStatus.ACTIVE,
+            verification_state=existing_state,
+        ),
+        FactType.PROBLEM,
+    )
+    active_snapshot = (
+        replace(
+            existing,
+            value=replace(
+                existing.value,
+                verification_state=VerificationState.CLINICIAN_CONFIRMED,
+            ),
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        )
+        if violation == "terminal_existing"
+        else existing
+    )
+    replacement_state = (
+        VerificationState.REJECTED
+        if violation == "terminal_replacement"
+        else VerificationState.CLINICIAN_CONFIRMED
+    )
+    replacement = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic invalid replacement",
+            status=ProblemStatus.ACTIVE,
+            verification_state=replacement_state,
+        ),
+        FactType.PROBLEM,
+    )
+    if violation == "self_id":
+        replacement = replace(replacement, fact_id=existing.fact_id)
+    snapshot_candidate = _fact(
+        patient.patient_id,
+        Problem(
+            label="Synthetic snapshot candidate",
+            status=ProblemStatus.ACTIVE,
+            verification_state=VerificationState.CLINICIAN_CONFIRMED,
+        ),
+        FactType.PROBLEM,
+    )
+    bypass = FactSupersession(
+        superseded=supersede_fact(active_snapshot, snapshot_candidate).superseded,
+        replacement=replacement,
+    )
+    repository = PostgresClinicalFactRepository()
+    async with database_runtime.transaction() as session:
+        await PostgresPatientRepository().add(session, patient)
+        await repository.add(session, existing)
+
+    with pytest.raises(InvalidFactSupersessionError):
+        async with database_runtime.transaction() as session:
+            await repository.persist_supersession(session, bypass)
+
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, existing.fact_id) == existing
+        if replacement.fact_id != existing.fact_id:
+            assert await repository.get(session, replacement.fact_id) is None
 
 
 async def test_p5_tables_and_sessions_patient_fk_are_registered() -> None:
