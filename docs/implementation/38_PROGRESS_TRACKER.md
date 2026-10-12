@@ -28,7 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P5 — Patient + Encounter + Provenance — PARTIAL
-**Current recommended next action:** verify P5-A remote CI before beginning P5-B.
+**Current recommended next action:** begin P5-B — Patient / Encounter Persistence & Migrations.
 
 ---
 
@@ -41,7 +41,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
-| P5 | Patient + Encounter + Provenance | PARTIAL | P5-A domain implementation is locally verified; remote CI verification is pending. |
+| P5 | Patient + Encounter + Provenance | PARTIAL | P5-A domain implementation is complete; P5-B and P5-C remain. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
@@ -594,7 +594,7 @@ Next recommended unit remains P5-A — Patient / Encounter Domain Types & Entiti
 
 ```text
 Phase/Sub-phase: P5-A — Patient / Encounter Domain Types & Entities
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-12
 Branch: phase/p5-a-domain-types-entities
 Base commit: f852ff7ca4cd70528f7e280bad5294ea2ed4a803
@@ -607,6 +607,8 @@ Local acceptance: AC-P5-001 PASS; AC-P5-002 PASS; AC-P5-003 PASS; AC-P5-004 PASS
 Local tests: 329 passed with 27 expected PostgreSQL skips; real PostgreSQL regression 26 passed with zero skips; backend and frontend quality gates passed.
 Migration/schema: unchanged; Alembic head p4c_0005; drift check passed; zero P5 tables.
 Overall P5 status: PARTIAL.
-Remote CI: PENDING.
+Remote CI: VERIFIED — GitHub Actions run 38209044264 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on head eb11fccfe586c0c83ebff0a78f91c5200774deb9.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38209044264
+Final P5-A acceptance: AC-P5-001 PASS; AC-P5-002 PASS; AC-P5-003 PASS; AC-P5-004 PASS; AC-P5-005 PASS; AC-P5-006 PASS; AC-P5-007 NOT YET IMPLEMENTED; AC-P5-008 NOT YET IMPLEMENTED.
 Next recommended unit after P5-A completion: P5-B — Patient / Encounter Persistence & Migrations.
 ```
