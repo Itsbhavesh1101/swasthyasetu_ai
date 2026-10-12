@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { ActionLink, PageHeader, Panel, StatusBanner } from "../components/ui-primitives";
+
+export const metadata: Metadata = { title: "Home" };
 
 export default function PatientHomePage() {
   return (

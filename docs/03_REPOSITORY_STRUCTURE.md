@@ -151,8 +151,10 @@ patient-facing UI primitives, a persistent urgent-help entry point, and honest A
 for planned patient routes. P6-B adds the connected onboarding components, server-only BFF helpers
 under `lib/onboarding/`, and same-origin handlers under `app/api/onboarding/`. The bridge uses only
 transient HttpOnly session cookies, forwards the bearer to FastAPI through `Authorization`, and
-returns minimized client states. Browser storage, PWA/service-worker behavior, and clinical intake
-remain absent.
+returns minimized client states. P6-C adds `app/manifest.ts`, the generic `app/offline/` route,
+project-owned icons, minimal registration under `components/`, and `public/sw.js`. The service
+worker caches only explicitly approved generic shell resources; stateful navigation and all APIs
+remain network-only. Clinical intake remains absent.
 
 ## `apps/clinician-web/`
 

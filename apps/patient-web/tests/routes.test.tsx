@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import ErrorPage from "../app/error";
 import DocumentsPage from "../app/documents/page";
 import LoadingPage from "../app/loading";
+import OfflinePage from "../app/offline/page";
 import UrgentHelpPage from "../app/urgent-help/page";
 
 describe("patient route states", () => {
@@ -32,6 +33,18 @@ describe("patient route states", () => {
 
     expect(screen.getByRole("status")).toHaveAttribute("aria-busy", "true");
     expect(screen.getByText("Loading patient page")).toBeVisible();
+  });
+
+  it("renders an honest generic offline fallback with accessible recovery actions", () => {
+    render(<OfflinePage />);
+
+    expect(
+      screen.getByRole("heading", { level: 1, name: "You appear to be offline" }),
+    ).toBeVisible();
+    expect(screen.getByText(/session and consent status cannot be confirmed/i)).toBeVisible();
+    expect(screen.getByText(/clinical workflows are unavailable offline/i)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "Return home" })).toHaveAttribute("href", "/");
   });
 
   it("keeps errors content-free and provides a meaningful retry", async () => {
