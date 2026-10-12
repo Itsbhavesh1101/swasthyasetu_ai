@@ -1,0 +1,53 @@
+"""Stable public exports for the patient domain."""
+
+from app.modules.patients.clinical import (
+    AllergyRecord,
+    ClinicalFact,
+    ClinicalFactId,
+    ClinicalTime,
+    ClinicalValue,
+    FactSupersession,
+    FactType,
+    InvalidFactSupersessionError,
+    InvestigationRecord,
+    MedicationRecord,
+    MedicationStatus,
+    Observation,
+    Problem,
+    ProblemStatus,
+    ProcedureRecord,
+    ReferenceRange,
+    supersede_fact,
+)
+from app.modules.patients.domain import (
+    Patient,
+    PatientDemographics,
+    PatientId,
+    PatientIdentifier,
+    PatientStatus,
+)
+
+__all__ = [
+    "AllergyRecord",
+    "ClinicalFact",
+    "ClinicalFactId",
+    "ClinicalTime",
+    "ClinicalValue",
+    "FactSupersession",
+    "FactType",
+    "InvestigationRecord",
+    "InvalidFactSupersessionError",
+    "MedicationRecord",
+    "MedicationStatus",
+    "Observation",
+    "Patient",
+    "PatientDemographics",
+    "PatientId",
+    "PatientIdentifier",
+    "PatientStatus",
+    "Problem",
+    "ProblemStatus",
+    "ProcedureRecord",
+    "ReferenceRange",
+    "supersede_fact",
+]

@@ -300,7 +300,7 @@ started_at
 completed_at?
 institution_id?
 language_context?
-created_by
+created_by?
 ```
 
 Encounter types:
@@ -329,6 +329,12 @@ Rules:
 
 - incomplete != completed;
 - encounter may exist for pseudonymous session without patient linkage.
+- every encounter references a session, while patient and creator references remain optional;
+- valid transitions are `CREATED -> IN_PROGRESS|ABANDONED|CANCELLED`,
+  `IN_PROGRESS -> AWAITING_REVIEW|COMPLETED|ABANDONED|CANCELLED`, and
+  `AWAITING_REVIEW -> IN_PROGRESS|COMPLETED|ABANDONED|CANCELLED`;
+- `COMPLETED`, `ABANDONED`, and `CANCELLED` are terminal;
+- only `COMPLETED` carries `completed_at`, which is required for that state.
 
 Owner: `encounters`.
 
@@ -350,6 +356,7 @@ effective_time?
 recorded_at
 verification_state
 provenance
+superseded_by_fact_id?
 ```
 
 Fact types may include:
@@ -372,6 +379,13 @@ Rules:
 - a risk assessment is not a confirmed problem;
 - a safety route is not a diagnosis;
 - source wording may be preserved separately.
+- correction is explicit supersession, never destructive value overwrite;
+- the superseded fact remains historical with `SUPERSEDED` state and links to the distinct
+  replacement fact through `superseded_by_fact_id`;
+- replacement facts retain the same patient/encounter scope and fact type;
+- a clinician-confirmed fact cannot be superseded by `EXTRACTED`, `LOW_CONFIDENCE`,
+  `NEEDS_CONFIRMATION`, or `PATIENT_CONFIRMED` data;
+- clinician-confirmed correction requires an explicit clinician-confirmed replacement.
 
 ---
 

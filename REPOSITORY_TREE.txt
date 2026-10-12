@@ -115,7 +115,9 @@ swasthyasetu-ai/
 │   │   │   ├── documents/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── encounters/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── domain.py
+│   │   │   │   └── public.py
 │   │   │   ├── feature_management/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── identity/
@@ -138,9 +140,14 @@ swasthyasetu-ai/
 │   │   │   ├── notifications/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── patients/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── clinical.py
+│   │   │   │   ├── domain.py
+│   │   │   │   └── public.py
 │   │   │   ├── provenance/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── domain.py
+│   │   │   │   └── public.py
 │   │   │   ├── providers/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── referrals/

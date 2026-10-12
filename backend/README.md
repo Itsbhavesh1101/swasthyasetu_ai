@@ -193,6 +193,24 @@ write minimal `ConsentGranted`/`ConsentRevoked` v1 envelopes to the existing tra
 in the same PostgreSQL transaction. Responses and errors use `Cache-Control: no-store`; bearer
 tokens, free text, clinical content, and arbitrary client metadata are not persisted or emitted.
 
+## Patient, encounter, and provenance domain
+
+P5-A provides framework-independent immutable domain contracts through
+`app.modules.patients.public`, `app.modules.encounters.public`, and
+`app.modules.provenance.public`. Patient profiles use opaque IDs, bounded privacy-safe identifiers,
+explicit optional demographics, and aware UTC timestamps. Encounter state changes use the
+canonical transition matrix; terminal states cannot reopen, and only completed encounters carry a
+completion timestamp.
+
+Clinical facts contain typed Problem, MedicationRecord, AllergyRecord, ProcedureRecord,
+Observation, or InvestigationRecord values and mandatory provenance. Fact/value verification
+states must agree. Corrections use `supersede_fact`: the original value and provenance remain in a
+separate historical `SUPERSEDED` fact linked to the replacement. Lower-trust extracted,
+needs-confirmation, or patient-confirmed data cannot supersede clinician-confirmed information.
+
+P5-A has no persistence or HTTP layer. The default application continues to register only
+`identity`, `sessions`, and `consent`; Alembic remains at `p4c_0005`.
+
 ## Module composition
 
 Future module `public.py` boundaries can supply immutable `ModuleRegistration` values to
