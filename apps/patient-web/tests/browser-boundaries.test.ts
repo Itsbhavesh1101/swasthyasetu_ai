@@ -5,7 +5,11 @@ import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const applicationRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
-const sourceRoots = [join(applicationRoot, "app"), join(applicationRoot, "components")];
+const browserSourceRoots = [
+  join(applicationRoot, "app"),
+  join(applicationRoot, "components"),
+  join(applicationRoot, "lib", "onboarding", "client.ts"),
+];
 
 function sourceFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -14,19 +18,19 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-describe("P6-A browser boundaries", () => {
-  const source = sourceRoots
-    .flatMap(sourceFiles)
+describe("P6-B browser boundaries", () => {
+  const browserSource = browserSourceRoots
+    .flatMap((path) => (extname(path) ? [path] : sourceFiles(path)))
     .filter((path) => [".ts", ".tsx"].includes(extname(path)))
     .map((path) => readFileSync(path, "utf8"))
     .join("\n");
 
   it("does not persist patient information in browser storage", () => {
-    expect(source).not.toMatch(/localStorage|sessionStorage|indexedDB|caches\./);
+    expect(browserSource).not.toMatch(/localStorage|sessionStorage|indexedDB|caches\./);
   });
 
-  it("does not register a service worker or call backend patient endpoints", () => {
-    expect(source).not.toMatch(/serviceWorker|\/api\/v1\/(sessions|consents|patients|encounters)/);
-    expect(source).not.toMatch(/\bfetch\s*\(/);
+  it("does not register a service worker or call backend routes from browser code", () => {
+    expect(browserSource).not.toMatch(/serviceWorker|\/api\/v1\//);
+    expect(browserSource).not.toContain("swasthyasetu_session_token");
   });
 });

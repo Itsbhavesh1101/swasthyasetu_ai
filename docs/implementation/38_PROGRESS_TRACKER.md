@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P6 — Patient Web Foundation — PARTIAL (P6-A COMPLETE)
-**Current recommended next action:** begin P6-B — Patient Onboarding / Session / Consent.
+**Current macro stage:** P6 — Patient Web Foundation — PARTIAL (P6-A COMPLETE; P6-B PARTIAL)
+**Current recommended next action:** complete P6-B remote CI verification.
 
 ---
 
@@ -42,7 +42,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
-| P6 | Patient Web Foundation | PARTIAL | P6-A complete; P6-B and P6-C not started. |
+| P6 | Patient Web Foundation | PARTIAL | P6-A complete; P6-B implementation complete with remote CI pending; P6-C not started. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
@@ -681,4 +681,29 @@ Local acceptance: AC-P6-001 PASS; AC-P6-004 PASS; AC-P6-006 PASS; AC-P6-007 PASS
 Overall P6 status: PARTIAL.
 Remote CI: PENDING.
 Next recommended unit after P6-A completion: P6-B — Patient Onboarding / Session / Consent.
+```
+
+---
+
+# 27. P6-B Patient Onboarding / Session / Consent
+
+```text
+Phase/Sub-phase: P6-B — Patient Onboarding / Session / Consent
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-12
+Branch: phase/p6-b-onboarding-session-consent
+Base commit: 778459800d1f16dc69d7efaeb57907beac19217f
+Flow: /start -> /language -> real pseudonymous session -> /consent -> real GENERAL_PRODUCT_USE grant -> /encounter readiness.
+BFF: same-origin Next.js handlers; server-only SWASTHYASETU_BACKEND_URL; bounded fetch timeout; no side-effect retry; minimized safe responses.
+Cookie security: opaque ID and bearer only in transient HttpOnly, SameSite=Strict, Path=/ cookies; Secure in production/non-loopback environments; bearer forwarded to FastAPI only through Authorization.
+Consent constants: SESSION subject from cookie; GENERAL_PRODUCT_USE; [clinical_intake]; privacy-v1; user_requested withdrawal; duplicate active grants serialized per session and rechecked within the BFF process.
+Known boundary: the fixed backend contract has no cross-instance idempotency key or active-grant uniqueness guarantee; changing it is outside P6-B.
+Browser boundary: no localStorage, sessionStorage, IndexedDB, Cache API, service worker, health data, raw consent collection, or client-visible bearer.
+Scope boundary: no backend/schema/migration/dependency change; Alembic head remains p5b_0006; no clinical intake or backend encounter.
+Notice: bounded project notice implemented; final jurisdiction-specific notice governance-deferred.
+PWA: deferred to P6-C.
+Local acceptance: AC-P6-001..008 PASS.
+Overall P6 status: PARTIAL.
+Remote CI: PENDING.
+Next after P6-B completion: P6-C — Accessibility + PWA Baseline.
 ```

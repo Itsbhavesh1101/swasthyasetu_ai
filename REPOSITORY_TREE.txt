@@ -35,6 +35,16 @@ swasthyasetu-ai/
 │   │   └── vitest.config.ts
 │   └── patient-web/
 │       ├── app/
+│       │   ├── api/
+│       │   │   └── onboarding/
+│       │   │       ├── consent/
+│       │   │       │   ├── revoke/
+│       │   │       │   │   └── route.ts
+│       │   │       │   └── route.ts
+│       │   │       └── session/
+│       │   │           ├── close/
+│       │   │           │   └── route.ts
+│       │   │           └── route.ts
 │       │   ├── consent/
 │       │   │   └── page.tsx
 │       │   ├── documents/
@@ -57,13 +67,23 @@ swasthyasetu-ai/
 │       │   ├── loading.tsx
 │       │   └── page.tsx
 │       ├── components/
+│       │   ├── consent-journey.tsx
+│       │   ├── language-selector.tsx
+│       │   ├── onboarding-readiness.tsx
 │       │   ├── patient-navigation.tsx
 │       │   ├── patient-shell.tsx
 │       │   ├── route-unavailable.tsx
 │       │   ├── ui-primitives.tsx
 │       │   └── urgent-help-link.tsx
+│       ├── lib/
+│       │   └── onboarding/
+│       │       ├── client.ts
+│       │       └── server.ts
 │       ├── tests/
 │       │   ├── browser-boundaries.test.ts
+│       │   ├── onboarding-consent-bff.test.ts
+│       │   ├── onboarding-session-bff.test.ts
+│       │   ├── onboarding-ui.test.tsx
 │       │   ├── page.test.tsx
 │       │   ├── routes.test.tsx
 │       │   └── shell.test.tsx

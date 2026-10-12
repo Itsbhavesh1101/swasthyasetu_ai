@@ -256,6 +256,15 @@ jobs:
     name: Playwright Chromium
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    env:
+      POSTGRES_DB: swasthyasetu
+      POSTGRES_USER: swasthyasetu_dev
+      POSTGRES_PASSWORD: ci-only-synthetic-password
+      POSTGRES_PORT: "5432"
+      BACKEND_PORT: "8000"
+      SWASTHYASETU_DATABASE__ENABLED: "true"
+      SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
+      SWASTHYASETU_BACKEND_URL: http://127.0.0.1:8000
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -264,6 +273,18 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ env.NODE_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
 
       - name: Enable pinned pnpm
         run: |
@@ -276,8 +297,51 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run browser smoke tests
+      - name: Start PostgreSQL
+        run: docker compose -f deployments/local/compose.yaml up -d postgres
+
+      - name: Wait for PostgreSQL
+        shell: bash
+        run: |
+          for attempt in {1..30}; do
+            if docker compose -f deployments/local/compose.yaml exec -T postgres \
+              pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          exit 1
+
+      - name: Install locked backend dependencies
+        working-directory: backend
+        run: uv sync --locked --dev
+
+      - name: Migrate database
+        working-directory: backend
+        run: uv run alembic -c alembic.ini upgrade head
+
+      - name: Start backend and wait for readiness
+        shell: bash
+        run: |
+          cd backend
+          nohup uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-playwright.log 2>&1 &
+          cd ..
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health/ready > /tmp/ready.json; then
+              grep -q '"database":"ok"' /tmp/ready.json
+              exit 0
+            fi
+            sleep 2
+          done
+          cat backend-playwright.log
+          exit 1
+
+      - name: Run browser journeys
         run: pnpm e2e:test
+
+      - name: Clean up PostgreSQL and volume
+        if: always()
+        run: docker compose -f deployments/local/compose.yaml down -v --remove-orphans
 
   security:
     name: Security scans

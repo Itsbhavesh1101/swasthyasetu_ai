@@ -148,8 +148,11 @@ Patient, caregiver, kiosk, and pseudonymous first-contact experience. Future fea
 
 P6-A establishes the patient-specific shell in `components/`, with responsive navigation,
 patient-facing UI primitives, a persistent urgent-help entry point, and honest App Router shells
-for planned patient routes. It contains no backend integration, browser persistence, authentication,
-working language flow, or PWA/service-worker behavior.
+for planned patient routes. P6-B adds the connected onboarding components, server-only BFF helpers
+under `lib/onboarding/`, and same-origin handlers under `app/api/onboarding/`. The bridge uses only
+transient HttpOnly session cookies, forwards the bearer to FastAPI through `Authorization`, and
+returns minimized client states. Browser storage, PWA/service-worker behavior, and clinical intake
+remain absent.
 
 ## `apps/clinician-web/`
 

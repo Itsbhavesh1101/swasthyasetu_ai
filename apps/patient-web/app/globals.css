@@ -390,6 +390,105 @@ a {
   opacity: 1;
 }
 
+.button--secondary {
+  border-color: var(--patient-border);
+  background: var(--patient-surface);
+  color: var(--patient-primary-strong);
+}
+
+.button--secondary:hover:not(:disabled) {
+  border-color: var(--patient-primary);
+}
+
+.onboarding-form,
+.consent-stack {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.choice-group {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.choice-group legend {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.choice-group > p {
+  margin: -0.45rem 0 0.35rem;
+  color: var(--patient-muted);
+}
+
+.choice-card,
+.agreement-control {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  border: 2px solid var(--patient-border);
+  border-radius: var(--patient-radius-sm);
+  background: var(--patient-surface);
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.choice-card:has(input:checked),
+.agreement-control:has(input:checked) {
+  border-color: var(--patient-primary);
+  background: var(--patient-surface-soft);
+}
+
+.choice-card input,
+.agreement-control input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0.2rem 0 0;
+  accent-color: var(--patient-primary);
+}
+
+.choice-card strong,
+.choice-card small {
+  display: block;
+}
+
+.choice-card small {
+  color: var(--patient-muted);
+}
+
+.form-error {
+  margin: 0;
+  border-left: 0.3rem solid var(--patient-critical);
+  background: var(--patient-critical-soft);
+  padding: 0.85rem 1rem;
+  color: var(--patient-critical-strong);
+  font-weight: 700;
+}
+
+.notice-panel h2 {
+  font-size: 1.4rem;
+}
+
+.governance-note {
+  border-top: 1px solid var(--patient-border);
+  padding-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.agreement-control {
+  font-weight: 700;
+}
+
+.inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
 .loading-indicator {
   width: 2rem;
   height: 2rem;
