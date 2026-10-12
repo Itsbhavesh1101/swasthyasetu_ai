@@ -5,14 +5,14 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5-A domain implementation is awaiting remote CI verification.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
 explicit Alembic migrations, and backend quality checks. It also includes three strictly typed
 Next.js application workspaces, shared UI primitives, frontend unit testing, and Playwright smoke
-tests. No clinical rules, patient domain, real external identity provider, production
-credentials, or predictive models are implemented.
+tests. No clinical safety rules, real external identity provider, production credentials, or
+predictive models are implemented.
 
 P4-A adds the sessions bounded context: pseudonymous and kiosk session creation, opaque bearer
 tokens protected by SHA-256 verifiers at rest, PostgreSQL-authoritative expiry/close state, and
@@ -29,6 +29,13 @@ events. SESSION authorization delegates to `sessions.validate`; ACTOR authorizat
 server-side `ActorContext`. PATIENT consent remains deliberately unavailable until P5 establishes
 patient ownership and authorization. General product consent never implies referral-sharing
 consent, and no public consent-check endpoint is exposed.
+
+P5-A adds the framework-independent Patient, Encounter, provenance, and typed clinical-fact domain.
+It includes explicit encounter transitions, UTC and decimal invariants, privacy-safe identifiers,
+and explicit fact supersession that fails closed when lower-trust data attempts to replace a
+clinician-confirmed fact. This domain-only unit adds no SQLAlchemy model, table, migration, API,
+runtime module registration, timeline service, or PATIENT-subject consent activation. Alembic
+remains at `p4c_0005`.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

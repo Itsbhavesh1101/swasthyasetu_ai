@@ -218,6 +218,12 @@ owns consent persistence and lifecycle rules, exposes typed internal capabilitie
 SESSION subject authentication to the registered `sessions.validate` capability. Shared bearer
 syntax parsing remains transport-only in `backend/app/api/security/bearer.py`.
 
+P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
+`provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle
+and provenance values remain independently owned. Each module exposes domain contracts through
+`public.py` only. P5-A deliberately adds no application, infrastructure, API, registration, or
+persistence layer; those remain assigned to P5-B/P5-C.
+
 ---
 
 # 6. Backend Platform Areas
