@@ -1132,7 +1132,8 @@ Browser storage/PWA: absent; PWA remains P6-C
 Dependencies/backend/schema/migrations: unchanged
 Alembic head: p5b_0006
 AC-P6-001..008: PASS locally
-P6-B: PARTIAL — REMOTE CI VERIFICATION PENDING
+Remote CI: PASS — GitHub Actions run 38244030550; all six required jobs passed
+P6-B: COMPLETE
 P6 overall: PARTIAL
 Next: P6-C — Accessibility + PWA Baseline
 ```
