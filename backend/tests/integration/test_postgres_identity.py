@@ -226,4 +226,4 @@ async def test_sessions_allow_null_actor_but_reject_unknown_actor(
                 "AND c.contype='f' AND a.attname='patient_id'"
             )
         )
-    assert patient_fk_count == 0
+    assert patient_fk_count == 1

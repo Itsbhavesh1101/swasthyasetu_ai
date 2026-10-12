@@ -28,7 +28,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 # 2. Project-Level Status
 
 **Current macro stage:** P5 — Patient + Encounter + Provenance — PARTIAL
-**Current recommended next action:** begin P5-B — Patient / Encounter Persistence & Migrations.
+**Current recommended next action:** verify P5-B remote CI, then begin P5-C — Timeline / Provenance Services & APIs.
 
 ---
 
@@ -41,7 +41,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
-| P5 | Patient + Encounter + Provenance | PARTIAL | P5-A domain implementation is complete; P5-B and P5-C remain. |
+| P5 | Patient + Encounter + Provenance | PARTIAL | P5-A is complete; P5-B is locally verified with remote CI pending; P5-C remains. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
@@ -611,4 +611,27 @@ Remote CI: VERIFIED — GitHub Actions run 38209044264 passed Backend quality, F
 CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38209044264
 Final P5-A acceptance: AC-P5-001 PASS; AC-P5-002 PASS; AC-P5-003 PASS; AC-P5-004 PASS; AC-P5-005 PASS; AC-P5-006 PASS; AC-P5-007 NOT YET IMPLEMENTED; AC-P5-008 NOT YET IMPLEMENTED.
 Next recommended unit after P5-A completion: P5-B — Patient / Encounter Persistence & Migrations.
+```
+
+---
+
+# 24. P5-B Patient / Encounter Persistence & Migrations
+
+```text
+Phase/Sub-phase: P5-B — Patient / Encounter Persistence & Migrations
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-12
+Branch: phase/p5-b-persistence-migrations
+Base commit: 470aeec643a577e82d035c23e5771bed74149a28
+Persistence scope: exactly nine P5-B tables for patients, demographics, identifiers, encounters, canonical clinical facts, provenance, and medication/allergy/observation projections.
+Mapping decisions: demographics fields round-trip without inference; identifier global uniqueness remains deferred; canonical labels are derived; domain recorded_at maps to created_at; source_text remains NULL.
+Integrity: sessions.patient_id now has a nullable patients FK; pseudonymous encounters remain valid; encounter versions reject stale writes; no ambiguous encounter consent FK exists.
+Atomicity evidence: real PostgreSQL injected-failure tests cover patient aggregates, facts/provenance/projections, and supersession replacement/history.
+Migration: p5b_0006, parent p4c_0005; downgrade removes all nine P5-B tables and the session-patient FK, then upgrade restores them with Alembic drift clean.
+Local tests: 342 network-free tests passed with 41 expected PostgreSQL skips; 41 real PostgreSQL tests passed with zero skips; backend and frontend quality gates passed.
+Docker evidence: unchanged Compose and Dockerfile built the non-root backend; explicit migration and live/database-aware readiness passed at p5b_0006.
+P5 acceptance: AC-P5-001..006 PASS; AC-P5-007 NOT YET IMPLEMENTED; AC-P5-008 NOT YET IMPLEMENTED.
+Overall P5 status: PARTIAL.
+Remote CI: NOT YET VERIFIED.
+Next recommended unit after P5-B completion: P5-C — Timeline / Provenance Services & APIs.
 ```

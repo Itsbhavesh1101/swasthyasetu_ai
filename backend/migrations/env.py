@@ -17,9 +17,22 @@ from app.events.outbox import OutboxEventRecord  # noqa: F401 - registers Alembi
 from app.modules.consent.infrastructure import (  # noqa: F401 - registers Alembic metadata
     ConsentRecord,
 )
+from app.modules.encounters.infrastructure import (  # noqa: F401 - registers Alembic metadata
+    EncounterRecord,
+)
 from app.modules.identity.infrastructure import (  # noqa: F401 - registers Alembic metadata
     ActorRecord,
     ActorRoleRecord,
+)
+from app.modules.patients.infrastructure import (  # noqa: F401 - registers Alembic metadata
+    AllergyRecordProjection,
+    ClinicalFactProvenanceRecord,
+    ClinicalFactRecord,
+    MedicationRecordProjection,
+    ObservationRecordProjection,
+    PatientDemographicsRecord,
+    PatientIdentifierRecord,
+    PatientRecord,
 )
 from app.modules.sessions.infrastructure import (  # noqa: F401 - registers Alembic metadata
     SessionRecord,

@@ -122,19 +122,16 @@ jobs:
           uv run alembic -c alembic.ini upgrade head
           uv run alembic -c alembic.ini current
           uv run alembic -c alembic.ini check
-          uv run alembic -c alembic.ini downgrade p4b_0004
-          test -z "$(docker compose -f ../deployments/local/compose.yaml exec -T postgres \
-            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT to_regclass('public.consent_records')")"
+          uv run alembic -c alembic.ini downgrade p4c_0005
           test "$(docker compose -f ../deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events')")" = "4"
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('patients','patient_demographics','patient_identifiers','encounters','clinical_facts','clinical_fact_provenance','medications','allergies','observations')")" = "0"
           test "$(docker compose -f ../deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT to_regclass('public.sessions')")" = "sessions"
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events','consent_records')")" = "5"
           test "$(docker compose -f ../deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT to_regclass('public.outbox_events')")" = "outbox_events"
+            "SELECT count(*) FROM pg_constraint WHERE conname='fk_sessions_patient_id_patients'")" = "0"
           uv run alembic -c alembic.ini upgrade head
           uv run alembic -c alembic.ini check
 
@@ -145,7 +142,7 @@ jobs:
       - name: Inspect migration revision
         run: |
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
-            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p4c_0005"
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p5b_0006"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
             "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='outbox_events'")" = "16"
@@ -166,7 +163,7 @@ jobs:
             "SELECT data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='consent_records' AND column_name='scope'")" = "jsonb"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events','consent_records')")" = "5"
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events','consent_records','patients','patient_demographics','patient_identifiers','encounters','clinical_facts','clinical_fact_provenance','medications','allergies','observations')")" = "14"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
             "SELECT count(*) FROM pg_constraint WHERE conname IN ('fk_actor_roles_actor_id_actors','fk_sessions_actor_id_actors','ck_actors_actor_type_supported','ck_actors_status_supported','ck_actor_roles_role_code_supported')")" = "5"
@@ -178,7 +175,10 @@ jobs:
             "SELECT count(*) FROM pg_indexes WHERE schemaname='public' AND tablename='consent_records' AND indexname IN ('ix_consent_records_subject_type_subject_id_purpose_status','ix_consent_records_actor_id')")" = "2"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('patients','referrals','audit_events')")" = "0"
+            "SELECT count(*) FROM pg_constraint WHERE conname IN ('fk_sessions_patient_id_patients','ck_patients_status_supported','ck_patient_demographics_age_years_non_negative','ck_encounters_encounter_type_supported','ck_encounters_status_supported','ck_encounters_version_positive','ck_clinical_facts_fact_type_supported','ck_clinical_facts_verification_state_supported','ck_clinical_fact_provenance_source_type_supported','ck_clinical_fact_provenance_confidence_range','ck_observations_value_present')")" = "11"
+          test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('clinical_intakes','intake_answers','questionnaire_instances','documents','referrals','audit_events','safety_events','fhir_resources')")" = "0"
 
       - name: Clean up PostgreSQL and volume
         if: always()

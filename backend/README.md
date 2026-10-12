@@ -173,8 +173,9 @@ MFA claim/assurance mapping remains deferred to the selected production IdP. Fro
 never substitutes for backend authorization.
 
 Migration `p4b_0004` (parent `p4a_0003`) creates only `actors` and `actor_roles` and adds the nullable
-`sessions.actor_id -> actors.id` foreign key. `sessions.patient_id` remains staged without a patient
-foreign key. Identity code does not mutate session state.
+`sessions.actor_id -> actors.id` foreign key. P5-B migration `p5b_0006` adds the staged nullable
+`sessions.patient_id -> patients.id` foreign key without changing session ownership or behavior.
+Identity and patient persistence code do not mutate session state.
 
 ## Consent
 
@@ -208,8 +209,14 @@ states must agree. Corrections use `supersede_fact`: the original value and prov
 separate historical `SUPERSEDED` fact linked to the replacement. Lower-trust extracted,
 needs-confirmation, or patient-confirmed data cannot supersede clinician-confirmed information.
 
-P5-A has no persistence or HTTP layer. The default application continues to register only
-`identity`, `sessions`, and `consent`; Alembic remains at `p4c_0005`.
+P5-B persists the domain through narrow caller-transaction-scoped repositories in the patient and
+encounter modules. Clinical values use an explicit `p5b-v1` JSONB shape and deterministic derived
+labels; original `recorded_at` maps to `created_at`, while `updated_at` tracks persistence changes.
+Fact provenance and medication/allergy/observation projections are written atomically with the
+canonical fact. Identifier namespace uniqueness, encounter consent context, PATIENT-subject consent
+activation, and timeline services remain deferred. The default application still registers only
+`identity`, `sessions`, and `consent`; no patient or encounter HTTP routes are added. Alembic head is
+`p5b_0006`.
 
 ## Module composition
 

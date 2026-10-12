@@ -5,6 +5,17 @@ from pathlib import Path
 
 from app.config import Settings
 from app.main import create_app
+from app.modules.encounters.infrastructure import EncounterRecord
+from app.modules.patients.infrastructure import (
+    AllergyRecordProjection,
+    ClinicalFactProvenanceRecord,
+    ClinicalFactRecord,
+    MedicationRecordProjection,
+    ObservationRecordProjection,
+    PatientDemographicsRecord,
+    PatientIdentifierRecord,
+    PatientRecord,
+)
 from app.shared.persistence import Base
 
 DOMAIN_FILES = (
@@ -51,11 +62,29 @@ def test_p5a_adds_no_api_routes() -> None:
     )
 
 
-def test_p5a_adds_no_persistence_metadata() -> None:
+def test_p5b_registers_only_the_nine_authorized_persistence_tables() -> None:
+    assert PatientRecord.__tablename__ == "patients"
+    assert PatientDemographicsRecord.__tablename__ == "patient_demographics"
+    assert PatientIdentifierRecord.__tablename__ == "patient_identifiers"
+    assert EncounterRecord.__tablename__ == "encounters"
+    assert ClinicalFactRecord.__tablename__ == "clinical_facts"
+    assert ClinicalFactProvenanceRecord.__tablename__ == "clinical_fact_provenance"
+    assert MedicationRecordProjection.__tablename__ == "medications"
+    assert AllergyRecordProjection.__tablename__ == "allergies"
+    assert ObservationRecordProjection.__tablename__ == "observations"
     assert set(Base.metadata.tables) == {
         "actor_roles",
         "actors",
+        "allergies",
+        "clinical_fact_provenance",
+        "clinical_facts",
         "consent_records",
+        "encounters",
+        "medications",
+        "observations",
         "outbox_events",
+        "patient_demographics",
+        "patient_identifiers",
+        "patients",
         "sessions",
     }

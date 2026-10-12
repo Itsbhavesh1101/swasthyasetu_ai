@@ -117,6 +117,7 @@ swasthyasetu-ai/
 │   │   │   ├── encounters/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── domain.py
+│   │   │   │   ├── infrastructure.py
 │   │   │   │   └── public.py
 │   │   │   ├── feature_management/
 │   │   │   │   └── .gitkeep
@@ -143,6 +144,8 @@ swasthyasetu-ai/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── clinical.py
 │   │   │   │   ├── domain.py
+│   │   │   │   ├── infrastructure.py
+│   │   │   │   ├── persistence.py
 │   │   │   │   └── public.py
 │   │   │   ├── provenance/
 │   │   │   │   ├── __init__.py
@@ -215,7 +218,8 @@ swasthyasetu-ai/
 │   │   │   ├── 0002_transactional_outbox.py
 │   │   │   ├── 0003_sessions.py
 │   │   │   ├── 0004_identity_authorization.py
-│   │   │   └── 0005_consent.py
+│   │   │   ├── 0005_consent.py
+│   │   │   └── 0006_patient_encounter_persistence.py
 │   │   ├── env.py
 │   │   └── script.py.mako
 │   ├── tests/
@@ -224,7 +228,8 @@ swasthyasetu-ai/
 │   │   │   ├── test_postgres_persistence.py
 │   │   │   ├── test_postgres_identity.py
 │   │   │   ├── test_postgres_sessions.py
-│   │   │   └── test_postgres_consent.py
+│   │   │   ├── test_postgres_consent.py
+│   │   │   └── test_postgres_p5_persistence.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py

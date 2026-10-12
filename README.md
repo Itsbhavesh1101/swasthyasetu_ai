@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5-A domain implementation is awaiting remote CI verification.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 is PARTIAL: P5-A is complete and P5-B persistence is implemented pending remote CI verification.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -34,8 +34,10 @@ P5-A adds the framework-independent Patient, Encounter, provenance, and typed cl
 It includes explicit encounter transitions, UTC and decimal invariants, privacy-safe identifiers,
 and explicit fact supersession that fails closed when lower-trust data attempts to replace a
 clinician-confirmed fact. This domain-only unit adds no SQLAlchemy model, table, migration, API,
-runtime module registration, timeline service, or PATIENT-subject consent activation. Alembic
-remains at `p4c_0005`.
+runtime module registration, timeline service, or PATIENT-subject consent activation. P5-B adds the
+PostgreSQL persistence adapters, typed/versioned clinical-value mapping, subordinate medication,
+allergy, and observation projections, and explicit migration `p5b_0006`. It adds no API or runtime
+capability, and PATIENT-subject consent remains deferred.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
