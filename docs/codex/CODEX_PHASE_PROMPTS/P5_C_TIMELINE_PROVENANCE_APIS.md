@@ -1423,9 +1423,9 @@ Stop after P5-C.
 ## Execution Record
 
 ```text
-Implementation: COMPLETE LOCALLY
-Remote CI: PENDING
+Implementation: COMPLETE
+Remote CI: VERIFIED — run 38228256117
 Alembic head: p5b_0006
 Schema/dependencies/frontend/Docker: UNCHANGED
-AC-P5-001..008: PASS LOCALLY
+AC-P5-001..008: PASS
 ```

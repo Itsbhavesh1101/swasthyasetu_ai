@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P5 — Patient + Encounter + Provenance — PARTIAL (remote CI pending)
-**Current recommended next action:** verify P5-C remote CI; then begin P6-A.
+**Current macro stage:** P5 — Patient + Encounter + Provenance — COMPLETE
+**Current recommended next action:** begin P6-A — Patient Web Design System / App Shell.
 
 ---
 
@@ -41,7 +41,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P2 | Shared Platform Kernel | COMPLETE | P2-A, P2-B, and P2-C complete; all mandatory P2-C feature-branch CI jobs passed. |
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
-| P5 | Patient + Encounter + Provenance | PARTIAL | P5-C implemented locally; remote CI verification pending. |
+| P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | NOT STARTED | Depends on P4 baseline. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
@@ -644,7 +644,7 @@ Next recommended unit after P5-B completion: P5-C — Timeline / Provenance Serv
 
 ```text
 Phase/Sub-phase: P5-C — Timeline / Provenance Services & APIs
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-12
 Branch: phase/p5-c-timeline-provenance-apis
 Base commit: ae987f683bee2bbb5759dd9abe8a3f66401bc74c
@@ -656,6 +656,8 @@ Privacy: patient identifiers, raw structured clinical JSON, source text, and sou
 Migration/dependencies/frontend/Docker: unchanged. Alembic head remains p5b_0006.
 Local tests: 352 network-free tests passed with 50 expected PostgreSQL skips; 50 real PostgreSQL tests passed with zero skips.
 Local acceptance: AC-P5-001..008 PASS.
-Overall P5 status: PARTIAL until remote CI verifies all six jobs.
+Remote CI: VERIFIED — GitHub Actions run 38228256117 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on implementation commit 972374df303558c99078ca3580070bdb7253deef.
+P5 final acceptance: AC-P5-001..008 PASS.
+Overall P5 status: COMPLETE.
 Next recommended unit after CI completion: P6-A — Patient Web Design System / App Shell.
 ```
