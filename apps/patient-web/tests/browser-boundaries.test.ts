@@ -18,7 +18,7 @@ function sourceFiles(directory: string): string[] {
   });
 }
 
-describe("P6-B browser boundaries", () => {
+describe("P6-C browser boundaries", () => {
   const browserSource = browserSourceRoots
     .flatMap((path) => (extname(path) ? [path] : sourceFiles(path)))
     .filter((path) => [".ts", ".tsx"].includes(extname(path)))
@@ -29,8 +29,19 @@ describe("P6-B browser boundaries", () => {
     expect(browserSource).not.toMatch(/localStorage|sessionStorage|indexedDB|caches\./);
   });
 
-  it("does not register a service worker or call backend routes from browser code", () => {
-    expect(browserSource).not.toMatch(/serviceWorker|\/api\/v1\//);
+  it("keeps backend contracts and bearer names out of browser code", () => {
+    expect(browserSource).not.toMatch(/\/api\/v1\//);
     expect(browserSource).not.toContain("swasthyasetu_session_token");
+  });
+
+  it("limits service-worker access to the registration boundary", () => {
+    const filesWithServiceWorker = browserSourceRoots
+      .flatMap((path) => (extname(path) ? [path] : sourceFiles(path)))
+      .filter((path) => [".ts", ".tsx"].includes(extname(path)))
+      .filter((path) => readFileSync(path, "utf8").includes("serviceWorker"));
+
+    expect(filesWithServiceWorker).toEqual([
+      join(applicationRoot, "components", "pwa-registration.tsx"),
+    ]);
   });
 });

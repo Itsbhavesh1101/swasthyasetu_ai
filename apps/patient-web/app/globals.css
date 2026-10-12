@@ -14,7 +14,7 @@
   --patient-critical: #a52a2a;
   --patient-critical-strong: #7d1f1f;
   --patient-critical-soft: #fff0ed;
-  --patient-focus: #f5a623;
+  --patient-focus: #7a4b00;
   --patient-radius-sm: 0.75rem;
   --patient-radius: 1.25rem;
   --patient-radius-lg: 2rem;
@@ -300,6 +300,7 @@ a {
 
 .panel,
 .state-panel {
+  min-width: 0;
   border: 1px solid var(--patient-border);
   border-radius: var(--patient-radius);
   background: var(--patient-surface);
@@ -433,6 +434,7 @@ a {
   border-radius: var(--patient-radius-sm);
   background: var(--patient-surface);
   padding: 1rem;
+  min-height: var(--patient-touch);
   cursor: pointer;
 }
 
@@ -552,7 +554,12 @@ a {
   }
 
   .hero-actions,
+  .inline-actions,
   .action-link {
+    width: 100%;
+  }
+
+  .inline-actions > * {
     width: 100%;
   }
 }
@@ -584,7 +591,17 @@ a {
 
   .action-link,
   .button,
-  .urgent-help-link {
+  .urgent-help-link,
+  .choice-card,
+  .agreement-control {
     border-color: ButtonText;
+  }
+
+  :focus-visible {
+    outline-color: Highlight;
+  }
+
+  .button:disabled {
+    color: GrayText;
   }
 }

@@ -53,6 +53,8 @@ swasthyasetu-ai/
 │       │   │   └── page.tsx
 │       │   ├── language/
 │       │   │   └── page.tsx
+│       │   ├── offline/
+│       │   │   └── page.tsx
 │       │   ├── referrals/
 │       │   │   └── page.tsx
 │       │   ├── results/
@@ -65,13 +67,16 @@ swasthyasetu-ai/
 │       │   ├── globals.css
 │       │   ├── layout.tsx
 │       │   ├── loading.tsx
+│       │   ├── manifest.ts
 │       │   └── page.tsx
 │       ├── components/
 │       │   ├── consent-journey.tsx
 │       │   ├── language-selector.tsx
 │       │   ├── onboarding-readiness.tsx
+│       │   ├── offline-actions.tsx
 │       │   ├── patient-navigation.tsx
 │       │   ├── patient-shell.tsx
+│       │   ├── pwa-registration.tsx
 │       │   ├── route-unavailable.tsx
 │       │   ├── ui-primitives.tsx
 │       │   └── urgent-help-link.tsx
@@ -79,12 +84,21 @@ swasthyasetu-ai/
 │       │   └── onboarding/
 │       │       ├── client.ts
 │       │       └── server.ts
+│       ├── public/
+│       │   ├── icons/
+│       │   │   ├── icon-192.png
+│       │   │   ├── icon-512.png
+│       │   │   ├── icon-maskable-512.png
+│       │   │   └── icon-source.svg
+│       │   └── sw.js
 │       ├── tests/
+│       │   ├── accessibility-baseline.test.ts
 │       │   ├── browser-boundaries.test.ts
 │       │   ├── onboarding-consent-bff.test.ts
 │       │   ├── onboarding-session-bff.test.ts
 │       │   ├── onboarding-ui.test.tsx
 │       │   ├── page.test.tsx
+│       │   ├── pwa-baseline.test.ts
 │       │   ├── routes.test.tsx
 │       │   └── shell.test.tsx
 │       ├── next-env.d.ts

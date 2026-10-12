@@ -2,8 +2,8 @@
 
 P1-B provides three independent Next.js App Router applications and the small shared UI package
 they consume. P6-A adds the patient-specific responsive shell and planned route architecture. P6-B
-connects the patient onboarding, language, session, and consent journey while the clinician and
-admin applications remain foundation surfaces.
+connects the patient onboarding, language, session, and consent journey. P6-C adds the accessibility
+and privacy-safe PWA baseline while the clinician and admin applications remain foundation surfaces.
 
 ## Requirements
 
@@ -34,21 +34,30 @@ The workspace packages are:
 - `@swasthyasetu/ui` in `packages/ui`.
 
 The patient shell exposes `/`, `/start`, `/consent`, `/language`, `/encounter`, `/documents`,
-`/results`, `/urgent-help`, and `/referrals`. P6-B activates the first four onboarding steps and a
-non-clinical readiness state at `/encounter`; later workflows remain explicitly unavailable.
+`/results`, `/urgent-help`, `/referrals`, and the generic `/offline` fallback. P6-B activates the
+onboarding steps and a non-clinical readiness state at `/encounter`; later workflows remain
+explicitly unavailable.
 
 Set `SWASTHYASETU_BACKEND_URL` on the Next.js server, for example
 `http://127.0.0.1:8000` in local development. Same-origin route handlers bridge to FastAPI and keep
 the opaque bearer in a transient `HttpOnly`, `SameSite=Strict` browser-session cookie. Cookies are
 `Secure` in production and on non-loopback hosts. Client code
 receives only minimized session/consent states. No health information, consent body, or language
-text is placed in cookies or browser storage, and no service worker is registered.
+text is placed in browser-readable storage.
 
 The consent bridge controls `GENERAL_PRODUCT_USE`, `clinical_intake`, and `privacy-v1`; client input
 cannot replace them. The bounded project notice is not a final jurisdiction-specific privacy
-notice, which remains governance-deferred. PWA and offline caching remain P6-C work.
+notice, which remains governance-deferred.
 Concurrent matching grants are serialized per session within one BFF process and rechecked before
 creation. Cross-instance atomic idempotency would require a future backend contract change.
+
+The P6-C manifest declares the installable patient shell and project-owned 192/512/maskable icons.
+The root-scope `/sw.js` uses one explicit allowlist: `/offline`, `/manifest.webmanifest`, and those
+icons. Navigations are network-only with `/offline` returned only after genuine network failure.
+APIs, onboarding responses, stateful pages, mutations, authorization data, session/consent state,
+and clinical data are never cached or replayed. No localStorage, sessionStorage, IndexedDB app
+persistence, background sync, push, or install prompt is used. Audio guidance is intentionally
+deferred to P12 because P6 has no governed audio workflow.
 
 ## Quality gates
 

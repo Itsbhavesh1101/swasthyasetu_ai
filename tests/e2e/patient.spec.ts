@@ -3,6 +3,13 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 const sessionIdCookie = "swasthyasetu_session_id";
 const sessionTokenCookie = "swasthyasetu_session_token";
 const backendUrl = process.env.SWASTHYASETU_BACKEND_URL ?? "http://127.0.0.1:8000";
+const approvedCachedPaths = new Set([
+  "/offline",
+  "/manifest.webmanifest",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/icon-maskable-512.png",
+]);
 
 async function expectHydrated(locator: Locator) {
   await expect
@@ -14,10 +21,50 @@ async function expectHydrated(locator: Locator) {
     .toBe(true);
 }
 
+async function expectTouchTarget(locator: Locator) {
+  const box = await locator.boundingBox();
+  expect(Boolean(box && box.width >= 44 && box.height >= 44)).toBe(true);
+}
+
+async function activateServiceWorker(page: Page) {
+  await page.goto("/");
+  await page.evaluate(async () => navigator.serviceWorker.ready);
+  if (!(await page.evaluate(() => Boolean(navigator.serviceWorker.controller)))) {
+    await page.reload();
+  }
+  await expect
+    .poll(() => page.evaluate(() => Boolean(navigator.serviceWorker.controller)))
+    .toBe(true);
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  expect(new URL(scope).pathname).toBe("/");
+}
+
+async function cachedPaths(page: Page): Promise<string[]> {
+  return page.evaluate(async () => {
+    const paths: string[] = [];
+    for (const name of await caches.keys()) {
+      const cache = await caches.open(name);
+      for (const request of await cache.keys()) paths.push(new URL(request.url).pathname);
+    }
+    return paths.sort();
+  });
+}
+
+async function expectPrivateCache(page: Page) {
+  await page.evaluate(async () => navigator.serviceWorker.ready);
+  const paths = await cachedPaths(page);
+  expect(paths.length).toBeGreaterThan(0);
+  expect(paths.every((path) => approvedCachedPaths.has(path))).toBe(true);
+  expect(paths.some((path) => path.startsWith("/api/"))).toBe(false);
+  expect(paths).not.toContain("/consent");
+  expect(paths).not.toContain("/encounter");
+}
+
 async function completeOnboarding(page: Page) {
   await page.goto("/start");
   await page.getByRole("link", { name: "Continue", exact: true }).press("Enter");
   await expect(page).toHaveURL(/\/language$/);
+  await expect(page.getByRole("main")).toBeFocused();
   const english = page.getByRole("radio", { name: /English/i });
   await expectHydrated(english);
   await english.focus();
@@ -33,6 +80,7 @@ async function completeOnboarding(page: Page) {
   const sessionResponse = await sessionResponsePromise;
   expect(sessionResponse.status(), await sessionResponse.text()).toBe(201);
   await expect(page).toHaveURL(/\/consent$/);
+  await expect(page.getByRole("main")).toBeFocused();
   const agreement = page.getByRole("checkbox", {
     name: /I understand and agree to this use for this session/i,
   });
@@ -42,6 +90,7 @@ async function completeOnboarding(page: Page) {
   await expect(agreement).toBeChecked();
   await page.getByRole("button", { name: /agree and continue/i }).press("Enter");
   await expect(page).toHaveURL(/\/encounter$/);
+  await expect(page.getByRole("main")).toBeFocused();
   await expect(page.getByText(/private session and consent are ready/i)).toBeVisible();
 }
 
@@ -90,6 +139,103 @@ test("mobile patient shell remains usable without horizontal overflow", async ({
   expect(hasHorizontalOverflow).toBe(false);
 });
 
+test("all patient routes preserve landmarks, one h1, urgent help, and narrow reflow", async ({
+  page,
+}) => {
+  const routes = [
+    "/",
+    "/start",
+    "/language",
+    "/consent",
+    "/encounter",
+    "/documents",
+    "/results",
+    "/urgent-help",
+    "/referrals",
+    "/offline",
+  ];
+
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: width === 320 ? 800 : 844 });
+    for (const route of routes) {
+      await page.goto(route);
+      await expect(page.getByRole("main")).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+      await expect(page.getByRole("link", { name: "Urgent help" }).first()).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+        ),
+      ).toBe(false);
+    }
+  }
+});
+
+test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await expectTouchTarget(page.getByRole("link", { name: "Urgent help" }).first());
+  await expectTouchTarget(page.getByRole("link", { name: /get started/i }));
+  await page.getByRole("link", { name: /get started/i }).click();
+  await expectTouchTarget(page.getByRole("link", { name: "Continue", exact: true }));
+
+  await page.getByRole("link", { name: "Continue", exact: true }).click();
+  const english = page.getByRole("radio", { name: /English/i });
+  await expectTouchTarget(english.locator(".."));
+  await expectTouchTarget(page.getByRole("button", { name: /continue to consent/i }));
+  await english.check();
+  await page.getByRole("button", { name: /continue to consent/i }).click();
+  const agreement = page.getByRole("checkbox", { name: /I understand and agree/i });
+  await expectTouchTarget(agreement.locator(".."));
+  await expectTouchTarget(page.getByRole("button", { name: /agree and continue/i }));
+  await agreement.check();
+  await page.getByRole("button", { name: /agree and continue/i }).click();
+  await expectTouchTarget(page.getByRole("button", { name: /end private session/i }));
+  await page.goto("/consent");
+  await expectTouchTarget(page.getByRole("button", { name: /withdraw this consent/i }));
+
+  await page.emulateMedia({ forcedColors: "active", reducedMotion: "reduce" });
+  await page.goto("/");
+  const urgent = page.getByRole("link", { name: "Urgent help" }).first();
+  await urgent.focus();
+  await expect(urgent).toHaveCSS("border-top-style", "solid");
+  await expect(urgent).toHaveCSS("outline-style", "solid");
+  await expect(page.locator("html")).toHaveCSS("scroll-behavior", "auto");
+});
+
+test("manifest and service worker expose only the privacy-safe shell cache", async ({ page }) => {
+  const manifestResponse = await page.request.get("/manifest.webmanifest");
+  expect(manifestResponse.ok()).toBe(true);
+  expect(await manifestResponse.json()).toMatchObject({
+    name: "SwasthyaSetu Patient",
+    start_url: "/",
+    scope: "/",
+    display: "standalone",
+  });
+  const workerResponse = await page.request.get("/sw.js");
+  expect(workerResponse.ok()).toBe(true);
+  expect(workerResponse.headers()["cache-control"]).toContain("no-cache");
+  expect(workerResponse.headers()["service-worker-allowed"]).toBe("/");
+
+  await activateServiceWorker(page);
+  await expectPrivateCache(page);
+});
+
+test("network-failed navigation shows the generic offline fallback", async ({ context, page }) => {
+  await activateServiceWorker(page);
+  await context.setOffline(true);
+  try {
+    await page.goto("/documents?offline-fallback-check=1");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "You appear to be offline" }),
+    ).toBeVisible();
+    await expect(page.getByText(/session and consent status cannot be confirmed/i)).toBeVisible();
+    await expect(page.getByText(/clinical workflows are unavailable offline/i)).toBeVisible();
+  } finally {
+    await context.setOffline(false);
+  }
+});
+
 test("keyboard onboarding uses real session and consent services without browser storage", async ({
   context,
   page,
@@ -115,23 +261,22 @@ test("keyboard onboarding uses real session and consent services without browser
     sameSite: tokenCookie?.sameSite,
     expires: tokenCookie?.expires,
   }).toEqual({ present: true, httpOnly: true, sameSite: "Strict", expires: -1 });
-  expect(idCookie?.value).toBeTruthy();
-  expect(tokenCookie?.value).toBeTruthy();
+  expect(Boolean(idCookie?.value)).toBe(true);
+  expect(Boolean(tokenCookie?.value)).toBe(true);
 
   const browserStorage = await page.evaluate(async () => ({
     local: localStorage.length,
     session: sessionStorage.length,
     indexedDatabases: (await indexedDB.databases()).length,
-    cacheEntries: ("caches" in window ? await caches.keys() : []).length,
     visibleCookies: document.cookie,
   }));
   expect(browserStorage).toEqual({
     local: 0,
     session: 0,
     indexedDatabases: 0,
-    cacheEntries: 0,
     visibleCookies: "",
   });
+  await expectPrivateCache(page);
 
   const sessionResponse = await request.get(
     `${backendUrl}/api/v1/sessions/${idCookie?.value ?? "missing"}`,
@@ -200,7 +345,10 @@ test("ending a private session closes the backend session and clears cookies", a
   const idCookie = cookies.find(({ name }) => name === sessionIdCookie);
   const tokenCookie = cookies.find(({ name }) => name === sessionTokenCookie);
 
-  await page.getByRole("button", { name: /end private session/i }).click();
+  const endSession = page.getByRole("button", { name: /end private session/i });
+  await endSession.focus();
+  await expect(endSession).toHaveCSS("outline-style", "solid");
+  await endSession.press("Enter");
   await expect(page).toHaveURL(/\/language$/);
   const remainingCookies = await context.cookies();
   expect(remainingCookies.some(({ name }) => name === sessionIdCookie)).toBe(false);
