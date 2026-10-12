@@ -9,17 +9,22 @@ from app.shared.security import ActorContext
 from app.shared.types import OpaqueId
 
 PATIENT_READ_SELF = PermissionCode("patient:read:self")
+PATIENT_WRITE_SELF = PermissionCode("patient:write:self")
+ENCOUNTER_READ_SELF = PermissionCode("encounter:read:self")
+ENCOUNTER_WRITE_SELF = PermissionCode("encounter:write:self")
 ENCOUNTER_READ_ASSIGNED = PermissionCode("encounter:read:assigned")
 SUMMARY_CONFIRM = PermissionCode("summary:confirm")
 PROVIDER_MANAGE = PermissionCode("provider:manage")
 POLICY_REVIEW = PermissionCode("policy:review")
 RESEARCH_RUN = PermissionCode("research:run")
 AUDIT_READ = PermissionCode("audit:read")
-AUTHORIZATION_POLICY_VERSION: Final = "p4b-v1"
+AUTHORIZATION_POLICY_VERSION: Final = "p5c-v1"
 
 _ROLE_PERMISSIONS = MappingProxyType(
     {
-        RoleCode.PATIENT: frozenset({PATIENT_READ_SELF}),
+        RoleCode.PATIENT: frozenset(
+            {PATIENT_READ_SELF, PATIENT_WRITE_SELF, ENCOUNTER_READ_SELF, ENCOUNTER_WRITE_SELF}
+        ),
         RoleCode.PSEUDONYMOUS_USER: frozenset(),
         RoleCode.CLINICIAN: frozenset({ENCOUNTER_READ_ASSIGNED, SUMMARY_CONFIRM}),
         RoleCode.RESOURCE_ADMIN: frozenset({PROVIDER_MANAGE}),

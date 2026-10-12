@@ -231,7 +231,14 @@ def test_consent_manifest_and_capabilities_are_explicit() -> None:
 def test_default_application_registers_consent_and_exposes_no_public_check_route() -> None:
     application = create_app(Settings(_env_file=None))
 
-    assert application.state.module_registry.module_ids == ("consent", "identity", "sessions")
+    assert application.state.module_registry.module_ids == (
+        "consent",
+        "encounters",
+        "identity",
+        "patients",
+        "provenance",
+        "sessions",
+    )
     for key in (CONSENT_GRANT, CONSENT_READ, CONSENT_LIST, CONSENT_REVOKE, CONSENT_CHECK):
         assert application.state.capability_registry.resolve(key) is not None
     paths = application.openapi()["paths"]

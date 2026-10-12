@@ -226,8 +226,11 @@ and provenance values remain independently owned. Each module exposes domain con
 P5-B adds module-private SQLAlchemy records and caller-session repositories in
 `patients/infrastructure.py` and `encounters/infrastructure.py`. The explicit typed clinical-value
 codec lives in `patients/persistence.py`; it is not a generic JSON persistence surface. These files
-add no application service, API route, runtime registration, or timeline capability. P5-C retains
-ownership of timeline/provenance services and APIs.
+add no application service, API route, runtime registration, or timeline capability. P5-C adds
+`contracts.py`, `application.py`, and `api.py` boundaries to these modules and activates their
+explicit registrations. Encounter patient validation and timeline composition consume only typed
+public patient/encounter capabilities; architecture tests prohibit non-owning infrastructure
+imports.
 
 ---
 

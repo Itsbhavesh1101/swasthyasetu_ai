@@ -11,7 +11,10 @@ from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
 from app.modules.consent.public import build_consent_registration
+from app.modules.encounters.public import build_encounter_service, build_encounters_registration
 from app.modules.identity.public import build_identity_registration
+from app.modules.patients.public import build_patient_service, build_patients_registration
+from app.modules.provenance.public import build_provenance_registration, build_provenance_service
 from app.modules.sessions.public import build_sessions_registration
 from app.shared.feature_flags import ConfigurationFeatureFlagProvider, FeatureFlagService
 from app.shared.modules import ModuleRegistration, ModuleRegistry
@@ -56,18 +59,31 @@ def create_app(
             if resolved_database is not None:
                 await resolved_database.dispose()
 
-    resolved_module_registrations = (
-        (
+    resolved_module_registrations: Sequence[ModuleRegistration[APIRouter]]
+    if module_registrations is None:
+        patient_service = build_patient_service(database=resolved_database)
+        encounter_service = build_encounter_service(
+            database=resolved_database, patients=patient_service
+        )
+        provenance_service = build_provenance_service(
+            patients=patient_service,
+            fact_reader=patient_service,
+            facts=patient_service,
+            encounters=encounter_service,
+        )
+        resolved_module_registrations = (
             build_identity_registration(database=resolved_database),
             build_sessions_registration(
                 settings=resolved_settings.sessions,
                 database=resolved_database,
             ),
             build_consent_registration(database=resolved_database),
+            build_patients_registration(service=patient_service),
+            build_encounters_registration(service=encounter_service),
+            build_provenance_registration(service=provenance_service),
         )
-        if module_registrations is None
-        else module_registrations
-    )
+    else:
+        resolved_module_registrations = module_registrations
     module_registry = ModuleRegistry[APIRouter]()
     for registration in resolved_module_registrations:
         module_registry.register(registration)

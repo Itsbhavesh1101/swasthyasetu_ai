@@ -149,7 +149,7 @@ def test_role_permission_policy_is_explicit_and_has_no_wildcard_superuser() -> N
     assert service.has_permission(admin, AUDIT_READ)
     assert service.has_permission(admin, PROVIDER_MANAGE)
     assert not service.has_permission(admin, RESEARCH_RUN)
-    assert service.policy_version == "p4b-v1"
+    assert service.policy_version == "p5c-v1"
     with pytest.raises(TypeError):
         service.role_permissions[RoleCode.SYSTEM_ADMIN] = frozenset()  # type: ignore[index]
 
@@ -198,7 +198,14 @@ def test_identity_manifest_and_default_composition_are_explicit_and_router_free(
     assert IDENTITY_MANIFEST.api_prefixes == ()
     assert IDENTITY_MANIFEST.data_ownership == ("actors", "actor_roles")
     assert registration.routers == ()
-    assert app.state.module_registry.module_ids == ("consent", "identity", "sessions")
+    assert app.state.module_registry.module_ids == (
+        "consent",
+        "encounters",
+        "identity",
+        "patients",
+        "provenance",
+        "sessions",
+    )
     assert app.state.module_registry.is_sealed
     for key in (IDENTITY_AUTHENTICATE, IDENTITY_CURRENT_ACTOR, IDENTITY_AUTHORIZE):
         assert app.state.capability_registry.resolve(key) is not None

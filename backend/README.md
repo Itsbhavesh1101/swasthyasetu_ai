@@ -214,9 +214,12 @@ encounter modules. Clinical values use an explicit `p5b-v1` JSONB shape and dete
 labels; original `recorded_at` maps to `created_at`, while `updated_at` tracks persistence changes.
 Fact provenance and medication/allergy/observation projections are written atomically with the
 canonical fact. Identifier namespace uniqueness, encounter consent context, PATIENT-subject consent
-activation, and timeline services remain deferred. The default application still registers only
-`identity`, `sessions`, and `consent`; no patient or encounter HTTP routes are added. Alembic head is
-`p5b_0006`.
+activation remains deferred. P5-C adds framework-independent application services, authorized
+patient/fact/encounter APIs, public provenance reads, and a bounded longitudinal timeline. The
+default application registers `consent`, `encounters`, `identity`, `patients`, `provenance`, and
+`sessions`; cross-module patient context flows only through typed public capabilities. Timeline
+order is `occurred_at DESC, entry_type ASC, entry_id ASC`, with versioned opaque keyset cursors.
+Alembic head remains `p5b_0006`.
 
 ## Module composition
 
