@@ -19,12 +19,16 @@ from sqlalchemy import (
     Text,
     Uuid,
     delete,
+    func,
+    or_,
     select,
 )
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship, selectinload
 
+from app.modules.patients.contracts import FactCursor, PatientAlreadyExistsError
 from app.modules.patients.persistence import (
     canonical_label,
     deserialize_clinical_value,
@@ -43,7 +47,7 @@ from app.modules.patients.public import (
     PatientStatus,
     supersede_fact,
 )
-from app.modules.provenance.public import (
+from app.modules.provenance.domain import (
     FactProvenance,
     ProvenanceSourceType,
     VerificationState,
@@ -384,7 +388,10 @@ class PostgresPatientRepository:
             identifier_records=_identifier_records(patient),
         )
         session.add(record)
-        await session.flush()
+        try:
+            await session.flush()
+        except IntegrityError as exc:
+            raise PatientAlreadyExistsError from exc
         return record
 
     async def get(self, session: AsyncSession, patient_id: OpaqueId) -> Patient | None:
@@ -576,6 +583,46 @@ class PostgresClinicalFactRepository:
         )
         record = (await session.execute(statement)).scalar_one_or_none()
         return None if record is None else self.to_domain(record)
+
+    async def list_for_patient(
+        self,
+        session: AsyncSession,
+        *,
+        patient_id: OpaqueId,
+        fact_type: FactType | None,
+        verification_state: VerificationState | None,
+        from_time: datetime | None,
+        to_time: datetime | None,
+        cursor: FactCursor | None,
+        limit: int,
+    ) -> tuple[ClinicalFact, ...]:
+        occurred_at = func.coalesce(ClinicalFactRecord.effective_at, ClinicalFactRecord.created_at)
+        statement = (
+            select(ClinicalFactRecord)
+            .options(selectinload(ClinicalFactRecord.provenance_records))
+            .where(ClinicalFactRecord.patient_id == patient_id.value)
+        )
+        if fact_type is not None:
+            statement = statement.where(ClinicalFactRecord.fact_type == fact_type.value)
+        if verification_state is not None:
+            statement = statement.where(
+                ClinicalFactRecord.verification_state == verification_state.value
+            )
+        if from_time is not None:
+            statement = statement.where(occurred_at >= from_time)
+        if to_time is not None:
+            statement = statement.where(occurred_at <= to_time)
+        if cursor is not None:
+            statement = statement.where(
+                or_(
+                    occurred_at < cursor.occurred_at,
+                    (occurred_at == cursor.occurred_at)
+                    & (ClinicalFactRecord.id > cursor.fact_id.value),
+                )
+            )
+        statement = statement.order_by(occurred_at.desc(), ClinicalFactRecord.id.asc()).limit(limit)
+        records = (await session.execute(statement)).scalars().all()
+        return tuple(self.to_domain(record) for record in records)
 
     async def persist_supersession(
         self, session: AsyncSession, supersession: FactSupersession

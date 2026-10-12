@@ -7,7 +7,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from enum import StrEnum
 
-from app.modules.provenance.public import FactProvenance, VerificationState
+from app.modules.provenance.domain import FactProvenance, VerificationState
 from app.shared.types import OpaqueId
 
 ClinicalFactId = OpaqueId
@@ -240,6 +240,24 @@ class InvestigationRecord:
 type ClinicalValue = (
     Problem | MedicationRecord | AllergyRecord | ProcedureRecord | Observation | InvestigationRecord
 )
+
+
+def clinical_fact_label(value: ClinicalValue) -> str:
+    """Return the safe canonical display label for a typed clinical value."""
+    if isinstance(value, Problem):
+        return value.label
+    if isinstance(value, MedicationRecord):
+        return value.name
+    if isinstance(value, AllergyRecord):
+        return value.substance
+    if isinstance(value, ProcedureRecord):
+        return value.name
+    if isinstance(value, Observation):
+        return value.observation_type
+    if isinstance(value, InvestigationRecord):
+        return value.investigation_type
+    raise ValueError("clinical value has no supported canonical label")
+
 
 _FACT_TYPE_BY_VALUE: tuple[tuple[type[object], FactType], ...] = (
     (Problem, FactType.PROBLEM),

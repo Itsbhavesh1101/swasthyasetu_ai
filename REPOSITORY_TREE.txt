@@ -116,6 +116,9 @@ swasthyasetu-ai/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── encounters/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── contracts.py
 │   │   │   │   ├── domain.py
 │   │   │   │   ├── infrastructure.py
 │   │   │   │   └── public.py
@@ -142,13 +145,19 @@ swasthyasetu-ai/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── patients/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
 │   │   │   │   ├── clinical.py
+│   │   │   │   ├── contracts.py
 │   │   │   │   ├── domain.py
 │   │   │   │   ├── infrastructure.py
 │   │   │   │   ├── persistence.py
 │   │   │   │   └── public.py
 │   │   │   ├── provenance/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── contracts.py
 │   │   │   │   ├── domain.py
 │   │   │   │   └── public.py
 │   │   │   ├── providers/
@@ -229,7 +238,8 @@ swasthyasetu-ai/
 │   │   │   ├── test_postgres_identity.py
 │   │   │   ├── test_postgres_sessions.py
 │   │   │   ├── test_postgres_consent.py
-│   │   │   └── test_postgres_p5_persistence.py
+│   │   │   ├── test_postgres_p5_persistence.py
+│   │   │   └── test_postgres_p5c.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
@@ -244,6 +254,8 @@ swasthyasetu-ai/
 │   │   ├── test_logging.py
 │   │   ├── test_module_registry.py
 │   │   ├── test_observability.py
+│   │   ├── test_p5_domain_boundaries.py
+│   │   ├── test_p5c_services.py
 │   │   ├── test_persistence.py
 │   │   ├── test_request_context.py
 │   │   ├── test_settings.py

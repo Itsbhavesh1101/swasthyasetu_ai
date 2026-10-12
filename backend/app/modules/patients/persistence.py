@@ -21,7 +21,7 @@ from app.modules.patients.public import (
     ProcedureRecord,
     ReferenceRange,
 )
-from app.modules.provenance.public import VerificationState
+from app.modules.provenance.domain import VerificationState
 from app.shared.types import OpaqueId
 
 STRUCTURED_VALUE_SCHEMA_VERSION = "p5b-v1"

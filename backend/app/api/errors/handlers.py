@@ -35,10 +35,10 @@ def _request_id(request: Request) -> str:
 
 
 def _protect_sensitive_response(request: Request, response: JSONResponse) -> JSONResponse:
-    """Prevent storage of session/consent errors without inspecting request secrets."""
+    """Prevent storage of sensitive API errors without inspecting request secrets."""
     route = str(getattr(request.scope.get("route"), "path", ""))
     if any(
-        route == prefix or route.startswith(f"{prefix}/") for prefix in ("/sessions", "/consents")
+        f"/{segment}" in route for segment in ("sessions", "consents", "patients", "encounters")
     ):
         response.headers["Cache-Control"] = "no-store"
     return response

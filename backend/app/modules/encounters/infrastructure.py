@@ -12,6 +12,7 @@ from sqlalchemy import (
     Integer,
     String,
     Uuid,
+    or_,
     select,
     text,
 )
@@ -19,13 +20,15 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
+from app.modules.encounters.contracts import (
+    EncounterCursor,
+)
+from app.modules.encounters.contracts import (
+    StaleEncounterWriteError as StaleEncounterWriteError,
+)
 from app.modules.encounters.public import Encounter, EncounterStatus, EncounterType
 from app.shared.persistence import Base
 from app.shared.types import OpaqueId
-
-
-class StaleEncounterWriteError(RuntimeError):
-    """Raised when an encounter save does not match its expected version."""
 
 
 class EncounterRecord(Base):
@@ -129,6 +132,48 @@ class PostgresEncounterRepository:
     async def get(self, session: AsyncSession, encounter_id: OpaqueId) -> Encounter | None:
         record = await session.get(EncounterRecord, encounter_id.value)
         return None if record is None else self.to_domain(record)
+
+    async def get_with_version(
+        self, session: AsyncSession, encounter_id: OpaqueId
+    ) -> tuple[Encounter, int] | None:
+        record = await session.get(EncounterRecord, encounter_id.value)
+        return None if record is None else (self.to_domain(record), record.version)
+
+    async def list_for_patient(
+        self,
+        session: AsyncSession,
+        *,
+        patient_id: OpaqueId,
+        from_time: datetime | None,
+        to_time: datetime | None,
+        cursor: EncounterCursor | None,
+        limit: int,
+    ) -> tuple[Encounter, ...]:
+        statement = select(EncounterRecord).where(EncounterRecord.patient_id == patient_id.value)
+        if from_time is not None:
+            statement = statement.where(EncounterRecord.started_at >= from_time)
+        if to_time is not None:
+            statement = statement.where(EncounterRecord.started_at <= to_time)
+        if cursor is not None:
+            statement = statement.where(
+                or_(
+                    EncounterRecord.started_at < cursor.started_at,
+                    (EncounterRecord.started_at == cursor.started_at)
+                    & (EncounterRecord.id > cursor.encounter_id.value),
+                )
+            )
+        records = (
+            (
+                await session.execute(
+                    statement.order_by(
+                        EncounterRecord.started_at.desc(), EncounterRecord.id.asc()
+                    ).limit(limit)
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return tuple(self.to_domain(record) for record in records)
 
     async def save(
         self,

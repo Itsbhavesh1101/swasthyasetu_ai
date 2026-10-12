@@ -21,16 +21,13 @@ from app.shared.persistence import Base
 DOMAIN_FILES = (
     Path("app/modules/patients/domain.py"),
     Path("app/modules/patients/clinical.py"),
-    Path("app/modules/patients/public.py"),
     Path("app/modules/encounters/domain.py"),
-    Path("app/modules/encounters/public.py"),
     Path("app/modules/provenance/domain.py"),
-    Path("app/modules/provenance/public.py"),
 )
 FORBIDDEN_FRAMEWORKS = {"fastapi", "sqlalchemy", "psycopg", "alembic", "pydantic"}
 
 
-def test_p5_domain_and_public_files_are_framework_independent() -> None:
+def test_p5_domain_files_are_framework_independent() -> None:
     imported_roots: set[str] = set()
     for path in DOMAIN_FILES:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
@@ -43,23 +40,57 @@ def test_p5_domain_and_public_files_are_framework_independent() -> None:
     assert imported_roots.isdisjoint(FORBIDDEN_FRAMEWORKS)
 
 
-def test_p5a_does_not_register_runtime_modules_or_capabilities() -> None:
+def test_p5c_registers_runtime_modules_and_capabilities() -> None:
     application = create_app(Settings(_env_file=None))
 
-    assert application.state.module_registry.module_ids == ("consent", "identity", "sessions")
-    assert all(
-        not name.startswith(("patients.", "encounters.", "provenance."))
-        for name in application.state.capability_registry.registered_names
+    assert application.state.module_registry.module_ids == (
+        "consent",
+        "encounters",
+        "identity",
+        "patients",
+        "provenance",
+        "sessions",
     )
+    assert {
+        "patients.create",
+        "patients.read",
+        "patients.fact.read",
+        "patients.facts.list",
+        "encounters.create",
+        "encounters.read",
+        "encounters.list",
+        "encounters.transition",
+        "provenance.read",
+        "patients.timeline",
+    }.issubset(application.state.capability_registry.registered_names)
 
 
-def test_p5a_adds_no_api_routes() -> None:
+def test_p5c_adds_only_governed_patient_and_encounter_routes() -> None:
     paths = create_app(Settings(_env_file=None)).openapi()["paths"]
 
-    assert not any(
-        path.startswith(("/api/v1/patients", "/api/v1/encounters", "/api/v1/clinical-facts"))
-        for path in paths
-    )
+    assert "/api/v1/patients" in paths
+    assert "/api/v1/patients/{patient_id}/timeline" in paths
+    assert "/api/v1/encounters/{encounter_id}/complete" in paths
+    assert not any(path.startswith("/api/v1/clinical-facts") for path in paths)
+
+
+def test_non_owning_modules_do_not_import_foreign_p5_infrastructure() -> None:
+    forbidden = {
+        "app.modules.patients.infrastructure",
+        "app.modules.encounters.infrastructure",
+    }
+    for module in ("encounters", "provenance"):
+        for path in Path(f"app/modules/{module}").glob("*.py"):
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+            imports = {
+                node.module
+                for node in ast.walk(tree)
+                if isinstance(node, ast.ImportFrom) and node.module is not None
+            }
+            if module == "encounters":
+                assert "app.modules.patients.infrastructure" not in imports
+            else:
+                assert imports.isdisjoint(forbidden)
 
 
 def test_p5b_registers_only_the_nine_authorized_persistence_tables() -> None:

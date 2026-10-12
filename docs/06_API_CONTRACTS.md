@@ -256,7 +256,8 @@ Requires the exact session bearer token. Only `ACTIVE -> CLOSED` is valid. Repea
 
 Creates a purpose-specific consent grant. SESSION subjects require the exact session bearer token
 and validation through `sessions.validate`. ACTOR subjects require a trusted server-side
-`ActorContext` for the same actor. PATIENT subjects return `VALIDATION_ERROR` until P5. The server
+`ActorContext` for the same actor. PATIENT subjects remain deferred pending the governed onboarding
+authorization flow and return `VALIDATION_ERROR`. The server
 derives actor attribution; `actor_id`, metadata, and arbitrary extra fields are rejected.
 
 Request:
@@ -336,7 +337,15 @@ Response:
 
 ## GET `/api/v1/patients/{patient_id}`
 
-Returns authorized patient profile/summary.
+Requires authenticated `patient:read:self` authorization with a matching trusted subject. Returns
+the patient profile without identifier values. `POST /patients` derives `patient_id` from the same
+trusted subject and rejects client-selected IDs.
+
+## GET `/api/v1/patients/{patient_id}/facts`
+
+Returns bounded, self-authorized fact summaries. Optional `fact_type`, `verification_state`,
+`limit`, and opaque `cursor` filters are supported. Raw structured values and provenance source
+text/references are excluded.
 
 ## GET `/api/v1/patients/{patient_id}/timeline`
 
@@ -350,7 +359,9 @@ from?
 to?
 ```
 
-Returns a paginated longitudinal read model.
+Returns a paginated longitudinal read model containing only `CLINICAL_FACT` and `ENCOUNTER`
+entries. Ordering is `occurred_at DESC, entry_type ASC, entry_id ASC`; timestamps must be UTC and
+the cursor is an opaque, versioned keyset position.
 
 ---
 
@@ -380,7 +391,8 @@ Response:
 
 ## GET `/api/v1/encounters/{encounter_id}`
 
-Returns encounter metadata/state.
+Returns encounter metadata/state. Patient-bound access requires trusted self authorization;
+pseudonymous access validates the exact bearer against the encounter session.
 
 ## POST `/api/v1/encounters/{encounter_id}/complete`
 

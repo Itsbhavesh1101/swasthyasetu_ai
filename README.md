@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 is PARTIAL: P5-A and P5-B are complete; P5-C remains.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5-C implementation is complete locally; remote CI verification is pending.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -38,6 +38,13 @@ runtime module registration, timeline service, or PATIENT-subject consent activa
 PostgreSQL persistence adapters, typed/versioned clinical-value mapping, subordinate medication,
 allergy, and observation projections, and explicit migration `p5b_0006`. It adds no API or runtime
 capability, and PATIENT-subject consent remains deferred.
+
+P5-C activates explicit `patients`, `encounters`, and `provenance` runtime modules. Authenticated
+patients can create/read their own profile, read bounded fact summaries, and create/read/transition
+self-owned encounters; pseudonymous encounters remain bound to an exact session bearer. The
+longitudinal timeline merges bounded fact and encounter reads through public capabilities in
+`occurred_at DESC, entry_type ASC, entry_id ASC` order with a versioned opaque cursor. No schema,
+migration, dependency, frontend, or PATIENT-consent activation is included.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
