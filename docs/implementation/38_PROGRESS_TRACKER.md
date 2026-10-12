@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** Pre-P7 prerequisite specification pack — PARTIAL (remote CI pending); P7 remains NOT STARTED
-**Current recommended next action:** complete specification-pack remote CI, then begin P7-A — Intake Domain / Schema.
+**Current macro stage:** Pre-P7 prerequisite specification pack — COMPLETE; P7 remains NOT STARTED
+**Current recommended next action:** P7-A — Intake Domain / Schema.
 
 ---
 
@@ -736,7 +736,7 @@ Next recommended action: complete and approve the governance-deferred P7 prerequ
 
 ```text
 Work unit: Pre-P7 prerequisite specifications
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-12
 Branch: phase/pre-p7-specification-pack
 Base commit: ed08ab6109995001821d9bd2b6b305666e045c1d
@@ -748,6 +748,6 @@ Deferrals: /messages and AI to P8; safety policy to P9; speech/translation to P1
 P6 security continuity: exact session bearer, centralized consent, server-only BFF, no-store, and PWA/browser-storage restrictions remain mandatory.
 Code/schema/dependencies/CI: unchanged; Alembic head remains p5b_0006.
 P7 status: NOT STARTED.
-Remote CI: PENDING.
+Remote CI: PASS — GitHub Actions run 38260421591; all six required jobs passed on specification commit c826f2dc1e8852483530958b4ed1f796d6cc412d.
 Next recommended unit: P7-A — Intake Domain / Schema.
 ```

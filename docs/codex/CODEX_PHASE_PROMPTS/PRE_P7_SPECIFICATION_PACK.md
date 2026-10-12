@@ -1073,6 +1073,7 @@ Clinical/safety boundary: P8/P9/P12 and clinical approvals explicitly deferred
 Code/schema/dependencies/CI workflow: unchanged
 Alembic head: p5b_0006
 P7: NOT STARTED
-Specification pack: PARTIAL — REMOTE CI VERIFICATION PENDING
+Remote CI: PASS — GitHub Actions run 38260421591; all six required jobs passed on specification commit c826f2dc1e8852483530958b4ed1f796d6cc412d.
+Specification pack: COMPLETE
 Next: P7-A — Intake Domain / Schema
 ```
