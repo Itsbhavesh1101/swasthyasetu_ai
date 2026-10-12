@@ -212,6 +212,12 @@ application service, immutable authorization policy, SQLAlchemy persistence, and
 `public.py` registration. FastAPI-specific permission and self-subject guards live in
 `backend/app/api/security/`; identity exposes no production router.
 
+P4-C implements `backend/app/modules/consent/` with cohesive `domain.py`, `events.py`,
+`contracts.py`, `application.py`, `infrastructure.py`, `api.py`, and `public.py` files. The module
+owns consent persistence and lifecycle rules, exposes typed internal capabilities, and delegates
+SESSION subject authentication to the registered `sessions.validate` capability. Shared bearer
+syntax parsing remains transport-only in `backend/app/api/security/bearer.py`.
+
 ---
 
 # 6. Backend Platform Areas

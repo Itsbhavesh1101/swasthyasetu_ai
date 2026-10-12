@@ -5,13 +5,13 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4-A Sessions COMPLETE. P4-B Identity & Authorization COMPLETE. P4 remains PARTIAL pending P4-C Consent.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
 explicit Alembic migrations, and backend quality checks. It also includes three strictly typed
 Next.js application workspaces, shared UI primitives, frontend unit testing, and Playwright smoke
-tests. No clinical rules, patient/consent domain, real external identity provider, production
+tests. No clinical rules, patient domain, real external identity provider, production
 credentials, or predictive models are implemented.
 
 P4-A adds the sessions bounded context: pseudonymous and kiosk session creation, opaque bearer
@@ -22,6 +22,13 @@ storage. P4-B adds PII-free actors and authoritative roles, provider-neutral aut
 contracts, trusted actor context resolution, and deny-by-default server-side authorization with
 explicit MFA and self-subject gates. The real IdP remains unconfigured and replaceable; no login or
 identity-management HTTP API is exposed.
+
+P4-C adds purpose-specific consent grants for SESSION and ACTOR subjects, centralized exact-purpose
+and scope-subset checks, revocation, subject-scoped listing, and minimal transactional outbox
+events. SESSION authorization delegates to `sessions.validate`; ACTOR authorization uses trusted
+server-side `ActorContext`. PATIENT consent remains deliberately unavailable until P5 establishes
+patient ownership and authorization. General product consent never implies referral-sharing
+consent, and no public consent-check endpoint is exposed.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

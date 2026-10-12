@@ -10,6 +10,7 @@ from app.api.health import router as health_router
 from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
+from app.modules.consent.public import build_consent_registration
 from app.modules.identity.public import build_identity_registration
 from app.modules.sessions.public import build_sessions_registration
 from app.shared.feature_flags import ConfigurationFeatureFlagProvider, FeatureFlagService
@@ -62,6 +63,7 @@ def create_app(
                 settings=resolved_settings.sessions,
                 database=resolved_database,
             ),
+            build_consent_registration(database=resolved_database),
         )
         if module_registrations is None
         else module_registrations

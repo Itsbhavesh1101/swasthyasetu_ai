@@ -176,6 +176,23 @@ Migration `p4b_0004` (parent `p4a_0003`) creates only `actors` and `actor_roles`
 `sessions.actor_id -> actors.id` foreign key. `sessions.patient_id` remains staged without a patient
 foreign key. Identity code does not mutate session state.
 
+## Consent
+
+The default application explicitly registers the `consent` module after `identity` and `sessions`.
+It exposes grant, revoke, and subject-scoped list operations at `/api/v1/consents`; the internal
+`consent.check` capability is intentionally not an HTTP endpoint.
+
+SESSION consent calls require the exact opaque bearer token and authorize through
+`sessions.validate`. ACTOR calls require a trusted server-side `ActorContext` for the same actor;
+client-supplied actor attribution is rejected. PATIENT subjects return a safe validation error
+until P5 provides patient ownership rules. Consent is exact-purpose and scope-subset based, with
+non-empty, unique, non-wildcard scope codes. Revoked or time-expired grants never satisfy a check.
+
+Migration `p4c_0005` (parent `p4b_0004`) creates only `consent_records`. Grants and revocations
+write minimal `ConsentGranted`/`ConsentRevoked` v1 envelopes to the existing transactional outbox
+in the same PostgreSQL transaction. Responses and errors use `Cache-Control: no-store`; bearer
+tokens, free text, clinical content, and arbitrary client metadata are not persisted or emitted.
+
 ## Module composition
 
 Future module `public.py` boundaries can supply immutable `ModuleRegistration` values to

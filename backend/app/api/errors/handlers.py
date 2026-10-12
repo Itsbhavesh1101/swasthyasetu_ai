@@ -34,10 +34,12 @@ def _request_id(request: Request) -> str:
     return str(getattr(request.state, "request_id", "unavailable"))
 
 
-def _protect_session_response(request: Request, response: JSONResponse) -> JSONResponse:
-    """Prevent storage of session-route errors without inspecting request secrets."""
+def _protect_sensitive_response(request: Request, response: JSONResponse) -> JSONResponse:
+    """Prevent storage of session/consent errors without inspecting request secrets."""
     route = str(getattr(request.scope.get("route"), "path", ""))
-    if route == "/sessions" or route.startswith("/sessions/"):
+    if any(
+        route == prefix or route.startswith(f"{prefix}/") for prefix in ("/sessions", "/consents")
+    ):
         response.headers["Cache-Control"] = "no-store"
     return response
 
@@ -46,7 +48,7 @@ async def application_error_handler(request: Request, exc: Exception) -> JSONRes
     """Translate a typed application error into the canonical envelope."""
     if not isinstance(exc, SwasthyaSetuError):
         raise TypeError("application_error_handler received an unexpected exception")
-    return _protect_session_response(
+    return _protect_sensitive_response(
         request,
         build_error_response(
             status_code=HTTP_STATUS_BY_ERROR_CODE[exc.code],
@@ -62,7 +64,7 @@ async def validation_error_handler(request: Request, exc: Exception) -> JSONResp
     """Return a stable validation response without echoing submitted values."""
     if not isinstance(exc, RequestValidationError):
         raise TypeError("validation_error_handler received an unexpected exception")
-    return _protect_session_response(
+    return _protect_sensitive_response(
         request,
         build_error_response(
             status_code=422,
@@ -101,7 +103,7 @@ async def http_error_handler(request: Request, exc: Exception) -> JSONResponse:
         429: "Too many requests.",
         503: "This service is temporarily unavailable.",
     }
-    return _protect_session_response(
+    return _protect_sensitive_response(
         request,
         build_error_response(
             status_code=exc.status_code,

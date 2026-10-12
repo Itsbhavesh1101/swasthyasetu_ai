@@ -162,6 +162,7 @@ notice_version VARCHAR NOT NULL
 status VARCHAR NOT NULL
 granted_at TIMESTAMPTZ NOT NULL
 revoked_at TIMESTAMPTZ NULL
+revocation_reason VARCHAR(64) NULL
 expires_at TIMESTAMPTZ NULL
 metadata JSONB NULL
 created_at TIMESTAMPTZ NOT NULL
@@ -174,6 +175,12 @@ Indexes:
 (subject_type, subject_id, purpose, status)
 actor_id
 ```
+
+P4-C migration `p4c_0005` creates this table only. `actor_id` is a nullable foreign key to
+`actors.id`; no patient foreign key is possible before P5. Named checks constrain subject type,
+purpose, status, JSON-array scope, and expiry-after-grant. `revoked_at` and `revocation_reason` are
+both absent for a grant and both required for a revoked record. The application further validates
+non-empty unique non-wildcard scope codes and bounded machine-coded revocation reasons.
 
 ---
 

@@ -31,7 +31,13 @@ def test_outbox_has_required_schema_alongside_registered_module_tables() -> None
     table = OutboxEventRecord.__table__
     assert isinstance(table, Table)
 
-    assert set(Base.metadata.tables) == {"outbox_events", "sessions", "actors", "actor_roles"}
+    assert set(Base.metadata.tables) == {
+        "outbox_events",
+        "sessions",
+        "actors",
+        "actor_roles",
+        "consent_records",
+    }
     assert tuple(table.columns) == tuple(
         table.c[name]
         for name in (

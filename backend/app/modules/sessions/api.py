@@ -8,13 +8,13 @@ from uuid import UUID
 from fastapi import APIRouter, Header, Response, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.api.security.bearer import parse_bearer
 from app.modules.sessions.contracts import (
     CloseSessionCapability,
     CreateSessionCapability,
     ReadSessionCapability,
 )
 from app.modules.sessions.domain import Session, SessionStatus, SessionType
-from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.types import OpaqueId
 
 
@@ -66,28 +66,6 @@ class SessionResponse(BaseModel):
     closed_at: datetime | None
 
 
-def _bearer(value: str | None) -> str:
-    if value is None:
-        raise _authentication_required()
-    scheme, separator, token = value.partition(" ")
-    if (
-        separator != " "
-        or scheme != "Bearer"
-        or not token
-        or token != token.strip()
-        or " " in token
-    ):
-        raise _authentication_required()
-    return token
-
-
-def _authentication_required() -> ApplicationError:
-    return ApplicationError(
-        code=ErrorCode.AUTHENTICATION_REQUIRED,
-        message="A valid session bearer token is required.",
-    )
-
-
 def _view(session: Session) -> SessionResponse:
     return SessionResponse(
         session_id=session.session_id.value,
@@ -134,7 +112,7 @@ def build_sessions_router(
     ) -> SessionResponse:
         response.headers["Cache-Control"] = "no-store"
         session = await reader.get_session(
-            session_id=OpaqueId(session_id), session_token=_bearer(authorization)
+            session_id=OpaqueId(session_id), session_token=parse_bearer(authorization)
         )
         return _view(session)
 
@@ -146,7 +124,7 @@ def build_sessions_router(
     ) -> SessionResponse:
         response.headers["Cache-Control"] = "no-store"
         session = await closer.close_session(
-            session_id=OpaqueId(session_id), session_token=_bearer(authorization)
+            session_id=OpaqueId(session_id), session_token=parse_bearer(authorization)
         )
         return _view(session)
 

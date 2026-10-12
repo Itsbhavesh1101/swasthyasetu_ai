@@ -152,13 +152,15 @@ Owner: `sessions`.
 
 ```text
 consent_id
-subject_ref
-actor_ref
+subject_type
+subject_id
+actor_id?
 purpose
 scope[]
 notice_version
 granted_at
 revoked_at?
+revocation_reason?
 expires_at?
 status
 metadata?
@@ -187,8 +189,19 @@ SUPERSEDED
 Rules:
 
 - consent is purpose-specific;
+- consent subjects are explicit typed references (`SESSION`, `ACTOR`, or future `PATIENT`), not
+  ambiguous reference strings;
+- a grant has a non-empty, unique set of validated, non-wildcard scope codes;
+- a check requires the exact purpose and a requested scope that is a subset of the grant;
 - referral consent is not implied by general product consent;
-- revocation must be representable.
+- revocation records a bounded machine code, never free text;
+- revoked or time-expired consent does not satisfy a check;
+- `actor_id` is trusted server attribution and is never accepted from the client.
+
+P4-C implements SESSION and ACTOR subject authorization. PATIENT is a canonical subject type but
+is rejected until P5 establishes patient ownership and authorization. The relational/API names
+`subject_type`, `subject_id`, and `actor_id` are canonical; earlier `subject_ref`/`actor_ref`
+wording is superseded by this explicit representation.
 
 Owner: `consent`.
 
