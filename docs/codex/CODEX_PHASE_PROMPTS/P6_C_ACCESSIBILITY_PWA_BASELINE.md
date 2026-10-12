@@ -973,7 +973,8 @@ Audio: deferred to P12; no browser speech/TTS.
 Dependencies/backend/schema/migrations: unchanged
 Alembic head: p5b_0006
 AC-P6-001..008: PASS locally
-P6-C: PARTIAL — REMOTE CI VERIFICATION PENDING
-P6 overall: PARTIAL
+Remote CI: PASS — GitHub Actions run 38254479579; all six required jobs passed on implementation commit 8e55700c74250757c6a93d3a50a938963cf96675.
+P6-C: COMPLETE
+P6 overall: COMPLETE
 Next: complete/approve P7 prerequisite specifications before P7-A
 ```

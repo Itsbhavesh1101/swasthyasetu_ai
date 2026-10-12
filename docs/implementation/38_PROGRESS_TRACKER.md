@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P6 — Patient Web Foundation — PARTIAL (P6-A and P6-B COMPLETE; P6-C PARTIAL)
-**Current recommended next action:** complete P6-C remote CI verification.
+**Current macro stage:** P6 — Patient Web Foundation — COMPLETE
+**Current recommended next action:** complete and approve the P7 prerequisite specifications before P7-A.
 
 ---
 
@@ -42,7 +42,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P3 | Persistence + Events + Jobs | COMPLETE | P3-A, P3-B, and P3-C complete; all mandatory P3-C feature-branch CI jobs passed. |
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
-| P6 | Patient Web Foundation | PARTIAL | P6-A and P6-B complete; P6-C implementation complete with remote CI pending. |
+| P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
@@ -714,7 +714,7 @@ Next after P6-B completion: P6-C — Accessibility + PWA Baseline.
 
 ```text
 Phase/Sub-phase: P6-C — Accessibility + PWA Baseline
-Status: PARTIAL
+Status: COMPLETE
 Date: 2026-10-12
 Branch: phase/p6-c-accessibility-pwa-baseline
 Base commit: b361511cbcf25e6834cc56daeb78bfc32d52e94d
@@ -725,7 +725,7 @@ Cache privacy: API requests, mutations, authenticated/session responses, consent
 Browser boundary: no localStorage, sessionStorage, IndexedDB, background sync, push, offline submission, replay queue, or bearer exposure; P6-B HttpOnly cookie/session boundary is preserved.
 Scope boundary: no backend, schema, migration, dependency, Docker, Compose, deployment, or product/domain changes; Alembic head remains p5b_0006.
 Local acceptance: AC-P6-001..008 PASS.
-Overall P6 status: PARTIAL pending remote CI.
-Remote CI: PENDING.
-Next recommended action: verify all six required CI jobs, then mark P6 COMPLETE and resolve the governance-deferred P7 prerequisite documents before implementation.
+Overall P6 status: COMPLETE.
+Remote CI: PASS — GitHub Actions run 38254479579; all six required jobs passed on implementation commit 8e55700c74250757c6a93d3a50a938963cf96675.
+Next recommended action: complete and approve the governance-deferred P7 prerequisite specifications before P7-A.
 ```
