@@ -154,7 +154,8 @@ transient HttpOnly session cookies, forwards the bearer to FastAPI through `Auth
 returns minimized client states. P6-C adds `app/manifest.ts`, the generic `app/offline/` route,
 project-owned icons, minimal registration under `components/`, and `public/sw.js`. The service
 worker caches only explicitly approved generic shell resources; stateful navigation and all APIs
-remain network-only. Clinical intake remains absent.
+remain network-only. Clinical intake code remains absent. The approved future P7 contracts are
+defined in `07_CLINICAL_INTAKE_SPEC.md`, `22_UX_AND_USER_FLOWS.md`, and `23_PATIENT_APP_SPEC.md`.
 
 ## `apps/clinician-web/`
 
