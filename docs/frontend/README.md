@@ -1,8 +1,9 @@
 # Frontend workspace
 
 P1-B provides three independent Next.js App Router applications and the small shared UI package
-they consume. P6-A adds the patient-specific responsive shell and planned route architecture while
-the clinician and admin applications remain foundation surfaces.
+they consume. P6-A adds the patient-specific responsive shell and planned route architecture. P6-B
+connects the patient onboarding, language, session, and consent journey while the clinician and
+admin applications remain foundation surfaces.
 
 ## Requirements
 
@@ -33,9 +34,21 @@ The workspace packages are:
 - `@swasthyasetu/ui` in `packages/ui`.
 
 The patient shell exposes `/`, `/start`, `/consent`, `/language`, `/encounter`, `/documents`,
-`/results`, `/urgent-help`, and `/referrals`. Only the landing and safe urgent-help shell are
-operational in P6-A; all later workflows identify themselves as unavailable. The shell makes no
-backend requests, stores no browser data, and registers no service worker.
+`/results`, `/urgent-help`, and `/referrals`. P6-B activates the first four onboarding steps and a
+non-clinical readiness state at `/encounter`; later workflows remain explicitly unavailable.
+
+Set `SWASTHYASETU_BACKEND_URL` on the Next.js server, for example
+`http://127.0.0.1:8000` in local development. Same-origin route handlers bridge to FastAPI and keep
+the opaque bearer in a transient `HttpOnly`, `SameSite=Strict` browser-session cookie. Cookies are
+`Secure` in production and on non-loopback hosts. Client code
+receives only minimized session/consent states. No health information, consent body, or language
+text is placed in cookies or browser storage, and no service worker is registered.
+
+The consent bridge controls `GENERAL_PRODUCT_USE`, `clinical_intake`, and `privacy-v1`; client input
+cannot replace them. The bounded project notice is not a final jurisdiction-specific privacy
+notice, which remains governance-deferred. PWA and offline caching remain P6-C work.
+Concurrent matching grants are serialized per session within one BFF process and rechecked before
+creation. Cross-instance atomic idempotency would require a future backend contract change.
 
 ## Quality gates
 
@@ -47,13 +60,14 @@ pnpm frontend:test
 pnpm frontend:build
 ```
 
-Playwright configuration and smoke-test discovery:
+Playwright configuration and test discovery:
 
 ```text
 pnpm e2e:list
 ```
 
-After installing Playwright's Chromium browser in a suitable P1-C/CI environment, run:
+The P6-B patient journeys require the existing PostgreSQL Compose service, migrations at head, and
+a ready FastAPI process. After installing Playwright's Chromium browser, run:
 
 ```text
 pnpm exec playwright install chromium

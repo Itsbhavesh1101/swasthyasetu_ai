@@ -17,8 +17,8 @@ export default function PatientHomePage() {
       </div>
 
       <StatusBanner title="You stay in control" tone="info">
-        Nothing is saved in your browser by this shell. Session and consent steps will be connected
-        in the next governed phase.
+        Onboarding uses only temporary, private session cookies. The browser does not store health
+        information or consent records in local storage.
       </StatusBanner>
 
       <section aria-labelledby="what-to-expect-title" className="feature-grid">

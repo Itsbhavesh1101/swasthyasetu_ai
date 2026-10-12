@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 
-import { RouteUnavailable } from "../../components/route-unavailable";
+import { ConsentJourney } from "../../components/consent-journey";
+import { PageHeader } from "../../components/ui-primitives";
 
 export const metadata: Metadata = { title: "Consent" };
 
 export default function ConsentPage() {
   return (
-    <RouteUnavailable
-      availableIn="P6-B consent integration"
-      description="Consent must be explained and recorded by the governed service before this step can be used."
-      title="Consent"
-    />
+    <div className="page-stack page-stack--narrow">
+      <PageHeader
+        title="Review consent"
+        description="Choose whether this temporary session may be used for general product use and future clinical-intake processing."
+      />
+      <ConsentJourney />
+    </div>
   );
 }

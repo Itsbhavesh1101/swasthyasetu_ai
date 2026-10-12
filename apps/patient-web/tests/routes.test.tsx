@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import ErrorPage from "../app/error";
-import LanguagePage from "../app/language/page";
+import DocumentsPage from "../app/documents/page";
 import LoadingPage from "../app/loading";
 import UrgentHelpPage from "../app/urgent-help/page";
 
@@ -20,10 +20,10 @@ describe("patient route states", () => {
   });
 
   it("renders future routes as unavailable with a natively disabled control", () => {
-    render(<LanguagePage />);
+    render(<DocumentsPage />);
 
     expect(screen.getByText("Not available yet")).toBeVisible();
-    expect(screen.getByText(/no preference is stored/i)).toBeVisible();
+    expect(screen.getByText(/document upload and review are not enabled/i)).toBeVisible();
     expect(screen.getByRole("button", { name: "Continue unavailable" })).toBeDisabled();
   });
 

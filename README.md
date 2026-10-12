@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation PARTIAL (P6-A COMPLETE).**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation PARTIAL (P6-A and P6-B COMPLETE).**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -51,6 +51,16 @@ accessible UI states, honest planned-route shells, and a persistent urgent-help 
 urgent route contains no invented helpline or provider data. This unit adds no backend calls,
 browser persistence, working language/consent flow, authentication, PWA behavior, or dependencies;
 those capabilities remain phase-gated.
+
+P6-B connects `/start`, `/language`, `/consent`, and `/encounter` through same-origin Next.js route
+handlers to the existing FastAPI session and consent contracts. The browser receives only transient
+`HttpOnly`, `SameSite=Strict` session cookies; the bearer is forwarded server-side only through the
+`Authorization` header and is never returned to client JavaScript. The backend base URL is supplied
+server-side as `SWASTHYASETU_BACKEND_URL`. Consent uses fixed `GENERAL_PRODUCT_USE`,
+`clinical_intake`, and `privacy-v1` values, with withdrawal and private-session close controls.
+Matching grants are rechecked inside a process-local, per-session serialized section before create;
+the fixed backend contract does not provide cross-instance consent idempotency.
+Jurisdiction-specific final notice approval and all PWA/offline behavior remain deferred.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

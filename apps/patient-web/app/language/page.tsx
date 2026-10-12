@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 
-import { RouteUnavailable } from "../../components/route-unavailable";
+import { LanguageSelector } from "../../components/language-selector";
+import { PageHeader } from "../../components/ui-primitives";
 
 export const metadata: Metadata = { title: "Language" };
 
 export default function LanguagePage() {
   return (
-    <RouteUnavailable
-      availableIn="P6-B language selection"
-      description="Language choices are not active in this build, and no preference is stored."
-      title="Choose a language"
-    />
+    <div className="page-stack page-stack--narrow">
+      <PageHeader
+        title="Choose a language"
+        description="This preference applies only to your temporary private session. The full experience is not yet translated."
+      />
+      <LanguageSelector />
+    </div>
   );
 }
