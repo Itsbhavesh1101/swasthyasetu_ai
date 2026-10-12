@@ -221,8 +221,13 @@ syntax parsing remains transport-only in `backend/app/api/security/bearer.py`.
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle
 and provenance values remain independently owned. Each module exposes domain contracts through
-`public.py` only. P5-A deliberately adds no application, infrastructure, API, registration, or
-persistence layer; those remain assigned to P5-B/P5-C.
+`public.py` only.
+
+P5-B adds module-private SQLAlchemy records and caller-session repositories in
+`patients/infrastructure.py` and `encounters/infrastructure.py`. The explicit typed clinical-value
+codec lives in `patients/persistence.py`; it is not a generic JSON persistence surface. These files
+add no application service, API route, runtime registration, or timeline capability. P5-C retains
+ownership of timeline/provenance services and APIs.
 
 ---
 

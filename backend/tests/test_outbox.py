@@ -37,6 +37,15 @@ def test_outbox_has_required_schema_alongside_registered_module_tables() -> None
         "actors",
         "actor_roles",
         "consent_records",
+        "patients",
+        "patient_demographics",
+        "patient_identifiers",
+        "encounters",
+        "clinical_facts",
+        "clinical_fact_provenance",
+        "medications",
+        "allergies",
+        "observations",
     }
     assert tuple(table.columns) == tuple(
         table.c[name]

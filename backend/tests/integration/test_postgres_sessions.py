@@ -29,12 +29,12 @@ async def database_runtime() -> AsyncIterator[DatabaseRuntime]:
         pytest.skip("SWASTHYASETU_TEST_DATABASE_URL is not configured")
     runtime = DatabaseRuntime(DatabaseSettings(enabled=True, url=test_url))
     async with runtime.engine.begin() as connection:
-        await connection.execute(text("TRUNCATE TABLE sessions"))
+        await connection.execute(text("TRUNCATE TABLE sessions CASCADE"))
     try:
         yield runtime
     finally:
         async with runtime.engine.begin() as connection:
-            await connection.execute(text("TRUNCATE TABLE sessions"))
+            await connection.execute(text("TRUNCATE TABLE sessions CASCADE"))
         await runtime.dispose()
 
 

@@ -49,7 +49,11 @@ class SessionRecord(Base):
         ForeignKey("actors.id", name="fk_sessions_actor_id_actors"),
         nullable=True,
     )
-    patient_id: Mapped[UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
+    patient_id: Mapped[UUID | None] = mapped_column(
+        Uuid(as_uuid=True),
+        ForeignKey("patients.id", name="fk_sessions_patient_id_patients"),
+        nullable=True,
+    )
     language_preference: Mapped[str | None] = mapped_column(String(35), nullable=True)
     status: Mapped[str] = mapped_column(
         String(16),

@@ -135,9 +135,9 @@ patient_id
 actor_id
 ```
 
-As of P4-B, nullable `sessions.actor_id` references `actors.id`. `sessions.patient_id` remains
-nullable without a patient foreign key until P5. This integrity constraint does not transfer
-session-table write ownership to identity.
+Nullable `sessions.actor_id` references `actors.id`. As of P5-B, nullable `sessions.patient_id`
+references `patients.id`. These integrity constraints do not transfer session-table write ownership
+to identity or patients.
 
 `token_hash` is the SHA-256 hex verifier for the active opaque bearer token. The raw active token is
 never stored. `recovery_token_hash` is a distinct future recovery verifier and remains NULL in
@@ -203,14 +203,18 @@ updated_at TIMESTAMPTZ NOT NULL
 ```text
 patient_id UUID PK/FK patients(id)
 date_of_birth DATE NULL
+age_years INTEGER NULL
 administrative_sex VARCHAR NULL
 gender_identity VARCHAR NULL
 pregnancy_status VARCHAR NULL
+location_context VARCHAR NULL
 demographics_metadata JSONB NULL
 updated_at TIMESTAMPTZ NOT NULL
 ```
 
-Fields may be refined after privacy review.
+`age_years` is non-negative when present and is never derived automatically. `location_context`
+preserves the bounded P5-A domain value. Metadata is reserved for governed internal use and is not
+an arbitrary clinical-truth bag.
 
 ## 7.3 `patient_identifiers`
 
@@ -226,13 +230,14 @@ created_at TIMESTAMPTZ NOT NULL
 updated_at TIMESTAMPTZ NOT NULL
 ```
 
-Candidate uniqueness:
+P5-B index:
 
 ```text
-UNIQUE(system, value)
+(system, value) -- non-unique
 ```
 
-subject to final identifier rules.
+Global uniqueness is deliberately deferred because locally assigned namespaces such as
+`hospital_mrn` are not proven globally unique across institutions.
 
 ---
 
@@ -266,6 +271,9 @@ session_id
 (status, started_at DESC)
 institution_id
 ```
+
+Pseudonymous encounters keep nullable `patient_id` and `created_by`. No ambiguous single consent
+foreign key or consent-status blob is stored; purpose-specific consent context remains deferred.
 
 ---
 
@@ -304,7 +312,12 @@ effective_at
 
 Rules:
 
-- `structured_value` follows type-specific schema;
+- `structured_value` uses the explicit versioned `p5b-v1` schema for the six constructible P5-A
+  value types and rejects unsupported versions, unknown fields, and future untyped fact categories;
+- `canonical_label` is derived from the typed value (`label`, `name`, `substance`,
+  `observation_type`, or `investigation_type`) and is not independently accepted;
+- domain `recorded_at` maps to immutable `created_at`; initial `updated_at` equals `recorded_at`;
+- `source_text` remains NULL until a governed ingestion boundary exists;
 - model risk does not become a clinical fact of confirmed condition automatically;
 - confirmed facts should be superseded rather than silently overwritten.
 
@@ -333,6 +346,10 @@ created_by UUID NULL
 created_at TIMESTAMPTZ NOT NULL
 metadata JSONB NULL
 ```
+
+Metadata is reserved for governed internal persistence use. The initial repository writes one
+canonical provenance row per fact but the schema intentionally leaves `fact_id` non-unique for
+future multi-source provenance.
 
 Indexes:
 
@@ -396,7 +413,7 @@ updated_at TIMESTAMPTZ NOT NULL
 id UUID PK
 patient_id UUID NULL
 encounter_id UUID NULL
-source_fact_id UUID NULL
+source_fact_id UUID NOT NULL
 observation_type TEXT NOT NULL
 value_numeric NUMERIC NULL
 value_text TEXT NULL
@@ -418,6 +435,10 @@ Index:
 ```
 
 Unit-aware interpretation is mandatory.
+
+Migration `p5b_0006` (parent `p4c_0005`) creates exactly the nine P5-B tables above and adds the
+nullable sessions-to-patients foreign key. Downgrade restores the P4-C schema. PATIENT-subject
+consent activation remains deferred until governed ownership/authorization is implemented.
 
 ---
 
