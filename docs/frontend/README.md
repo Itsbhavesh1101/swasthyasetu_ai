@@ -1,8 +1,8 @@
 # Frontend workspace
 
 P1-B provides three independent Next.js App Router applications and the small shared UI package
-they consume. These are foundation surfaces only; they intentionally contain no product,
-clinical, authentication, persistence, analytics, or API-integration behavior.
+they consume. P6-A adds the patient-specific responsive shell and planned route architecture while
+the clinician and admin applications remain foundation surfaces.
 
 ## Requirements
 
@@ -31,6 +31,11 @@ The workspace packages are:
 - `@swasthyasetu/clinician-web` in `apps/clinician-web`;
 - `@swasthyasetu/admin-web` in `apps/admin-web`;
 - `@swasthyasetu/ui` in `packages/ui`.
+
+The patient shell exposes `/`, `/start`, `/consent`, `/language`, `/encounter`, `/documents`,
+`/results`, `/urgent-help`, and `/referrals`. Only the landing and safe urgent-help shell are
+operational in P6-A; all later workflows identify themselves as unavailable. The shell makes no
+backend requests, stores no browser data, and registers no service worker.
 
 ## Quality gates
 

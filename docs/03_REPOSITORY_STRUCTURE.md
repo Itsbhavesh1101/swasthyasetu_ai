@@ -146,6 +146,11 @@ swasthyasetu-ai/
 
 Patient, caregiver, kiosk, and pseudonymous first-contact experience. Future feature areas should include onboarding, consent, intake, documents, mental health, self-care, providers, and referrals. Clinical policy remains server-authoritative.
 
+P6-A establishes the patient-specific shell in `components/`, with responsive navigation,
+patient-facing UI primitives, a persistent urgent-help entry point, and honest App Router shells
+for planned patient routes. It contains no backend integration, browser persistence, authentication,
+working language flow, or PWA/service-worker behavior.
+
 ## `apps/clinician-web/`
 
 Clinician-facing queue, patient overview, timeline, summary, provenance, documents, safety, referrals, and future decision-support panels. New clinical modules should register feature panels rather than expanding one giant page.
