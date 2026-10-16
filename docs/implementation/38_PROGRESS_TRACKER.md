@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** Pre-P7 prerequisite specification pack — COMPLETE; P7 remains NOT STARTED
-**Current recommended next action:** P7-A — Intake Domain / Schema.
+**Current macro stage:** P7-A Intake Domain / Schema — PARTIAL; remote CI verification pending
+**Current recommended next action:** verify P7-A remote CI, then P7-B — Deterministic Adaptive Engine.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | NOT STARTED | All three prerequisite specifications are complete; implementation has not begun. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A implementation is complete locally; remote CI verification is pending. P7-B/P7-C are not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -750,4 +750,27 @@ Code/schema/dependencies/CI: unchanged; Alembic head remains p5b_0006.
 P7 status: NOT STARTED.
 Remote CI: PASS — GitHub Actions run 38260421591; all six required jobs passed on specification commit c826f2dc1e8852483530958b4ed1f796d6cc412d.
 Next recommended unit: P7-A — Intake Domain / Schema.
+```
+
+---
+
+# 30. P7-A Intake Domain / Schema
+
+```text
+Phase/Sub-phase: P7-A — Intake Domain / Schema
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-17
+Branch: phase/p7-a-intake-domain-schema
+Base commit: 2bfd834c4d1e4a1c0fb5782eeae6e2a6a097cda3
+Domain: immutable intake lifecycle and typed chief complaint, HPI, history, ROS, prior investigations, missing-information, contradiction, answer, questionnaire, and pack contracts.
+Serialization: strict versioned JSONB shapes reject unknown keys/versions and restore immutable typed values without echoing sensitive payloads in errors.
+Persistence: exactly clinical_intakes, intake_answers, and questionnaire_instances; one intake per encounter; append-only answers; caller-owned transactions; optimistic versioning.
+Migration: p7a_0007 on p5b_0006; downgrade removes only P7-A tables and re-upgrade is drift-clean.
+Composition: unbound clinical_intake manifest and future capability keys; no default registration, service stub, API, or router.
+Safety boundary: no diagnosis, triage, treatment, safety policy, AI, production question content, Hindi clinical content, or AYUSH/Dashavidha content.
+Dependencies/frontend: unchanged.
+Local verification: backend unit/regression and real PostgreSQL verification pass; final full gates pending.
+P7 status: PARTIAL. P7-B and P7-C are not started.
+Remote CI: PENDING.
+Next recommended unit after CI completion: P7-B — Deterministic Adaptive Engine.
 ```

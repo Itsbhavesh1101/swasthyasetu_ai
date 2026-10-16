@@ -34,7 +34,7 @@ async def test_runtime_constructs_lazily_with_async_engine_and_session_factory()
         await runtime.dispose()
 
 
-def test_metadata_contains_only_registered_foundation_p4_and_p5b_tables() -> None:
+def test_metadata_contains_registered_tables_through_p7a() -> None:
     assert set(Base.metadata.tables) == {
         OutboxEventRecord.__tablename__,
         SessionRecord.__tablename__,
@@ -50,6 +50,9 @@ def test_metadata_contains_only_registered_foundation_p4_and_p5b_tables() -> Non
         "medications",
         "allergies",
         "observations",
+        "clinical_intakes",
+        "intake_answers",
+        "questionnaire_instances",
     }
     assert Base.metadata.naming_convention == NAMING_CONVENTION
 

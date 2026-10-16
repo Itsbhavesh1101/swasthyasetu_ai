@@ -93,7 +93,7 @@ def test_non_owning_modules_do_not_import_foreign_p5_infrastructure() -> None:
                 assert imports.isdisjoint(forbidden)
 
 
-def test_p5b_registers_only_the_nine_authorized_persistence_tables() -> None:
+def test_metadata_preserves_p5b_and_adds_only_p7a_tables() -> None:
     assert PatientRecord.__tablename__ == "patients"
     assert PatientDemographicsRecord.__tablename__ == "patient_demographics"
     assert PatientIdentifierRecord.__tablename__ == "patient_identifiers"
@@ -118,4 +118,7 @@ def test_p5b_registers_only_the_nine_authorized_persistence_tables() -> None:
         "patient_identifiers",
         "patients",
         "sessions",
+        "clinical_intakes",
+        "intake_answers",
+        "questionnaire_instances",
     }

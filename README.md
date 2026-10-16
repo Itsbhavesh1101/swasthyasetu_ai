@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation COMPLETE.**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation COMPLETE. P7 Structured Clinical Intake PARTIAL (P7-A implemented; remote CI pending).**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -67,6 +67,13 @@ root-scope service worker pre-caches only `/offline`, the manifest, and project-
 navigation remains network-only, `/api/**` is bypassed, and no session, consent, clinical, bearer,
 or mutation data is cached or queued. Offline mode cannot confirm session or consent state and
 offers no clinical workflow. Audio guidance remains deferred to the governed P12 language phase.
+
+P7-A adds the framework-independent `clinical_intake` domain and strict versioned serializers,
+closed question/answer/questionnaire/pack contracts, explicit pack registration, and the three
+canonical PostgreSQL tables through migration `p7a_0007`. Repositories use caller-owned
+transactions, append-only answers, one-intake-per-encounter uniqueness, and optimistic aggregate
+versions. The module is not registered in the default application and provides no engine, API,
+frontend, AI, safety logic, production question pack, or clinical interpretation.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
