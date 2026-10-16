@@ -199,12 +199,9 @@ def validate_pack(pack: QuestionPack) -> None:
 
 
 def validate_question_identities(packs: Iterable[QuestionPack]) -> None:
-    identities: set[tuple[str, str]] = set()
+    active_question_ids: set[str] = set()
     for pack in packs:
         for question in pack.questions:
-            identity = (question.question_id, question.question_version)
-            if identity in identities:
-                raise InvalidQuestionPackError(
-                    "question identity is ambiguous across registered packs"
-                )
-            identities.add(identity)
+            if question.question_id in active_question_ids:
+                raise InvalidQuestionPackError("question identity is ambiguous across active packs")
+            active_question_ids.add(question.question_id)

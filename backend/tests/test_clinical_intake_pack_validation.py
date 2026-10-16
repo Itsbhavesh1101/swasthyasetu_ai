@@ -8,6 +8,7 @@ from app.modules.clinical_intake.contracts import (
     AnswerType,
     ApprovalState,
     InputMode,
+    InvalidQuestionPackError,
     OptionValidation,
     PackRegistry,
     QuestionDefinition,
@@ -82,6 +83,30 @@ def test_activation_rejects_ambiguous_question_identity_across_selected_packs() 
             language="en",
         )
     assert raised.type.__name__ == "InvalidQuestionPackError"
+
+
+def test_activation_rejects_shared_question_id_across_different_versions() -> None:
+    first = _pack(
+        pack_id="synthetic.first",
+        questions=(_question("synthetic.shared"),),
+    )
+    second = _pack(
+        pack_id="synthetic.second",
+        questions=(replace(_question("synthetic.shared"), question_version="2.0.0"),),
+    )
+    registry = PackRegistry((first, second))
+
+    assert registry.activate(((first.pack_id, first.version),), language="en") == (first,)
+    assert registry.activate(((second.pack_id, second.version),), language="en") == (second,)
+    for identities in (
+        ((first.pack_id, first.version), (second.pack_id, second.version)),
+        ((second.pack_id, second.version), (first.pack_id, first.version)),
+    ):
+        with pytest.raises(
+            InvalidQuestionPackError,
+            match="question identity is ambiguous across active packs",
+        ):
+            registry.activate(identities, language="en")
 
 
 @pytest.mark.parametrize(

@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-B Deterministic Adaptive Engine — COMPLETE; P7 remains PARTIAL
-**Current recommended next action:** P7-C — APIs + Patient UI.
+**Current macro stage:** P7-B Review Fix 01 — PARTIAL (remote CI pending); P7 remains PARTIAL
+**Current recommended next action:** verify the P7-B active question-version ambiguity repair, then begin P7-C — APIs + Patient UI.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A and P7-B are complete with all six required P7-B CI jobs passing. P7-C is not started. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete. P7-B active question-version ambiguity repair is locally verified with remote CI pending. P7-C is not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -816,4 +816,22 @@ Local verification: 465 non-PostgreSQL tests passed with 83 expected skips; all 
 Remote CI: PASS — GitHub Actions run 38975516345; all six required jobs passed on implementation commit a8bd924f7ac0f0bb8a1df82be38dd3657d51afe2.
 P7-A = COMPLETE. P7-B = COMPLETE. P7-C = NOT STARTED. P7 = PARTIAL.
 Next recommended unit: P7-C — APIs + Patient UI.
+```
+
+---
+
+# 33. P7-B Review Fix 01 — Active Question-Version Ambiguity Guard
+
+```text
+Review repair: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-17
+Branch: phase/p7-b-deterministic-adaptive-engine
+Reviewed head: 9280523bb76593ee2ee140294329a1ff7e9a86ee
+Repair: active pack validation now requires question_id uniqueness regardless of question_version, matching the engine and rule-language namespace.
+Compatibility: registry storage may retain separate packs with different versions of one question; either pack activates independently, while simultaneous activation fails with InvalidQuestionPackError in both caller orders.
+Scope: no engine result, rule operator, schema, migration, dependency, API, application, frontend, clinical policy, production content, AI, or P7-C change.
+Migration: Alembic head remains p7a_0007.
+Local verification: 467 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; backend/frontend quality gates, compileall, migration drift, and scope audits passed.
+P7-B repair status: PARTIAL — REMOTE CI VERIFICATION PENDING. P7 remains PARTIAL.
+Next recommended unit after repair verification: P7-C — APIs + Patient UI.
 ```

@@ -18,6 +18,7 @@ from app.modules.clinical_intake.contracts import (
     InputMode,
     IntakeAnswer,
     IntakeAnswerSourceType,
+    InvalidQuestionPackError,
     NumericValidation,
     OptionValidation,
     PackRegistry,
@@ -195,6 +196,27 @@ def test_selection_is_repeatable_and_uses_canonical_tie_breaks() -> None:
     assert first.pack_id == "synthetic.a"
     assert first.question.question_id == "synthetic.a"
     assert first.engine_version == ENGINE_VERSION == "deterministic-intake.v1"
+
+
+def test_engine_rejects_two_active_versions_of_one_question_before_evaluation() -> None:
+    first = _pack("synthetic.first", (_question("synthetic.shared"),))
+    second = _pack(
+        "synthetic.second",
+        (
+            replace(
+                _question("synthetic.shared"),
+                question_version="2.0.0",
+            ),
+        ),
+    )
+    engine = AdaptiveIntakeEngine(PackRegistry((first, second)))
+
+    for selected in ((first, second), (second, first)):
+        with pytest.raises(
+            InvalidQuestionPackError,
+            match="question identity is ambiguous across active packs",
+        ):
+            engine.evaluate(_input(_intake(), selected))
 
 
 def test_newest_answer_selection_is_input_order_independent() -> None:
