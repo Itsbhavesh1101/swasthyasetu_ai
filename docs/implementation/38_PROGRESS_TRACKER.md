@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-A Intake Domain / Schema — COMPLETE; P7 remains PARTIAL
-**Current recommended next action:** P7-B — Deterministic Adaptive Engine.
+**Current macro stage:** P7-B Deterministic Adaptive Engine — PARTIAL (remote CI pending); P7 remains PARTIAL
+**Current recommended next action:** verify P7-B remote CI, then begin P7-C — APIs + Patient UI.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete with all six CI jobs passing. P7-B/P7-C are not started. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete. P7-B implementation and local verification are complete with remote CI pending. P7-C is not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -793,4 +793,26 @@ Remote CI: VERIFIED — GitHub Actions run 38969891055 passed Backend quality, F
 CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38969891055
 P7-A status: COMPLETE. P7 remains PARTIAL; P7-B and P7-C are not started.
 Next recommended unit remains P7-B — Deterministic Adaptive Engine.
+```
+
+---
+
+# 32. P7-B Deterministic Adaptive Engine
+
+```text
+Phase/Sub-phase: P7-B — Deterministic Adaptive Engine
+Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-17
+Branch: phase/p7-b-deterministic-adaptive-engine
+Base commit: 1e4522c9f13309935faed0557ee2654cea54e093
+Engine: pure immutable deterministic-intake.v1 evaluation with NextQuestion, ClarificationRequired, Incomplete, and CompletionReady results.
+Rules: closed validated EXISTS/EQUALS/IN/AND/OR/NOT/ANSWER_DISPOSITION/HISTORY_AVAILABLE/CONTRADICTION_STATE grammar; no executable expressions.
+Determinism: canonical pack/question ordering, newest-answer tie-breaks, stable UUIDv5 missing IDs, and order-perturbation/repeatability coverage.
+Validation: strict pack graphs/metadata/approval boundaries and all registered answer-type constraints fail closed with privacy-safe typed errors.
+History/contradictions: terminal facts are excluded, suppression requires explicit fully approved policy, reused history is never promoted to a patient answer, and configured open clarification has priority.
+Extensibility: synthetic complaint, specialty, and approval-gated AYUSH packs use the same engine; no production clinical content was added.
+Schema/dependencies/frontend/runtime composition: unchanged. Alembic head remains p7a_0007.
+Local verification: 465 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; 113 focused intake/domain tests passed; backend/frontend quality gates, production builds, compileall, migration drift, Docker readiness, and scope audits passed.
+P7-A = COMPLETE. P7-B = PARTIAL — REMOTE CI VERIFICATION PENDING. P7-C = NOT STARTED. P7 = PARTIAL.
+Next recommended unit after CI completion: P7-C — APIs + Patient UI.
 ```

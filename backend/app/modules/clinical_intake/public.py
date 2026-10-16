@@ -3,10 +3,25 @@
 from app.modules.clinical_intake.contracts import (
     AnswerIntakeCapability,
     CompleteIntakeCapability,
+    HistoryReusePolicy,
     NextQuestionCapability,
+    PackRegistry,
     ReadIntakeCapability,
     StartIntakeCapability,
 )
+from app.modules.clinical_intake.engine import (
+    ENGINE_VERSION,
+    AdaptiveIntakeEngine,
+    ClarificationRequired,
+    CompletionReady,
+    EngineInput,
+    EngineResult,
+    Incomplete,
+    InvalidAnswerForQuestionError,
+    InvalidEngineInputError,
+    NextQuestion,
+)
+from app.modules.clinical_intake.history import HistoryContext
 from app.modules.consent.public import CONSENT_CHECK
 from app.modules.encounters.public import ENCOUNTERS_READ, ENCOUNTERS_TRANSITION
 from app.modules.patients.public import PATIENTS_FACTS_LIST, PATIENTS_READ
@@ -50,10 +65,23 @@ CLINICAL_INTAKE_MANIFEST = ModuleManifest(
 )
 
 __all__ = [
+    "AdaptiveIntakeEngine",
     "CLINICAL_INTAKE_MANIFEST",
+    "ClarificationRequired",
+    "CompletionReady",
+    "ENGINE_VERSION",
+    "EngineInput",
+    "EngineResult",
+    "HistoryContext",
+    "HistoryReusePolicy",
     "INTAKE_ANSWER",
     "INTAKE_COMPLETE",
     "INTAKE_NEXT_QUESTION",
     "INTAKE_READ",
     "INTAKE_START",
+    "Incomplete",
+    "InvalidAnswerForQuestionError",
+    "InvalidEngineInputError",
+    "NextQuestion",
+    "PackRegistry",
 ]

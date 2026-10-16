@@ -6,7 +6,8 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Protocol
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,7 +20,11 @@ from app.modules.clinical_intake.domain import (
 from app.modules.clinical_intake.domain import (
     Requiredness as Requiredness,
 )
+from app.modules.provenance.domain import VerificationState
 from app.shared.types import OpaqueId
+
+if TYPE_CHECKING:
+    from app.modules.clinical_intake.engine import EngineResult
 
 
 class AnswerType(StrEnum):
@@ -153,6 +158,31 @@ class HistoryBinding:
 
 
 @dataclass(frozen=True, slots=True)
+class HistoryReusePolicy:
+    eligible_verification_states: tuple[VerificationState, ...]
+    suppress_question: bool = False
+    confirmation_required: bool = True
+
+    def __post_init__(self) -> None:
+        tuple_of(
+            "eligible_verification_states",
+            self.eligible_verification_states,
+            VerificationState,
+        )
+        if not self.eligible_verification_states or len(
+            set(self.eligible_verification_states)
+        ) != len(self.eligible_verification_states):
+            raise ValueError("history reuse verification states must be non-empty and unique")
+        if self.suppress_question and self.confirmation_required:
+            raise ValueError("history suppression cannot also require confirmation")
+        if {
+            VerificationState.REJECTED,
+            VerificationState.SUPERSEDED,
+        }.intersection(self.eligible_verification_states):
+            raise ValueError("terminal verification states are never reusable")
+
+
+@dataclass(frozen=True, slots=True)
 class QuestionDefinition:
     question_id: str
     question_version: str
@@ -169,7 +199,10 @@ class QuestionDefinition:
     dependency_question_ids: tuple[str, ...] = ()
     allow_unknown: bool = False
     allow_prefer_not_to_answer: bool = False
+    allow_skip: bool = False
     history_binding: HistoryBinding | None = None
+    history_reuse_policy: HistoryReusePolicy | None = None
+    clarification_rule_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         for name in ("question_id", "question_version", "content_key"):
@@ -180,7 +213,11 @@ class QuestionDefinition:
             raise ValueError("input_modes must be a non-empty tuple")
         if any(not isinstance(mode, InputMode) for mode in self.input_modes):
             raise TypeError("input_modes must contain only InputMode values")
-        for name in ("applicability_rule_ids", "dependency_question_ids"):
+        for name in (
+            "applicability_rule_ids",
+            "dependency_question_ids",
+            "clarification_rule_ids",
+        ):
             values = getattr(self, name)
             tuple_of(name, values, str)
             for value in values:
@@ -199,6 +236,8 @@ class QuestionDefinition:
         }[self.answer_type]
         if not isinstance(self.validation, expected):
             raise ValueError("validation constraints do not match answer_type")
+        if self.history_reuse_policy is not None and self.history_binding is None:
+            raise ValueError("history reuse policy requires a history binding")
 
 
 class IntakeAnswerSourceType(StrEnum):
@@ -282,8 +321,8 @@ class IntakeAnswer:
                 raise ValueError("numeric answer combination is invalid")
             if self.answer_type is AnswerType.DURATION and (self.value < 0 or self.unit is None):
                 raise ValueError("DURATION answer requires non-negative value and unit")
-            if self.answer_type is not AnswerType.DURATION and self.unit is not None:
-                raise ValueError("unit is valid only for DURATION")
+            if self.answer_type is AnswerType.SEVERITY_SCALE and self.unit is not None:
+                raise ValueError("unit is invalid for SEVERITY_SCALE")
         object.__setattr__(self, "answered_at", answered)
         object.__setattr__(self, "created_at", created)
 
@@ -429,6 +468,18 @@ class DuplicateQuestionPackError(ValueError):
     """Raised for explicit duplicate pack/version registration."""
 
 
+class InvalidQuestionPackError(ValueError):
+    """Raised when structural pack validation fails closed."""
+
+
+class InvalidRuleDefinitionError(InvalidQuestionPackError):
+    """Raised when a non-executable rule definition is malformed."""
+
+
+class PackNotActivationEligibleError(ValueError):
+    """Raised when an explicitly requested pack cannot be activated."""
+
+
 class PackRegistry:
     """Process-local immutable explicit registration container; no discovery."""
 
@@ -439,14 +490,55 @@ class PackRegistry:
             key = (pack.pack_id, pack.version)
             if key in values:
                 raise DuplicateQuestionPackError("question pack identity is already registered")
+            from app.modules.clinical_intake.pack_validation import validate_pack
+
+            validate_pack(pack)
             values[key] = pack
-        self._packs = values
+        self._packs = MappingProxyType(values)
 
     def get(self, pack_id: str, version: str) -> QuestionPack | None:
         return self._packs.get((pack_id, version))
 
     def all(self) -> tuple[QuestionPack, ...]:
-        return tuple(self._packs.values())
+        return tuple(
+            sorted(
+                self._packs.values(),
+                key=lambda pack: (pack.order, pack.pack_id, pack.version),
+            )
+        )
+
+    def activate(
+        self,
+        identities: tuple[tuple[str, str], ...],
+        *,
+        language: str | None = None,
+    ) -> tuple[QuestionPack, ...]:
+        selected: list[QuestionPack] = []
+        seen: set[tuple[str, str]] = set()
+        for identity in identities:
+            if identity in seen:
+                raise PackNotActivationEligibleError("pack activation identity is duplicated")
+            seen.add(identity)
+            pack = self._packs.get(identity)
+            if pack is None:
+                raise PackNotActivationEligibleError("requested question pack is not registered")
+            if pack.approval_state is ApprovalState.CLINICAL_APPROVAL_REQUIRED:
+                raise PackNotActivationEligibleError("question pack is not activation eligible")
+            if pack.approval_state is not ApprovalState.APPROVED and any(
+                question.history_reuse_policy is not None
+                and question.history_reuse_policy.suppress_question
+                for question in pack.questions
+            ):
+                raise PackNotActivationEligibleError(
+                    "history suppression requires an approved question pack"
+                )
+            if language is not None and language not in pack.supported_languages:
+                raise PackNotActivationEligibleError("question pack does not support language")
+            selected.append(pack)
+        from app.modules.clinical_intake.pack_validation import validate_question_identities
+
+        validate_question_identities(selected)
+        return tuple(sorted(selected, key=lambda pack: (pack.order, pack.pack_id, pack.version)))
 
 
 class StaleClinicalIntakeWriteError(RuntimeError):
@@ -522,4 +614,4 @@ class CompleteIntakeCapability(Protocol):
 
 
 class NextQuestionCapability(Protocol):
-    async def next_question(self, intake_id: OpaqueId) -> QuestionDefinition | None: ...
+    async def next_question(self, intake_id: OpaqueId) -> EngineResult: ...

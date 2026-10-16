@@ -220,11 +220,13 @@ default application registers `consent`, `encounters`, `identity`, `patients`, `
 `sessions`; cross-module patient context flows only through typed public capabilities. Timeline
 order is `occurred_at DESC, entry_type ASC, entry_id ASC`, with versioned opaque keyset cursors.
 P7-A migration `p7a_0007` (parent `p5b_0006`) creates only `clinical_intakes`,
-`intake_answers`, and `questionnaire_instances`. The `clinical_intake` package currently exposes
-immutable domain values, strict JSONB serializers, repository contracts/adapters, future
-capability keys, and an unbound module manifest. It is deliberately absent from default runtime
-composition: there is no intake application service, router, adaptive engine, or frontend yet.
-Alembic head is `p7a_0007`.
+`intake_answers`, and `questionnaire_instances`. The `clinical_intake` package exposes immutable
+domain values, strict JSONB serializers, repository contracts/adapters, future capability keys,
+and an unbound module manifest. P7-B adds the pure `deterministic-intake.v1` engine, a closed
+machine-readable rule grammar, strict pack validation/activation, registered answer validation,
+stable missing-information output, contradiction priority, and explicit conservative history
+reuse. It remains absent from default runtime composition: there is no intake application service,
+router, runtime pack, or frontend yet. Alembic head remains `p7a_0007`.
 
 ## Module composition
 
