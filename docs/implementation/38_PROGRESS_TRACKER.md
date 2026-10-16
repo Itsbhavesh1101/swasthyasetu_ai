@@ -774,3 +774,23 @@ P7 status: PARTIAL. P7-B and P7-C are not started.
 Remote CI: PASS — GitHub Actions run 38963368588; all six required jobs passed on implementation commit ce843754d37a90c2be8ee3ceef3cfb39945273c2.
 Next recommended unit after CI completion: P7-B — Deterministic Adaptive Engine.
 ```
+
+---
+
+# 31. P7-A Review Fix 01 — Lifecycle Persistence Guard
+
+```text
+Review repair: VERIFIED
+Date: 2026-10-17
+Branch: phase/p7-a-intake-domain-schema
+Reviewed head: 258c64905fc26ba8729cfc9f6b404cc07f3f199a
+Repair commit: 43aa57a27f7a1718bf520ed6991a8a5e6d0e9eb5
+Lifecycle guard: PostgresClinicalIntakeRepository.save locks the authoritative row and reuses the canonical domain transition semantics before mutating any persisted field; terminal intakes are immutable through this repository path.
+PostgreSQL evidence: all four requested cross-state terminal transitions and same-status structured terminal mutations are rejected with InvalidClinicalIntakeTransitionError; fresh-session assertions prove status, structured content, completed_at, and version remain unchanged; valid IN_PROGRESS edit/complete/abandon saves increment exactly once.
+Regression evidence: 379 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; backend/frontend quality gates, Alembic p7a_0007 head/drift, dependency, migration, frontend, and P7-B scope audits passed.
+Schema/migrations/dependencies/APIs/frontend: unchanged. Alembic head remains p7a_0007.
+Remote CI: VERIFIED — GitHub Actions run 38969891055 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on repair commit 43aa57a27f7a1718bf520ed6991a8a5e6d0e9eb5.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38969891055
+P7-A status: COMPLETE. P7 remains PARTIAL; P7-B and P7-C are not started.
+Next recommended unit remains P7-B — Deterministic Adaptive Engine.
+```
