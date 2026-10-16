@@ -1304,10 +1304,10 @@ Stop after P7-A.
 ## Implementation Record
 
 ```text
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Branch: phase/p7-a-intake-domain-schema
 Base: 2bfd834c4d1e4a1c0fb5782eeae6e2a6a097cda3
 Migration: p7a_0007 on p5b_0006
 Scope: P7-A only; P7-B/P7-C not implemented
-Remote CI: PENDING
+Remote CI: PASS — run 38963368588 on ce843754d37a90c2be8ee3ceef3cfb39945273c2
 ```

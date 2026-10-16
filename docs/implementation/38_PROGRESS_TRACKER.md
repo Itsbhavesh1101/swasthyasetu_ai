@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-A Intake Domain / Schema — PARTIAL; remote CI verification pending
-**Current recommended next action:** verify P7-A remote CI, then P7-B — Deterministic Adaptive Engine.
+**Current macro stage:** P7-A Intake Domain / Schema — COMPLETE; P7 remains PARTIAL
+**Current recommended next action:** P7-B — Deterministic Adaptive Engine.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A implementation is complete locally; remote CI verification is pending. P7-B/P7-C are not started. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete with all six CI jobs passing. P7-B/P7-C are not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -758,7 +758,7 @@ Next recommended unit: P7-A — Intake Domain / Schema.
 
 ```text
 Phase/Sub-phase: P7-A — Intake Domain / Schema
-Status: PARTIAL — REMOTE CI VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-17
 Branch: phase/p7-a-intake-domain-schema
 Base commit: 2bfd834c4d1e4a1c0fb5782eeae6e2a6a097cda3
@@ -769,8 +769,8 @@ Migration: p7a_0007 on p5b_0006; downgrade removes only P7-A tables and re-upgra
 Composition: unbound clinical_intake manifest and future capability keys; no default registration, service stub, API, or router.
 Safety boundary: no diagnosis, triage, treatment, safety policy, AI, production question content, Hindi clinical content, or AYUSH/Dashavidha content.
 Dependencies/frontend: unchanged.
-Local verification: backend unit/regression and real PostgreSQL verification pass; final full gates pending.
+Local verification: 379 non-PostgreSQL tests passed with 74 expected skips; all 74 real PostgreSQL tests passed; backend/frontend quality, migration downgrade/re-upgrade/drift, Docker readiness, and scope audits passed.
 P7 status: PARTIAL. P7-B and P7-C are not started.
-Remote CI: PENDING.
+Remote CI: PASS — GitHub Actions run 38963368588; all six required jobs passed on implementation commit ce843754d37a90c2be8ee3ceef3cfb39945273c2.
 Next recommended unit after CI completion: P7-B — Deterministic Adaptive Engine.
 ```
