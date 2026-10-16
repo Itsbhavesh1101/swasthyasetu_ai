@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** Pre-P7 prerequisite specification pack — COMPLETE; P7 remains NOT STARTED
-**Current recommended next action:** P7-A — Intake Domain / Schema.
+**Current macro stage:** P7-A Intake Domain / Schema — COMPLETE; P7 remains PARTIAL
+**Current recommended next action:** P7-B — Deterministic Adaptive Engine.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | NOT STARTED | All three prerequisite specifications are complete; implementation has not begun. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete with all six CI jobs passing. P7-B/P7-C are not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -750,4 +750,47 @@ Code/schema/dependencies/CI: unchanged; Alembic head remains p5b_0006.
 P7 status: NOT STARTED.
 Remote CI: PASS — GitHub Actions run 38260421591; all six required jobs passed on specification commit c826f2dc1e8852483530958b4ed1f796d6cc412d.
 Next recommended unit: P7-A — Intake Domain / Schema.
+```
+
+---
+
+# 30. P7-A Intake Domain / Schema
+
+```text
+Phase/Sub-phase: P7-A — Intake Domain / Schema
+Status: COMPLETE
+Date: 2026-10-17
+Branch: phase/p7-a-intake-domain-schema
+Base commit: 2bfd834c4d1e4a1c0fb5782eeae6e2a6a097cda3
+Domain: immutable intake lifecycle and typed chief complaint, HPI, history, ROS, prior investigations, missing-information, contradiction, answer, questionnaire, and pack contracts.
+Serialization: strict versioned JSONB shapes reject unknown keys/versions and restore immutable typed values without echoing sensitive payloads in errors.
+Persistence: exactly clinical_intakes, intake_answers, and questionnaire_instances; one intake per encounter; append-only answers; caller-owned transactions; optimistic versioning.
+Migration: p7a_0007 on p5b_0006; downgrade removes only P7-A tables and re-upgrade is drift-clean.
+Composition: unbound clinical_intake manifest and future capability keys; no default registration, service stub, API, or router.
+Safety boundary: no diagnosis, triage, treatment, safety policy, AI, production question content, Hindi clinical content, or AYUSH/Dashavidha content.
+Dependencies/frontend: unchanged.
+Local verification: 379 non-PostgreSQL tests passed with 74 expected skips; all 74 real PostgreSQL tests passed; backend/frontend quality, migration downgrade/re-upgrade/drift, Docker readiness, and scope audits passed.
+P7 status: PARTIAL. P7-B and P7-C are not started.
+Remote CI: PASS — GitHub Actions run 38963368588; all six required jobs passed on implementation commit ce843754d37a90c2be8ee3ceef3cfb39945273c2.
+Next recommended unit after CI completion: P7-B — Deterministic Adaptive Engine.
+```
+
+---
+
+# 31. P7-A Review Fix 01 — Lifecycle Persistence Guard
+
+```text
+Review repair: VERIFIED
+Date: 2026-10-17
+Branch: phase/p7-a-intake-domain-schema
+Reviewed head: 258c64905fc26ba8729cfc9f6b404cc07f3f199a
+Repair commit: 43aa57a27f7a1718bf520ed6991a8a5e6d0e9eb5
+Lifecycle guard: PostgresClinicalIntakeRepository.save locks the authoritative row and reuses the canonical domain transition semantics before mutating any persisted field; terminal intakes are immutable through this repository path.
+PostgreSQL evidence: all four requested cross-state terminal transitions and same-status structured terminal mutations are rejected with InvalidClinicalIntakeTransitionError; fresh-session assertions prove status, structured content, completed_at, and version remain unchanged; valid IN_PROGRESS edit/complete/abandon saves increment exactly once.
+Regression evidence: 379 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; backend/frontend quality gates, Alembic p7a_0007 head/drift, dependency, migration, frontend, and P7-B scope audits passed.
+Schema/migrations/dependencies/APIs/frontend: unchanged. Alembic head remains p7a_0007.
+Remote CI: VERIFIED — GitHub Actions run 38969891055 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on repair commit 43aa57a27f7a1718bf520ed6991a8a5e6d0e9eb5.
+CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38969891055
+P7-A status: COMPLETE. P7 remains PARTIAL; P7-B and P7-C are not started.
+Next recommended unit remains P7-B — Deterministic Adaptive Engine.
 ```

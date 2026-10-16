@@ -14,6 +14,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import Settings
 from app.events.outbox import OutboxEventRecord  # noqa: F401 - registers Alembic metadata
+from app.modules.clinical_intake.infrastructure import (  # noqa: F401 - registers Alembic metadata
+    ClinicalIntakeRecord,
+    IntakeAnswerRecord,
+    QuestionnaireInstanceRecord,
+)
 from app.modules.consent.infrastructure import (  # noqa: F401 - registers Alembic metadata
     ConsentRecord,
 )

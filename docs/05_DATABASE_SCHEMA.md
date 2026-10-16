@@ -498,6 +498,11 @@ started_at TIMESTAMPTZ NOT NULL
 completed_at TIMESTAMPTZ NULL
 ```
 
+Migration `p7a_0007` (parent `p5b_0006`) creates exactly these three P7-A tables. It enforces one
+intake per encounter, closed lifecycle/source values, positive optimistic versions, completed-time
+consistency, JSON object/array shapes, encounter/intake foreign keys, and the documented lookup
+indexes. Downgrade removes only these three tables and restores the P5-B schema.
+
 ---
 
 # 13. Safety Tables

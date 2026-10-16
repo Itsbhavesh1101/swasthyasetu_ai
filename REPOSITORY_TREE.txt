@@ -161,7 +161,12 @@ swasthyasetu-ai/
 │   │   │   ├── audit/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── clinical_intake/
-│   │   │   │   └── .gitkeep
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── contracts.py
+│   │   │   │   ├── domain.py
+│   │   │   │   ├── infrastructure.py
+│   │   │   │   ├── public.py
+│   │   │   │   └── serialization.py
 │   │   │   ├── consent/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── api.py
@@ -287,7 +292,8 @@ swasthyasetu-ai/
 │   │   │   ├── 0003_sessions.py
 │   │   │   ├── 0004_identity_authorization.py
 │   │   │   ├── 0005_consent.py
-│   │   │   └── 0006_patient_encounter_persistence.py
+│   │   │   ├── 0006_patient_encounter_persistence.py
+│   │   │   └── 0007_clinical_intake_foundation.py
 │   │   ├── env.py
 │   │   └── script.py.mako
 │   ├── tests/
@@ -298,11 +304,14 @@ swasthyasetu-ai/
 │   │   │   ├── test_postgres_sessions.py
 │   │   │   ├── test_postgres_consent.py
 │   │   │   ├── test_postgres_p5_persistence.py
-│   │   │   └── test_postgres_p5c.py
+│   │   │   ├── test_postgres_p5c.py
+│   │   │   └── test_postgres_clinical_intake.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py
 │   │   ├── test_application.py
+│   │   ├── test_clinical_intake_boundaries.py
+│   │   ├── test_clinical_intake_domain.py
 │   │   ├── test_capability_registry.py
 │   │   ├── test_consent.py
 │   │   ├── test_consent_service.py
