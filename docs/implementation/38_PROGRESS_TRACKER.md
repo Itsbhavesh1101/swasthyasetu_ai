@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P6 — Patient Web Foundation — COMPLETE
-**Current recommended next action:** complete and approve the P7 prerequisite specifications before P7-A.
+**Current macro stage:** Pre-P7 prerequisite specification pack — COMPLETE; P7 remains NOT STARTED
+**Current recommended next action:** P7-A — Intake Domain / Schema.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | NOT STARTED | Requires clinical-intake spec. |
+| P7 | Structured Clinical Intake | NOT STARTED | All three prerequisite specifications are complete; implementation has not begun. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -100,9 +100,9 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `07_CLINICAL_INTAKE_SPEC.md` | NOT STARTED |
-| `22_UX_AND_USER_FLOWS.md` | NOT STARTED |
-| `23_PATIENT_APP_SPEC.md` | NOT STARTED |
+| `07_CLINICAL_INTAKE_SPEC.md` | COMPLETE |
+| `22_UX_AND_USER_FLOWS.md` | COMPLETE |
+| `23_PATIENT_APP_SPEC.md` | COMPLETE |
 
 ## Before P9
 
@@ -728,4 +728,26 @@ Local acceptance: AC-P6-001..008 PASS.
 Overall P6 status: COMPLETE.
 Remote CI: PASS — GitHub Actions run 38254479579; all six required jobs passed on implementation commit 8e55700c74250757c6a93d3a50a938963cf96675.
 Next recommended action: complete and approve the governance-deferred P7 prerequisite specifications before P7-A.
+```
+
+---
+
+# 29. Pre-P7 Prerequisite Specification Pack
+
+```text
+Work unit: Pre-P7 prerequisite specifications
+Status: COMPLETE
+Date: 2026-10-12
+Branch: phase/pre-p7-specification-pack
+Base commit: ed08ab6109995001821d9bd2b6b305666e045c1d
+Created: 07_CLINICAL_INTAKE_SPEC.md, 22_UX_AND_USER_FLOWS.md, 23_PATIENT_APP_SPEC.md.
+Traceability: FR-INTAKE-001..032 and AC-P7-001..010 are mapped to future P7-A/P7-B/P7-C evidence; no AC-P7 criterion is marked PASS.
+Architecture: clinical_intake owns its typed domain and three predeclared tables; PostgreSQL is authoritative; cross-module access is capability-only; question packs register explicitly at compile time.
+Safety boundary: no diagnosis, triage, threshold, treatment, medication advice, AYUSH interpretation, specialty routing, or unapproved question content was invented.
+Deferrals: /messages and AI to P8; safety policy to P9; speech/translation to P12; production Dashavidha content requires clinical approval.
+P6 security continuity: exact session bearer, centralized consent, server-only BFF, no-store, and PWA/browser-storage restrictions remain mandatory.
+Code/schema/dependencies/CI: unchanged; Alembic head remains p5b_0006.
+P7 status: NOT STARTED.
+Remote CI: PASS — GitHub Actions run 38260421591; all six required jobs passed on specification commit c826f2dc1e8852483530958b4ed1f796d6cc412d.
+Next recommended unit: P7-A — Intake Domain / Schema.
 ```

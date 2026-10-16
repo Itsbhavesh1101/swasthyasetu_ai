@@ -399,7 +399,8 @@ swasthyasetu-ai/
 │   │   │   ├── P2_A_SHARED_KERNEL_PRIMITIVES.md
 │   │   │   ├── P2_B_MODULE_CAPABILITY_REGISTRY.md
 │   │   │   ├── P2_C_OBSERVABILITY_FEATURE_FLAGS.md
-│   │   │   └── P3_A_SQLALCHEMY_ALEMBIC_FOUNDATION.md
+│   │   │   ├── P3_A_SQLALCHEMY_ALEMBIC_FOUNDATION.md
+│   │   │   └── PRE_P7_SPECIFICATION_PACK.md
 │   │   ├── CODEX_CONTEXT_RULES.md
 │   │   ├── CODEX_INSTRUCTIONS.md
 │   │   ├── CODEX_WORKFLOW.md
@@ -473,6 +474,9 @@ swasthyasetu-ai/
 │   ├── 04_DOMAIN_MODEL.md
 │   ├── 05_DATABASE_SCHEMA.md
 │   ├── 06_API_CONTRACTS.md
+│   ├── 07_CLINICAL_INTAKE_SPEC.md
+│   ├── 22_UX_AND_USER_FLOWS.md
+│   ├── 23_PATIENT_APP_SPEC.md
 │   ├── 29_ENGINEERING_STANDARDS.md
 │   ├── 34_MASTER_IMPLEMENTATION_PLAN.md
 │   └── README.md
