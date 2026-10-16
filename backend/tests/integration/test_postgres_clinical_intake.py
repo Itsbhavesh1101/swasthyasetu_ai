@@ -33,6 +33,7 @@ from app.modules.clinical_intake.domain import (
     ClinicalIntakeStatus,
     DurationValue,
     HistoryOfPresentIllness,
+    InvalidClinicalIntakeTransitionError,
 )
 from app.modules.clinical_intake.infrastructure import (
     ClinicalIntakeRecord,
@@ -258,6 +259,156 @@ async def test_optimistic_save_increments_once_and_rejects_stale_write(
                 expected_version=1,
                 updated_at=NOW + timedelta(minutes=6),
             )
+
+
+@pytest.mark.parametrize(
+    ("persisted_status", "requested_status"),
+    [
+        (ClinicalIntakeStatus.ABANDONED, ClinicalIntakeStatus.COMPLETED),
+        (ClinicalIntakeStatus.ABANDONED, ClinicalIntakeStatus.IN_PROGRESS),
+        (ClinicalIntakeStatus.COMPLETED, ClinicalIntakeStatus.IN_PROGRESS),
+        (ClinicalIntakeStatus.COMPLETED, ClinicalIntakeStatus.ABANDONED),
+    ],
+)
+async def test_save_rejects_transition_from_authoritative_terminal_status(
+    database_runtime: DatabaseRuntime,
+    persisted_status: ClinicalIntakeStatus,
+    requested_status: ClinicalIntakeStatus,
+) -> None:
+    encounter_id = await _encounter(database_runtime)
+    intake = _intake(encounter_id)
+    repository = PostgresClinicalIntakeRepository()
+    terminal = intake.transition_to(
+        persisted_status,
+        at=NOW + timedelta(minutes=5)
+        if persisted_status is ClinicalIntakeStatus.COMPLETED
+        else None,
+    )
+    async with database_runtime.transaction() as session:
+        await repository.add(session, intake)
+        persisted = await repository.save(
+            session,
+            terminal,
+            expected_version=1,
+            updated_at=NOW + timedelta(minutes=5),
+        )
+
+    requested = replace(
+        persisted,
+        status=requested_status,
+        completed_at=(
+            NOW + timedelta(minutes=10)
+            if requested_status is ClinicalIntakeStatus.COMPLETED
+            else None
+        ),
+    )
+    with pytest.raises(InvalidClinicalIntakeTransitionError):
+        async with database_runtime.transaction() as session:
+            await repository.save(
+                session,
+                requested,
+                expected_version=2,
+                updated_at=NOW + timedelta(minutes=10),
+            )
+
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, intake.intake_id) == persisted
+
+
+@pytest.mark.parametrize(
+    "terminal_status",
+    [ClinicalIntakeStatus.COMPLETED, ClinicalIntakeStatus.ABANDONED],
+)
+async def test_save_rejects_structured_mutation_while_reusing_terminal_status(
+    database_runtime: DatabaseRuntime,
+    terminal_status: ClinicalIntakeStatus,
+) -> None:
+    encounter_id = await _encounter(database_runtime)
+    intake = _intake(encounter_id)
+    repository = PostgresClinicalIntakeRepository()
+    terminal = intake.transition_to(
+        terminal_status,
+        at=NOW + timedelta(minutes=5)
+        if terminal_status is ClinicalIntakeStatus.COMPLETED
+        else None,
+    )
+    async with database_runtime.transaction() as session:
+        await repository.add(session, intake)
+        persisted = await repository.save(
+            session,
+            terminal,
+            expected_version=1,
+            updated_at=NOW + timedelta(minutes=5),
+        )
+
+    assert persisted.chief_complaint is not None
+    changed = replace(
+        persisted,
+        chief_complaint=replace(
+            persisted.chief_complaint,
+            display_key="chief.changed",
+        ),
+    )
+    with pytest.raises(InvalidClinicalIntakeTransitionError):
+        async with database_runtime.transaction() as session:
+            await repository.save(
+                session,
+                changed,
+                expected_version=2,
+                updated_at=NOW + timedelta(minutes=10),
+            )
+
+    async with database_runtime.session_factory() as session:
+        stored = await repository.get(session, intake.intake_id)
+    assert stored == persisted
+    assert stored is not None
+    assert stored.status is terminal_status
+    assert stored.chief_complaint == terminal.chief_complaint
+    assert stored.completed_at == terminal.completed_at
+    assert stored.version == 2
+
+
+@pytest.mark.parametrize(
+    "requested_status",
+    [
+        ClinicalIntakeStatus.IN_PROGRESS,
+        ClinicalIntakeStatus.COMPLETED,
+        ClinicalIntakeStatus.ABANDONED,
+    ],
+)
+async def test_save_allows_canonical_mutation_from_in_progress_once(
+    database_runtime: DatabaseRuntime,
+    requested_status: ClinicalIntakeStatus,
+) -> None:
+    encounter_id = await _encounter(database_runtime)
+    intake = _intake(encounter_id)
+    repository = PostgresClinicalIntakeRepository()
+    assert intake.chief_complaint is not None
+    requested = (
+        replace(
+            intake,
+            chief_complaint=replace(intake.chief_complaint, display_key="chief.edited"),
+        )
+        if requested_status is ClinicalIntakeStatus.IN_PROGRESS
+        else intake.transition_to(
+            requested_status,
+            at=NOW + timedelta(minutes=5)
+            if requested_status is ClinicalIntakeStatus.COMPLETED
+            else None,
+        )
+    )
+    async with database_runtime.transaction() as session:
+        await repository.add(session, intake)
+        saved = await repository.save(
+            session,
+            requested,
+            expected_version=1,
+            updated_at=NOW + timedelta(minutes=5),
+        )
+
+    assert saved.version == 2
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, intake.intake_id) == saved
 
 
 async def test_invalid_save_timestamp_does_not_mutate_persisted_intake(

@@ -244,6 +244,12 @@ class PostgresClinicalIntakeRepository:
             raise StaleClinicalIntakeWriteError("clinical intake version is stale")
         if record.encounter_id != intake.encounter_id.value:
             raise ClinicalIntakeIdentityError("clinical intake encounter identity cannot change")
+        persisted = self.to_domain(record)
+        if (
+            persisted.status is not ClinicalIntakeStatus.IN_PROGRESS
+            or intake.status is not ClinicalIntakeStatus.IN_PROGRESS
+        ):
+            persisted.transition_to(intake.status, at=intake.completed_at)
         record.status = intake.status.value
         record.chief_complaint = (
             None
