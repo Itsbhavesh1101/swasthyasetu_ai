@@ -686,6 +686,9 @@ An abandon capability is required by the lifecycle. P7-C may expose
 the session does not silently mutate the intake and it remains resumable until governed retention.
 Final endpoint activation is an **OPEN DESIGN DECISION** for P7-C.
 
+P7-C leaves this endpoint unexposed. Ending a private session neither abandons nor deletes the
+server-authoritative draft.
+
 ## 25.6 Deferred messages
 
 `POST /api/v1/intakes/{intake_id}/messages` is **DEFERRED TO P8** and excluded from all P7 acceptance.

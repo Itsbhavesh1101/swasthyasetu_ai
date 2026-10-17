@@ -124,6 +124,7 @@ def test_default_application_registers_sessions_and_seals_capabilities() -> None
     application = create_app(Settings(_env_file=None))
 
     assert application.state.module_registry.module_ids == (
+        "clinical_intake",
         "consent",
         "encounters",
         "identity",

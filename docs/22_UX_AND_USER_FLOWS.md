@@ -437,4 +437,6 @@ State is derived from authorized server responses, never URL possession or brows
 | `AC-P7-009` | AYUSH UI appears only for an approved enabled pack; no invented content. |
 | `AC-P7-010` | Review/completion copy consistently says draft and contains no diagnosis. |
 
-These criteria remain **NOT YET IMPLEMENTED** until P7 code and tests pass.
+P7-C implements these flows with an explicitly gated English engineering fixture. Production
+clinical-content approval, Hindi clinical localization, AYUSH content, and safety interpretation
+remain unavailable and cannot be inferred from engineering acceptance evidence.

@@ -199,6 +199,7 @@ def test_identity_manifest_and_default_composition_are_explicit_and_router_free(
     assert IDENTITY_MANIFEST.data_ownership == ("actors", "actor_roles")
     assert registration.routers == ()
     assert app.state.module_registry.module_ids == (
+        "clinical_intake",
         "consent",
         "encounters",
         "identity",

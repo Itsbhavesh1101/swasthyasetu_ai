@@ -10,6 +10,7 @@ from app.modules.encounters.contracts import (
     CreateEncounterCapability,
     EncounterCursor,
     EncounterPage,
+    FindOrCreateGeneralIntakeEncounterCapability,
     ListEncountersCapability,
     ReadEncounterCapability,
     TransitionEncounterCapability,
@@ -32,6 +33,9 @@ if TYPE_CHECKING:
 ENCOUNTERS_CREATE = CapabilityKey[CreateEncounterCapability](
     CapabilityIdentifier("encounters.create")
 )
+ENCOUNTERS_FIND_OR_CREATE_GENERAL_INTAKE = CapabilityKey[
+    FindOrCreateGeneralIntakeEncounterCapability
+](CapabilityIdentifier("encounters.find_or_create_general_intake"))
 ENCOUNTERS_READ = CapabilityKey[ReadEncounterCapability](CapabilityIdentifier("encounters.read"))
 ENCOUNTERS_LIST = CapabilityKey[ListEncountersCapability](CapabilityIdentifier("encounters.list"))
 ENCOUNTERS_TRANSITION = CapabilityKey[TransitionEncounterCapability](
@@ -45,6 +49,7 @@ ENCOUNTERS_MANIFEST = ModuleManifest(
         key.identifier
         for key in (
             ENCOUNTERS_CREATE,
+            ENCOUNTERS_FIND_OR_CREATE_GENERAL_INTAKE,
             ENCOUNTERS_READ,
             ENCOUNTERS_LIST,
             ENCOUNTERS_TRANSITION,
@@ -77,9 +82,17 @@ def build_encounters_registration(*, service: "EncounterService") -> ModuleRegis
 
     return ModuleRegistration(
         manifest=ENCOUNTERS_MANIFEST,
-        routers=(build_encounters_router(creator=service, reader=service, transitions=service),),
+        routers=(
+            build_encounters_router(
+                creator=service,
+                general_intake=service,
+                reader=service,
+                transitions=service,
+            ),
+        ),
         capability_bindings=(
             ENCOUNTERS_CREATE.bind(service),
+            ENCOUNTERS_FIND_OR_CREATE_GENERAL_INTAKE.bind(service),
             ENCOUNTERS_READ.bind(service),
             ENCOUNTERS_LIST.bind(service),
             ENCOUNTERS_TRANSITION.bind(service),
@@ -99,6 +112,7 @@ __all__ = [
     "ReadEncounterCapability",
     "TransitionEncounterCapability",
     "ENCOUNTERS_CREATE",
+    "ENCOUNTERS_FIND_OR_CREATE_GENERAL_INTAKE",
     "ENCOUNTERS_LIST",
     "ENCOUNTERS_MANIFEST",
     "ENCOUNTERS_READ",

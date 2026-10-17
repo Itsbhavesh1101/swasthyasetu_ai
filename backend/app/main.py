@@ -10,6 +10,8 @@ from app.api.health import router as health_router
 from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
+from app.config.settings import Environment
+from app.modules.clinical_intake.public import build_clinical_intake_registration
 from app.modules.consent.public import build_consent_registration
 from app.modules.encounters.public import build_encounter_service, build_encounters_registration
 from app.modules.identity.public import build_identity_registration
@@ -81,6 +83,11 @@ def create_app(
             build_patients_registration(service=patient_service),
             build_encounters_registration(service=encounter_service),
             build_provenance_registration(service=provenance_service),
+            build_clinical_intake_registration(
+                database=resolved_database,
+                engineering_content_enabled=resolved_settings.environment
+                in {Environment.LOCAL, Environment.TEST},
+            ),
         )
     else:
         resolved_module_registrations = module_registrations

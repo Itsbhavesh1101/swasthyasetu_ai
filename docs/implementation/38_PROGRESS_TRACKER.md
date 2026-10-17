@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-B Review Fix 01 — VERIFIED; P7 remains PARTIAL
-**Current recommended next action:** P7-C — APIs + Patient UI.
+**Current macro stage:** P7-C — IMPLEMENTED; branch CI verification pending
+**Current recommended next action:** Review P7-C evidence and approve/merge separately; do not begin P8 from this branch.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A and P7-B are complete; the active question-version ambiguity repair is verified with all six CI jobs passing. P7-C is not started. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A/P7-B are complete. P7-C implements gated engineering APIs and patient UI with no schema/dependency change; branch CI verification is pending. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -816,6 +816,32 @@ Local verification: 465 non-PostgreSQL tests passed with 83 expected skips; all 
 Remote CI: PASS — GitHub Actions run 38975516345; all six required jobs passed on implementation commit a8bd924f7ac0f0bb8a1df82be38dd3657d51afe2.
 P7-A = COMPLETE. P7-B = COMPLETE. P7-C = NOT STARTED. P7 = PARTIAL.
 Next recommended unit: P7-C — APIs + Patient UI.
+
+---
+
+# 34. P7-C Intake APIs and Patient UI
+
+Phase/Sub-phase: P7-C — Clinical Intake Application, APIs, Patient BFF & UI
+
+Implementation: explicit runtime registration; exact-session and SESSION-consent authorization;
+PostgreSQL-serialized general-intake encounter start; one intake per encounter; server-pinned packs;
+append-only answer correction; atomic questionnaire index/projection/version updates; deterministic
+read/review/completion; same-origin no-store BFF; accessible question and review routes.
+
+Clinical content: neutral English `core.intake@engineering.1` fixture, activated only for explicit
+local/test environments. Hindi and non-local deployment content fail closed. No AI, safety,
+diagnosis, clinical threshold, AYUSH pack, abandon endpoint, dependency, schema, or migration added.
+
+Alembic head: `p7a_0007`.
+
+Acceptance mapping: AC-P7-001/006/008 use deterministic server pack/engine selection;
+AC-P7-002 uses the chief-complaint draft projection; AC-P7-003..005 are covered by the closed eight
+answer controls and typed section contracts without activating unapproved medical content;
+AC-P7-007 preserves the governed history boundary with no fabricated pseudonymous history;
+AC-P7-009 keeps AYUSH absent until approved; AC-P7-010 verifies draft-only, non-diagnostic review
+and completion copy. All results are engineering acceptance only.
+
+P7-C and P7 status remain PARTIAL until final branch CI and review evidence are recorded.
 ```
 
 ---

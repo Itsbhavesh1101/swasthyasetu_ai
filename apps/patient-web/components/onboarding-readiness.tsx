@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ConsentState, onboardingRequest, SessionState } from "../lib/onboarding/client";
+import { intakeRequest } from "../lib/intake/client";
 import { LoadingState } from "./ui-primitives";
 
 type Readiness = "LOADING" | "NO_SESSION" | "NO_CONSENT" | "READY" | "UNAVAILABLE";
@@ -22,6 +23,7 @@ export function OnboardingReadiness() {
   const router = useRouter();
   const [state, setState] = useState<Readiness>("LOADING");
   const [closing, setClosing] = useState(false);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -48,6 +50,18 @@ export function OnboardingReadiness() {
       return;
     }
     setClosing(false);
+    setState("UNAVAILABLE");
+  }
+
+  async function startIntake() {
+    if (starting) return;
+    setStarting(true);
+    const result = await intakeRequest("/api/intake/start", { method: "POST" });
+    if (result.ok) {
+      router.push(`/intake/${result.value.intake_id}`);
+      return;
+    }
+    setStarting(false);
     setState("UNAVAILABLE");
   }
 
@@ -125,15 +139,25 @@ export function OnboardingReadiness() {
       </span>
       <div>
         <h2 id="readiness-title">Your private session and consent are ready.</h2>
-        <p>Clinical intake is not available in this phase.</p>
-        <button
-          className="button button--secondary"
-          disabled={closing}
-          onClick={() => void close()}
-          type="button"
-        >
-          {closing ? "Ending private session…" : "End private session"}
-        </button>
+        <p>You can now start a structured, patient-provided intake draft.</p>
+        <div className="inline-actions">
+          <button
+            className="button button--primary"
+            disabled={starting || closing}
+            onClick={() => void startIntake()}
+            type="button"
+          >
+            {starting ? "Starting intake…" : "Start intake"}
+          </button>
+          <button
+            className="button button--secondary"
+            disabled={closing || starting}
+            onClick={() => void close()}
+            type="button"
+          >
+            {closing ? "Ending private session…" : "End private session"}
+          </button>
+        </div>
       </div>
     </section>
   );

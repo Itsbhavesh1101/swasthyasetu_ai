@@ -243,7 +243,7 @@ test("keyboard onboarding uses real session and consent services without browser
 }) => {
   await completeOnboarding(page);
 
-  await expect(page.getByText(/clinical intake is not available in this phase/i)).toBeVisible();
+  await expect(page.getByRole("button", { name: /start intake/i })).toBeVisible();
   await expect(page.getByRole("link", { name: "Urgent help" }).first()).toBeVisible();
 
   const cookies = await context.cookies();
@@ -298,6 +298,35 @@ test("keyboard onboarding uses real session and consent services without browser
     scope: ["clinical_intake"],
     notice_version: "privacy-v1",
   });
+});
+
+test("real structured intake saves, resumes, reviews, and completes a non-diagnostic draft", async ({
+  page,
+}) => {
+  await completeOnboarding(page);
+  const start = page.getByRole("button", { name: /start intake/i });
+  await start.focus();
+  await expect(start).toBeFocused();
+  await start.press("Enter");
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    /what would you like to share/i,
+  );
+  await page.getByLabel(/what would you like to share/i).fill("Synthetic browser journey concern");
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/review$/);
+  await expect(page.getByText("Synthetic browser journey concern")).toBeVisible();
+  await expect(
+    page.getByText(/not a diagnosis, treatment plan, urgency assessment/i),
+  ).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByText("Synthetic browser journey concern")).toBeVisible();
+  await page.getByRole("button", { name: /complete draft/i }).click();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /your intake draft has been saved/i }),
+  ).toBeVisible();
+  await expect(page.getByText(/not a diagnosis/i)).toBeVisible();
 });
 
 test("withdrawing consent removes onboarding readiness without closing the session", async ({

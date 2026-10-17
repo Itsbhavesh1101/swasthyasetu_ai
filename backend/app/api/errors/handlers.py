@@ -38,7 +38,8 @@ def _protect_sensitive_response(request: Request, response: JSONResponse) -> JSO
     """Prevent storage of sensitive API errors without inspecting request secrets."""
     route = str(getattr(request.scope.get("route"), "path", ""))
     if any(
-        f"/{segment}" in route for segment in ("sessions", "consents", "patients", "encounters")
+        f"/{segment}" in route
+        for segment in ("sessions", "consents", "patients", "encounters", "intakes")
     ):
         response.headers["Cache-Control"] = "no-store"
     return response
@@ -114,8 +115,22 @@ async def http_error_handler(request: Request, exc: Exception) -> JSONResponse:
     )
 
 
+async def unexpected_error_handler(request: Request, exc: Exception) -> JSONResponse:
+    """Fail closed with a stable envelope; exception details stay server-side."""
+    return _protect_sensitive_response(
+        request,
+        build_error_response(
+            status_code=500,
+            code=ErrorCode.PROCESSING_FAILED,
+            message="The request could not be completed.",
+            request_id=_request_id(request),
+        ),
+    )
+
+
 def register_error_handlers(application: FastAPI) -> None:
     """Register project-owned exception translation with FastAPI."""
     application.add_exception_handler(SwasthyaSetuError, application_error_handler)
     application.add_exception_handler(RequestValidationError, validation_error_handler)
     application.add_exception_handler(StarletteHTTPException, http_error_handler)
+    application.add_exception_handler(Exception, unexpected_error_handler)

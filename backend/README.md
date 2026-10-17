@@ -225,8 +225,17 @@ domain values, strict JSONB serializers, repository contracts/adapters, future c
 and an unbound module manifest. P7-B adds the pure `deterministic-intake.v1` engine, a closed
 machine-readable rule grammar, strict pack validation/activation, registered answer validation,
 stable missing-information output, contradiction priority, and explicit conservative history
-reuse. It remains absent from default runtime composition: there is no intake application service,
-router, runtime pack, or frontend yet. Alembic head remains `p7a_0007`.
+reuse. P7-C registers the module and structured intake start/read/answer/complete routes. Every
+operation revalidates the exact encounter session and bounded SESSION consent; answer, questionnaire
+index, projection, and version changes commit atomically. Encounter-owned general-intake start uses
+a PostgreSQL advisory transaction lock to return/create one resumable pseudonymous episode per
+session. The only bundled content is an English local/test engineering fixture; other languages and
+environments fail closed. Alembic remains `p7a_0007`.
+
+Consent and session services retain their module-owned transactions. Intake performs a fresh public
+capability check on every request immediately before its own mutation transaction; it does not
+bypass ownership to lock consent rows. A concurrently committed revocation can therefore serialize
+before or after an already-authorized intake mutation, while every later operation fails closed.
 
 ## Module composition
 

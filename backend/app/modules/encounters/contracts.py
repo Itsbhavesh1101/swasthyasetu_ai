@@ -39,6 +39,10 @@ class CreateEncounterCapability(Protocol):
     ) -> Encounter: ...
 
 
+class FindOrCreateGeneralIntakeEncounterCapability(Protocol):
+    async def find_or_create_general_intake(self, *, session: Session) -> Encounter: ...
+
+
 class ReadEncounterCapability(Protocol):
     async def get_encounter(self, encounter_id: OpaqueId) -> Encounter: ...
 
@@ -62,6 +66,12 @@ class TransitionEncounterCapability(Protocol):
 
 
 class EncounterRepository(Protocol):
+    async def acquire_session_start_lock(
+        self, session: AsyncSession, session_id: OpaqueId
+    ) -> None: ...
+    async def get_resumable_for_session(
+        self, session: AsyncSession, session_id: OpaqueId
+    ) -> Encounter | None: ...
     async def add(self, session: AsyncSession, encounter: Encounter) -> object: ...
     async def get(self, session: AsyncSession, encounter_id: OpaqueId) -> Encounter | None: ...
     async def get_with_version(

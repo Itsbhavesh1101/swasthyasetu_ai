@@ -408,7 +408,8 @@ Marks incomplete encounter as abandoned.
 
 ## POST `/api/v1/encounters/{encounter_id}/intake`
 
-Starts intake.
+Starts or resumes the unique intake for an exact authorized pseudonymous encounter. Request pack
+IDs are allowlisted; immutable versions are resolved and pinned server-side.
 
 Response:
 
@@ -416,13 +417,16 @@ Response:
 {
   "intake_id": "uuid",
   "status": "IN_PROGRESS",
-  "next_question": {}
+  "version": 1,
+  "engine_state": "NEXT_QUESTION",
+  "current_question": {}
 }
 ```
 
 ## GET `/api/v1/intakes/{intake_id}`
 
-Returns structured intake state.
+Returns the authorized minimized structured draft, persisted version, pinned pack identities,
+latest answer views, missing-information summary, and deterministic engine state.
 
 ## POST `/api/v1/intakes/{intake_id}/answers`
 
@@ -430,11 +434,18 @@ Request:
 
 ```json
 {
-  "question_id": "hpi.duration",
+  "question_id": "core.hpi.duration",
+  "question_version": "1.0.0",
   "answer": {
-    "value": "2 days"
+    "schema_version": "intake-answer.v1",
+    "answer_type": "DURATION",
+    "value": 2,
+    "unit": "day",
+    "response_disposition": "ANSWERED",
+    "language_code": "en"
   },
-  "source_type": "PATIENT_TOUCH"
+  "source_type": "PATIENT_TOUCH",
+  "expected_version": 3
 }
 ```
 
@@ -443,15 +454,16 @@ Response:
 ```json
 {
   "status": "IN_PROGRESS",
-  "next_question": {},
-  "missing_information": [],
-  "requires_safety_evaluation": false
+  "version": 4,
+  "engine_state": "NEXT_QUESTION",
+  "current_question": {},
+  "missing_information": []
 }
 ```
 
-## POST `/api/v1/intakes/{intake_id}/messages`
+## POST `/api/v1/intakes/{intake_id}/messages` — deferred to P8
 
-AI-assisted conversational input.
+This route is not implemented in P7. AI-assisted conversational input is deferred to P8.
 
 Request:
 
@@ -476,7 +488,9 @@ This endpoint must not return an authoritative diagnosis.
 
 ## POST `/api/v1/intakes/{intake_id}/complete`
 
-Transitions the intake to its next governed state.
+With `{ "expected_version": n }`, atomically re-evaluates and saves the structured draft as
+`COMPLETED`. It does not complete the encounter or imply diagnosis, treatment, triage, safety, or
+clinician review. P7-C exposes no abandon endpoint.
 
 ---
 

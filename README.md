@@ -5,7 +5,7 @@ self-care governance, interoperability, and ML/QML research platform.
 
 ## Current status
 
-**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation COMPLETE. P7 Structured Clinical Intake PARTIAL (P7-A/P7-B COMPLETE; P7-C not started).**
+**P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation COMPLETE. P7 Structured Clinical Intake COMPLETE for the gated engineering flow; production clinical content approval remains deferred.**
 
 The repository includes a locked Python 3.12+/FastAPI backend with typed configuration, health
 endpoints, request correlation, structured logging, an async PostgreSQL persistence runtime,
@@ -81,6 +81,12 @@ clarification, and conservative explicit history-reuse policy. Pack and input or
 the canonical `(pack.order, question.order, pack_id, question_id)` selection result. It adds no
 runtime module registration, API, database change, dependency, frontend, production clinical
 content, network access, or AI behavior.
+
+P7-C activates the explicit clinical-intake module, exact-session and SESSION-consent checks,
+server-pinned question-pack versions, transactional append-only answers/projections, deterministic
+review/completion APIs, and the patient BFF/question/review experience. A neutral English CORE pack
+is an explicitly local/test-only engineering fixture; Hindi and non-local deployments fail closed
+until governed clinical content is approved. Alembic remains `p7a_0007` and no dependency was added.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
