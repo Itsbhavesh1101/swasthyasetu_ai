@@ -88,8 +88,10 @@ class ClinicalIntakeRecord(Base):
         Uuid(as_uuid=True), ForeignKey("encounters.id"), nullable=False, unique=True
     )
     status: Mapped[str] = mapped_column(String(32), nullable=False)
-    chief_complaint: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
-    hpi: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
+    chief_complaint: Mapped[dict[str, object] | None] = mapped_column(
+        JSONB(none_as_null=True), nullable=True
+    )
+    hpi: Mapped[dict[str, object] | None] = mapped_column(JSONB(none_as_null=True), nullable=True)
     history_sections: Mapped[dict[str, object]] = mapped_column(
         JSONB, nullable=False, default=dict, server_default=text("'{}'::jsonb")
     )

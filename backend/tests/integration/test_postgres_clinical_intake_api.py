@@ -4,31 +4,25 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncIterator
-from typing import cast
 
 import pytest
-from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select, text
 
 from app.config import DatabaseSettings, Environment, Settings
 from app.main import create_app
-from app.modules.clinical_intake.api import intake_view
-from app.modules.clinical_intake.application import ClinicalIntakeService
 from app.modules.clinical_intake.infrastructure import (
     ClinicalIntakeRecord,
     IntakeAnswerRecord,
     QuestionnaireInstanceRecord,
 )
-from app.modules.clinical_intake.public import INTAKE_START
 from app.shared.persistence import DatabaseRuntime
-from app.shared.types import OpaqueId
 
 pytestmark = pytest.mark.postgres
 
 
 @pytest.fixture
-async def intake_client() -> AsyncIterator[tuple[AsyncClient, DatabaseRuntime, FastAPI]]:
+async def intake_client() -> AsyncIterator[tuple[AsyncClient, DatabaseRuntime]]:
     url = os.getenv("SWASTHYASETU_TEST_DATABASE_URL")
     if url is None:
         pytest.skip("SWASTHYASETU_TEST_DATABASE_URL is not configured")
@@ -45,13 +39,10 @@ async def intake_client() -> AsyncIterator[tuple[AsyncClient, DatabaseRuntime, F
         _env_file=None,
     )
     application = create_app(settings, database=database)
-    # Unexpected exceptions must fail the integration test with their traceback;
-    # the production handler is verified separately for its sanitized envelope.
-    application.exception_handlers.pop(Exception, None)
     async with AsyncClient(
         transport=ASGITransport(app=application), base_url="http://test"
     ) as client:
-        yield client, database, application
+        yield client, database
     async with database.engine.begin() as connection:
         await connection.execute(truncate)
     await database.dispose()
@@ -91,9 +82,9 @@ async def _onboard(client: AsyncClient) -> tuple[str, str, str]:
 
 
 async def test_real_http_flow_is_atomic_versioned_idempotent_and_session_bound(
-    intake_client: tuple[AsyncClient, DatabaseRuntime, FastAPI],
+    intake_client: tuple[AsyncClient, DatabaseRuntime],
 ) -> None:
-    client, database, application = intake_client
+    client, database = intake_client
     _, token, encounter_id = await _onboard(client)
     headers = {"Authorization": f"Bearer {token}"}
     start = await client.post(
@@ -101,15 +92,6 @@ async def test_real_http_flow_is_atomic_versioned_idempotent_and_session_bound(
         headers=headers,
         json={"pack_ids": ["core.intake"]},
     )
-    if start.status_code == 500:
-        service = cast(
-            ClinicalIntakeService,
-            application.state.capability_registry.resolve(INTAKE_START),
-        )
-        snapshot = await service.start_snapshot(
-            OpaqueId.parse(encounter_id), pack_ids=("core.intake",), language="en"
-        )
-        intake_view(snapshot)
     assert start.status_code == 201
     assert start.headers["cache-control"] == "no-store"
     started = start.json()
@@ -215,9 +197,9 @@ async def test_real_http_flow_is_atomic_versioned_idempotent_and_session_bound(
 
 
 async def test_hindi_and_production_engineering_content_fail_closed(
-    intake_client: tuple[AsyncClient, DatabaseRuntime, FastAPI],
+    intake_client: tuple[AsyncClient, DatabaseRuntime],
 ) -> None:
-    client, _, _ = intake_client
+    client, _ = intake_client
     session_response = await client.post(
         "/api/v1/sessions",
         json={"session_type": "PSEUDONYMOUS", "language_preference": "hi"},
