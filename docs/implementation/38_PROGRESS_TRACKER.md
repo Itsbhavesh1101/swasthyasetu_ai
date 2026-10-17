@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-A Intake Domain / Schema — COMPLETE; P7 remains PARTIAL
-**Current recommended next action:** P7-B — Deterministic Adaptive Engine.
+**Current macro stage:** P7-B Review Fix 01 — VERIFIED; P7 remains PARTIAL
+**Current recommended next action:** P7-C — APIs + Patient UI.
 
 ---
 
@@ -43,7 +43,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A is complete with all six CI jobs passing. P7-B/P7-C are not started. |
+| P7 | Structured Clinical Intake | PARTIAL | P7-A and P7-B are complete; the active question-version ambiguity repair is verified with all six CI jobs passing. P7-C is not started. |
 | P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
@@ -793,4 +793,47 @@ Remote CI: VERIFIED — GitHub Actions run 38969891055 passed Backend quality, F
 CI URL: https://github.com/Itsbhavesh1101/swasthyasetu_ai/actions/runs/38969891055
 P7-A status: COMPLETE. P7 remains PARTIAL; P7-B and P7-C are not started.
 Next recommended unit remains P7-B — Deterministic Adaptive Engine.
+```
+
+---
+
+# 32. P7-B Deterministic Adaptive Engine
+
+```text
+Phase/Sub-phase: P7-B — Deterministic Adaptive Engine
+Status: COMPLETE
+Date: 2026-10-17
+Branch: phase/p7-b-deterministic-adaptive-engine
+Base commit: 1e4522c9f13309935faed0557ee2654cea54e093
+Engine: pure immutable deterministic-intake.v1 evaluation with NextQuestion, ClarificationRequired, Incomplete, and CompletionReady results.
+Rules: closed validated EXISTS/EQUALS/IN/AND/OR/NOT/ANSWER_DISPOSITION/HISTORY_AVAILABLE/CONTRADICTION_STATE grammar; no executable expressions.
+Determinism: canonical pack/question ordering, newest-answer tie-breaks, stable UUIDv5 missing IDs, and order-perturbation/repeatability coverage.
+Validation: strict pack graphs/metadata/approval boundaries and all registered answer-type constraints fail closed with privacy-safe typed errors.
+History/contradictions: terminal facts are excluded, suppression requires explicit fully approved policy, reused history is never promoted to a patient answer, and configured open clarification has priority.
+Extensibility: synthetic complaint, specialty, and approval-gated AYUSH packs use the same engine; no production clinical content was added.
+Schema/dependencies/frontend/runtime composition: unchanged. Alembic head remains p7a_0007.
+Local verification: 465 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; 113 focused intake/domain tests passed; backend/frontend quality gates, production builds, compileall, migration drift, Docker readiness, and scope audits passed.
+Remote CI: PASS — GitHub Actions run 38975516345; all six required jobs passed on implementation commit a8bd924f7ac0f0bb8a1df82be38dd3657d51afe2.
+P7-A = COMPLETE. P7-B = COMPLETE. P7-C = NOT STARTED. P7 = PARTIAL.
+Next recommended unit: P7-C — APIs + Patient UI.
+```
+
+---
+
+# 33. P7-B Review Fix 01 — Active Question-Version Ambiguity Guard
+
+```text
+Review repair: VERIFIED
+Date: 2026-10-17
+Branch: phase/p7-b-deterministic-adaptive-engine
+Reviewed head: 9280523bb76593ee2ee140294329a1ff7e9a86ee
+Repair: active pack validation now requires question_id uniqueness regardless of question_version, matching the engine and rule-language namespace.
+Compatibility: registry storage may retain separate packs with different versions of one question; either pack activates independently, while simultaneous activation fails with InvalidQuestionPackError in both caller orders.
+Scope: no engine result, rule operator, schema, migration, dependency, API, application, frontend, clinical policy, production content, AI, or P7-C change.
+Migration: Alembic head remains p7a_0007.
+Local verification: 467 non-PostgreSQL tests passed with 83 expected skips; all 83 real PostgreSQL tests passed; backend/frontend quality gates, compileall, migration drift, and scope audits passed.
+Repair commit: d02d60917a4eb6727366397928287497f52c0c7b
+Remote CI: VERIFIED — GitHub Actions run 38978341449 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans.
+P7-B repair status: COMPLETE. P7-B remains COMPLETE. P7 remains PARTIAL.
+Next recommended unit: P7-C — APIs + Patient UI.
 ```

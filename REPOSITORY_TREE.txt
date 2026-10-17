@@ -164,8 +164,12 @@ swasthyasetu-ai/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── contracts.py
 │   │   │   │   ├── domain.py
+│   │   │   │   ├── engine.py
+│   │   │   │   ├── history.py
 │   │   │   │   ├── infrastructure.py
+│   │   │   │   ├── pack_validation.py
 │   │   │   │   ├── public.py
+│   │   │   │   ├── rules.py
 │   │   │   │   └── serialization.py
 │   │   │   ├── consent/
 │   │   │   │   ├── __init__.py
@@ -312,6 +316,8 @@ swasthyasetu-ai/
 │   │   ├── test_application.py
 │   │   ├── test_clinical_intake_boundaries.py
 │   │   ├── test_clinical_intake_domain.py
+│   │   ├── test_clinical_intake_engine.py
+│   │   ├── test_clinical_intake_pack_validation.py
 │   │   ├── test_capability_registry.py
 │   │   ├── test_consent.py
 │   │   ├── test_consent_service.py
