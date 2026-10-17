@@ -39,6 +39,9 @@ async def intake_client() -> AsyncIterator[tuple[AsyncClient, DatabaseRuntime]]:
         _env_file=None,
     )
     application = create_app(settings, database=database)
+    # Unexpected exceptions must fail the integration test with their traceback;
+    # the production handler is verified separately for its sanitized envelope.
+    application.exception_handlers.pop(Exception, None)
     async with AsyncClient(
         transport=ASGITransport(app=application), base_url="http://test"
     ) as client:
