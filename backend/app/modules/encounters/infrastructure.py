@@ -107,6 +107,33 @@ def _language_context_from_record(value: object) -> str | None:
 class PostgresEncounterRepository:
     """Persist encounters without committing the caller-owned transaction."""
 
+    async def acquire_session_start_lock(self, session: AsyncSession, session_id: OpaqueId) -> None:
+        # A transaction-scoped advisory lock serializes the empty-row create race.
+        lock_key = int.from_bytes(session_id.value.bytes[:8], "big", signed=True)
+        await session.execute(
+            text("SELECT pg_advisory_xact_lock(:lock_key)"), {"lock_key": lock_key}
+        )
+
+    async def get_resumable_for_session(
+        self, session: AsyncSession, session_id: OpaqueId
+    ) -> Encounter | None:
+        record = (
+            await session.execute(
+                select(EncounterRecord)
+                .where(
+                    EncounterRecord.session_id == session_id.value,
+                    EncounterRecord.patient_id.is_(None),
+                    EncounterRecord.encounter_type == EncounterType.GENERAL_INTAKE.value,
+                    EncounterRecord.status.in_(
+                        (EncounterStatus.CREATED.value, EncounterStatus.IN_PROGRESS.value)
+                    ),
+                )
+                .order_by(EncounterRecord.started_at.asc(), EncounterRecord.id.asc())
+                .limit(1)
+            )
+        ).scalar_one_or_none()
+        return None if record is None else self.to_domain(record)
+
     async def add(self, session: AsyncSession, encounter: Encounter) -> EncounterRecord:
         record = EncounterRecord(
             id=encounter.encounter_id.value,

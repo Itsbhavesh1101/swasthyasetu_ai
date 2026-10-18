@@ -271,6 +271,7 @@ jobs:
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
       SWASTHYASETU_BACKEND_URL: http://127.0.0.1:8000
+      SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake"]'
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

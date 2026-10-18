@@ -10,7 +10,7 @@ export default function EncounterPage() {
     <div className="page-stack page-stack--narrow">
       <PageHeader
         title="Health journey"
-        description="Check whether the private onboarding steps are ready. No encounter or clinical intake is created here."
+        description="Check your private session and consent, then start a structured intake draft."
       />
       <OnboardingReadiness />
     </div>

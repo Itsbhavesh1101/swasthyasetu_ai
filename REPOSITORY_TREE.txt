@@ -36,6 +36,13 @@ swasthyasetu-ai/
 │   └── patient-web/
 │       ├── app/
 │       │   ├── api/
+│       │   │   ├── intake/
+│       │   │   │   ├── [intakeId]/
+│       │   │   │   │   ├── answers/route.ts
+│       │   │   │   │   ├── complete/route.ts
+│       │   │   │   │   └── route.ts
+│       │   │   │   ├── encounters/[encounterId]/start/route.ts
+│       │   │   │   └── start/route.ts
 │       │   │   └── onboarding/
 │       │   │       ├── consent/
 │       │   │       │   ├── revoke/
@@ -50,6 +57,9 @@ swasthyasetu-ai/
 │       │   ├── documents/
 │       │   │   └── page.tsx
 │       │   ├── encounter/
+│       │   │   └── page.tsx
+│       │   ├── intake/[intakeId]/
+│       │   │   ├── review/page.tsx
 │       │   │   └── page.tsx
 │       │   ├── language/
 │       │   │   └── page.tsx
@@ -71,6 +81,9 @@ swasthyasetu-ai/
 │       │   └── page.tsx
 │       ├── components/
 │       │   ├── consent-journey.tsx
+│       │   ├── intake/
+│       │   │   ├── answer-control.tsx
+│       │   │   └── intake-journey.tsx
 │       │   ├── language-selector.tsx
 │       │   ├── onboarding-readiness.tsx
 │       │   ├── offline-actions.tsx
@@ -81,6 +94,10 @@ swasthyasetu-ai/
 │       │   ├── ui-primitives.tsx
 │       │   └── urgent-help-link.tsx
 │       ├── lib/
+│       │   ├── intake/
+│       │   │   ├── client.ts
+│       │   │   ├── contracts.ts
+│       │   │   └── server.ts
 │       │   └── onboarding/
 │       │       ├── client.ts
 │       │       └── server.ts
@@ -94,6 +111,8 @@ swasthyasetu-ai/
 │       ├── tests/
 │       │   ├── accessibility-baseline.test.ts
 │       │   ├── browser-boundaries.test.ts
+│       │   ├── intake-bff.test.ts
+│       │   ├── intake-ui.test.tsx
 │       │   ├── onboarding-consent-bff.test.ts
 │       │   ├── onboarding-session-bff.test.ts
 │       │   ├── onboarding-ui.test.tsx
@@ -162,6 +181,9 @@ swasthyasetu-ai/
 │   │   │   │   └── .gitkeep
 │   │   │   ├── clinical_intake/
 │   │   │   │   ├── __init__.py
+│   │   │   │   ├── api.py
+│   │   │   │   ├── application.py
+│   │   │   │   ├── content.py
 │   │   │   │   ├── contracts.py
 │   │   │   │   ├── domain.py
 │   │   │   │   ├── engine.py
@@ -309,7 +331,8 @@ swasthyasetu-ai/
 │   │   │   ├── test_postgres_consent.py
 │   │   │   ├── test_postgres_p5_persistence.py
 │   │   │   ├── test_postgres_p5c.py
-│   │   │   └── test_postgres_clinical_intake.py
+│   │   │   ├── test_postgres_clinical_intake.py
+│   │   │   └── test_postgres_clinical_intake_api.py
 │   │   ├── conftest.py
 │   │   ├── test_actor_context.py
 │   │   ├── test_api_versioning.py

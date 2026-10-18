@@ -11,6 +11,7 @@ from app.api.security.authorization import get_actor_context
 from app.api.security.bearer import parse_bearer
 from app.modules.encounters.contracts import (
     CreateEncounterCapability,
+    FindOrCreateGeneralIntakeEncounterCapability,
     ReadEncounterCapability,
     TransitionEncounterCapability,
 )
@@ -40,6 +41,11 @@ class EncounterResponse(BaseModel):
     started_at: datetime
     completed_at: datetime | None
     language_context: str | None
+
+
+class GeneralIntakeEncounterRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    session_id: UUID
 
 
 def encounter_view(value: Encounter) -> EncounterResponse:
@@ -74,10 +80,27 @@ async def _authorize_existing(
 def build_encounters_router(
     *,
     creator: CreateEncounterCapability,
+    general_intake: FindOrCreateGeneralIntakeEncounterCapability,
     reader: ReadEncounterCapability,
     transitions: TransitionEncounterCapability,
 ) -> APIRouter:
     router = APIRouter(prefix="/encounters", tags=["encounters"])
+
+    @router.post("/general-intake", response_model=EncounterResponse)
+    async def find_or_create_general_intake(
+        payload: GeneralIntakeEncounterRequest,
+        request: Request,
+        response: Response,
+        authorization: Annotated[str | None, Header()] = None,
+    ) -> EncounterResponse:
+        response.headers["Cache-Control"] = "no-store"
+        session = await request.app.state.capability_registry.resolve(
+            SESSIONS_VALIDATE
+        ).validate_session(
+            session_id=OpaqueId(payload.session_id),
+            session_token=parse_bearer(authorization),
+        )
+        return encounter_view(await general_intake.find_or_create_general_intake(session=session))
 
     @router.post("", response_model=EncounterResponse, status_code=status.HTTP_201_CREATED)
     async def create_encounter(

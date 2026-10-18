@@ -44,6 +44,7 @@ class RequestContextMiddleware(BaseHTTPMiddleware):
                         message="The request could not be completed.",
                         request_id=request_id,
                     )
+                    response.headers["Cache-Control"] = "no-store"
 
                 response.headers[REQUEST_ID_HEADER] = request_id
                 duration_ms = round((perf_counter() - started_at) * 1000, 3)

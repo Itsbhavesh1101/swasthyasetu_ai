@@ -164,7 +164,11 @@ describe("P6-B onboarding UI", () => {
       render(<EncounterPage />);
 
       expect(await screen.findByText(message)).toBeVisible();
-      expect(screen.getByText(/clinical intake is not available/i)).toBeVisible();
+      if (expectedHref === null) {
+        expect(screen.getByRole("button", { name: /start intake/i })).toBeVisible();
+      } else {
+        expect(screen.getByText(/clinical intake is not available/i)).toBeVisible();
+      }
       if (expectedHref) {
         expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute(
           "href",

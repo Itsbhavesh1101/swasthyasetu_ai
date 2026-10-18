@@ -3,8 +3,12 @@
 import ast
 from pathlib import Path
 
-from app.config import Environment, Settings
+import pytest
+
+from app.config import Environment, FeaturesSettings, Settings
 from app.main import create_app
+from app.modules.clinical_intake.application import ClinicalIntakeService
+from app.modules.clinical_intake.public import INTAKE_START
 
 MODULE_ROOT = Path(__file__).parents[1] / "app" / "modules" / "clinical_intake"
 
@@ -34,7 +38,14 @@ def test_clinical_intake_has_no_foreign_infrastructure_imports() -> None:
         "socket",
         "urllib",
     )
-    for path in MODULE_ROOT.glob("*.py"):
+    for path in (
+        MODULE_ROOT / "domain.py",
+        MODULE_ROOT / "contracts.py",
+        MODULE_ROOT / "engine.py",
+        MODULE_ROOT / "history.py",
+        MODULE_ROOT / "rules.py",
+        MODULE_ROOT / "pack_validation.py",
+    ):
         assert not any(
             imported == prefix or imported.startswith(f"{prefix}.")
             for imported in _imports(path)
@@ -42,9 +53,9 @@ def test_clinical_intake_has_no_foreign_infrastructure_imports() -> None:
         ), path
 
 
-def test_clinical_intake_has_no_application_or_api_layer() -> None:
-    assert not (MODULE_ROOT / "application.py").exists()
-    assert not (MODULE_ROOT / "api.py").exists()
+def test_clinical_intake_has_explicit_application_and_api_layers() -> None:
+    assert (MODULE_ROOT / "application.py").is_file()
+    assert (MODULE_ROOT / "api.py").is_file()
 
 
 def test_pure_engine_has_no_clock_random_or_identifier_generation_calls() -> None:
@@ -93,6 +104,40 @@ def test_pure_engine_has_no_io_or_environment_imports() -> None:
         ), path
 
 
-def test_default_application_does_not_register_clinical_intake() -> None:
+def test_default_application_registers_clinical_intake() -> None:
     application = create_app(Settings(environment=Environment.TEST, _env_file=None))
-    assert "clinical_intake" not in application.state.module_registry.module_ids
+    assert "clinical_intake" in application.state.module_registry.module_ids
+    service = application.state.capability_registry.resolve(INTAKE_START)
+    assert isinstance(service, ClinicalIntakeService)
+    assert service._allowed_pack_versions == {}
+
+
+def test_engineering_content_requires_explicit_local_or_test_opt_in() -> None:
+    application = create_app(
+        Settings(
+            environment=Environment.TEST,
+            features=FeaturesSettings(enabled=("engineering_clinical_intake",)),
+            _env_file=None,
+        )
+    )
+    service = application.state.capability_registry.resolve(INTAKE_START)
+    assert isinstance(service, ClinicalIntakeService)
+    assert service._allowed_pack_versions == {"core.intake": "engineering.1"}
+
+
+@pytest.mark.parametrize(
+    "environment", [Environment.STAGING, Environment.PILOT, Environment.PRODUCTION]
+)
+def test_engineering_content_flag_cannot_override_deployment_environment(
+    environment: Environment,
+) -> None:
+    application = create_app(
+        Settings(
+            environment=environment,
+            features=FeaturesSettings(enabled=("engineering_clinical_intake",)),
+            _env_file=None,
+        )
+    )
+    service = application.state.capability_registry.resolve(INTAKE_START)
+    assert isinstance(service, ClinicalIntakeService)
+    assert service._allowed_pack_versions == {}

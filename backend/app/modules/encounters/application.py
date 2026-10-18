@@ -78,6 +78,34 @@ class EncounterService:
             await self._repository.add(transaction, encounter)
         return encounter
 
+    async def find_or_create_general_intake(self, *, session: Session) -> Encounter:
+        if session.session_type is not SessionType.PSEUDONYMOUS:
+            raise ApplicationError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="A general intake encounter is unavailable for this session.",
+            )
+        database = self._require_database()
+        async with database.transaction() as transaction:
+            await self._repository.acquire_session_start_lock(transaction, session.session_id)
+            existing = await self._repository.get_resumable_for_session(
+                transaction, session.session_id
+            )
+            if existing is not None:
+                return existing
+            now = self._now()
+            encounter = Encounter(
+                encounter_id=OpaqueId.new(),
+                patient_id=None,
+                session_id=session.session_id,
+                encounter_type=EncounterType.GENERAL_INTAKE,
+                status=EncounterStatus.CREATED,
+                started_at=now,
+                language_context=session.language_preference,
+                created_by=None,
+            )
+            await self._repository.add(transaction, encounter)
+            return encounter
+
     async def get_encounter(self, encounter_id: OpaqueId) -> Encounter:
         database = self._require_database()
         async with database.transaction() as transaction:
