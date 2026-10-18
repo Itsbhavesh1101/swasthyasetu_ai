@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-C Review Fix 01 — IMPLEMENTED; final branch CI verification pending
-**Current recommended next action:** Verify the P7-C repair evidence and approve/merge separately; do not begin P8 from this branch.
+**Current macro stage:** Pre-P8 prerequisite specification pack — specs complete subject to user review
+**Current recommended next action:** Review and merge the specification pack separately, then begin P8-A — AI gateway + provider ports/mock.
 
 ---
 
@@ -43,8 +43,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P4 | Identity + Sessions + Consent | COMPLETE | P4-A, P4-B, and P4-C complete; all mandatory P4-C feature-branch CI jobs passed. |
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
-| P7 | Structured Clinical Intake | PARTIAL | P7-A/P7-B are complete. P7-C implements gated engineering APIs and patient UI with no schema/dependency change; branch CI verification is pending. Production clinical content remains governance-deferred. |
-| P8 | AI Gateway + Structured Extraction | NOT STARTED | Depends on P7. |
+| P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
+| P8 | AI Gateway + Structured Extraction | NOT STARTED | Prerequisite specs are complete subject to user review; AC-P8-001..010 are not yet verified. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
@@ -104,6 +104,16 @@ These documents should be created before their dependent coding phases.
 | `22_UX_AND_USER_FLOWS.md` | COMPLETE |
 | `23_PATIENT_APP_SPEC.md` | COMPLETE |
 
+## Before P8
+
+| Document | Status |
+|---|---|
+| `13_AI_ORCHESTRATION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
+| `14_LLM_EXTRACTION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
+| `26_PRIVACY_CONSENT_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
+| `30_TESTING_STRATEGY.md` | COMPLETE — SUBJECT TO USER REVIEW |
+| `33_ERROR_HANDLING_POLICY.md` | COMPLETE — SUBJECT TO USER REVIEW |
+
 ## Before P9
 
 | Document | Status |
@@ -140,8 +150,8 @@ These documents should be created before their dependent coding phases.
 | Document | Status |
 |---|---|
 | `09_MENTAL_HEALTH_POLICY.md` | NOT STARTED |
-| `13_AI_ORCHESTRATION_SPEC.md` | NOT STARTED |
-| `14_LLM_EXTRACTION_SPEC.md` | NOT STARTED |
+| `13_AI_ORCHESTRATION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
+| `14_LLM_EXTRACTION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
 
 ## Before P15
 
@@ -168,13 +178,13 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `26_PRIVACY_CONSENT_SPEC.md` | NOT STARTED |
+| `26_PRIVACY_CONSENT_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
 | `27_SECURITY_ARCHITECTURE.md` | NOT STARTED |
 | `28_THREAT_MODEL.md` | NOT STARTED |
-| `30_TESTING_STRATEGY.md` | NOT STARTED |
+| `30_TESTING_STRATEGY.md` | COMPLETE — SUBJECT TO USER REVIEW |
 | `31_OBSERVABILITY_SPEC.md` | NOT STARTED |
 | `32_DEVOPS_DEPLOYMENT.md` | NOT STARTED |
-| `33_ERROR_HANDLING_POLICY.md` | NOT STARTED |
+| `33_ERROR_HANDLING_POLICY.md` | COMPLETE — SUBJECT TO USER REVIEW |
 
 ---
 
@@ -842,7 +852,8 @@ AC-P7-007 preserves the governed history boundary with no fabricated pseudonymou
 AC-P7-009 keeps AYUSH absent until approved; AC-P7-010 verifies draft-only, non-diagnostic review
 and completion copy. All results are engineering acceptance only.
 
-P7-C and P7 status remain PARTIAL until final branch CI and review evidence are recorded.
+P7-C status: COMPLETE. P7 status: COMPLETE. PR #21 merged to `main` at
+`926f27a5bda456b616061617dfaf1519e302b9d4` after the reviewed repair evidence passed.
 ```
 
 ---
@@ -850,7 +861,7 @@ P7-C and P7 status remain PARTIAL until final branch CI and review evidence are 
 # 35. P7-C Review Fix 01 — Intake Authority and Coverage
 
 ```text
-Review repair: IMPLEMENTED; FINAL CI PENDING
+Review repair: VERIFIED
 Branch: phase/p7-c-intake-apis-patient-ui / PR #21
 Authority: persisted pre-mutation engine selection gates new answers; eligible corrections are
 re-evaluated without their prior answer history, while early, conditional, or dependency-blocked
@@ -867,6 +878,11 @@ completed-instance rejection.
 Feature policy: engineering content requires environment AND explicit opt-in and can never activate
 in staging, pilot, or production. Production clinical approval remains unavailable.
 Schema/dependencies: unchanged. Alembic head remains p7a_0007.
+Repair head: `61d04658fc2a7d1c357b77f3eaf79d75e5f8cc5d`.
+Remote CI: PASS — GitHub Actions run `39148572995`; Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans passed.
+Merge evidence: PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`.
+P7-C status: COMPLETE. P7 status: COMPLETE.
 ```
 
 ---
@@ -887,4 +903,30 @@ Repair commit: d02d60917a4eb6727366397928287497f52c0c7b
 Remote CI: VERIFIED — GitHub Actions run 38978341449 passed Backend quality, Frontend quality, Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans.
 P7-B repair status: COMPLETE. P7-B remains COMPLETE. P7 remains PARTIAL.
 Next recommended unit: P7-C — APIs + Patient UI.
+```
+
+---
+
+# 36. Pre-P8 Prerequisite Specification Pack
+
+```text
+Work unit: Pre-P8 prerequisite specifications
+Status: COMPLETE — SUBJECT TO USER REVIEW
+Date: 2026-10-18
+Branch: phase/pre-p8-specification-pack
+Base commit: 926f27a5bda456b616061617dfaf1519e302b9d4
+Created: 13_AI_ORCHESTRATION_SPEC.md, 14_LLM_EXTRACTION_SPEC.md,
+26_PRIVACY_CONSENT_SPEC.md, 30_TESTING_STRATEGY.md, and 33_ERROR_HANDLING_POLICY.md.
+Architecture: future P8-A is a project-owned in-process orchestration boundary over LLMProvider
+with explicit compile-time registration; no production provider, SDK, proxy, or service is selected.
+Extraction: future P8-B owns strict task schemas/prompts, evidence, validation, provenance,
+uncertainty, injection/hallucination rejection, and candidate-only outputs.
+Integration: /api/v1/intakes/{intake_id}/messages remains P8-C design only and is not activated.
+Privacy: current exact-session/SESSION-consent/no-store/BFF rules are preserved; general intake
+consent does not authorize third-party AI egress, and real-patient external transfer remains blocked
+pending explicit privacy/security/institutional/regulatory review.
+Traceability: AC-P8-001..010 are mapped to future P8-A/B/C evidence and remain NOT YET VERIFIED.
+P7 status: COMPLETE. P8/P8-A/P8-B/P8-C status: NOT STARTED.
+Schema/dependencies/code/CI: unchanged. Alembic head remains p7a_0007.
+Next recommended unit after review and merge: P8-A — AI gateway + provider ports/mock.
 ```
