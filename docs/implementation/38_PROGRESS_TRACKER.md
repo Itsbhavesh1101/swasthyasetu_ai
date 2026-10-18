@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P8-A AI orchestration/provider ports — complete; P8 remains partial
-**Current recommended next action:** Complete independent PR review and merge P8-A separately before starting P8-B.
+**Current macro stage:** P8-B extraction schema/prompt package — implementation complete; P8 remains partial
+**Current recommended next action:** Complete independent review of P8-B PR #24; do not start P8-C.
 
 ---
 
@@ -44,7 +44,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
-| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A is complete with all six required CI jobs passing. P8-B/P8-C are not started. |
+| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A is merged. P8-B implementation and review repairs are complete subject to independent review; P8-C is not started. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
@@ -1022,8 +1022,8 @@ Safety/privacy: default off; no runtime registration, API, persistence, event, t
 provider SDK, network adapter, or external egress. Deterministic P7 intake remains the fallback.
 Validation: exact source version/hash and Unicode half-open spans, literal quote/value support,
 server-derived proposal IDs, prompt/schema/provider/model/source correlation, whole-output rejection,
-and conservative abstention for negation, temporality, third-party, hypothetical, uncertainty, and
-prompt-injection content.
+and a deliberately small positive allowlist of unambiguous first-person synthetic engineering
+fixtures. All other candidate-producing source forms are rejected because authority is unproven.
 Schema/migrations/dependencies/frontend: unchanged. Alembic head remains p7a_0007.
 Acceptance: AC-P8-003/004/006/007/008/009/010 implementation evidence added; AC-P8-001/002 and
 P8-A evidence preserved. P8-B is subject to independent review; P8-C is NOT STARTED; P8 is PARTIAL.
@@ -1033,4 +1033,34 @@ implementation commit 17d40eea8568efc55bd3a6dbab3041d998c8b110.
 Open gates: production prompt/schema semantics, clinical evidence sufficiency, real-patient external
 egress/consent/security/institutional/regulatory review, retention, and governed confirmation remain
 unapproved and unimplemented.
+```
+
+---
+
+# 40. P8-B Review Repair 01 — Source Authority and Prompt Boundary
+
+```text
+Work unit: P8-B review repair 01
+Status: IMPLEMENTATION COMPLETE — REMOTE CI PENDING
+Date: 2026-10-19
+Branch: phase/p8-b-clinical-extraction-schema-prompts
+Reviewed head: 3f1da4678d1e2ecc516b7b2641f5377182b19bb3
+Source authority: the prior negative-pattern heuristic is removed. Candidate promotion now requires
+an exact, server-owned engineering fixture form and literal, with evidence covering the authorized
+claim exactly. The guard applies to every enabled CandidateFieldKey and rejects mixed output wholly.
+Unicode boundary: all extraction string fields deliberately reject malformed UTF-8 Unicode with
+content-free validation errors; lone high/low surrogates cannot reach provider invocation or output
+serialization. Valid NFC Unicode remains supported.
+Prompt boundary: the immutable manifest records ADAPTER_ROLE_BINDING_NOT_VERIFIED. A future approved
+adapter must resolve prompt ID/version against the server-owned manifest, verify the content hash,
+and render the instruction template in a trusted instruction role separate from patient source data.
+P8-B does not transport that instruction through P8-A and does not claim adapter-level role
+enforcement or production prompt-injection resistance.
+AC-P8-009: schema/data separation is regression-tested; adapter role binding is NOT YET VERIFIED,
+so full production instruction-boundary acceptance remains deferred.
+Scope: no API, persistence, migration, dependency, adapter, provider, Docker, Compose, frontend, or
+P8-C changes. Alembic head remains p7a_0007.
+Open gates: clinical approval of production semantics/evidence, approved external-provider adapter,
+role separation assurance, real-patient egress/consent/security/institutional/regulatory review,
+retention, and governed confirmation remain unapproved and unimplemented.
 ```

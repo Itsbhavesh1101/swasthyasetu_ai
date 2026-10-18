@@ -21,6 +21,10 @@ class PromptApprovalState(StrEnum):
     ENGINEERING_ONLY = "ENGINEERING_ONLY"
 
 
+class PromptRoleAssurance(StrEnum):
+    ADAPTER_ROLE_BINDING_NOT_VERIFIED = "ADAPTER_ROLE_BINDING_NOT_VERIFIED"
+
+
 class PromptPackageError(ValueError):
     """Content-free prompt registry validation failure."""
 
@@ -35,6 +39,15 @@ All candidate facts remain AI_EXTRACTED_UNCONFIRMED."""
 
 @dataclass(frozen=True, slots=True)
 class PromptManifest:
+    """Server-owned prompt metadata with an explicitly deferred adapter boundary.
+
+    A future approved adapter must resolve this immutable manifest by prompt and
+    schema identity, verify ``content_hash``, and render ``instruction_template``
+    in a trusted instruction role that is separate from patient-controlled source
+    data. P8-B does not transport the template through P8-A and therefore does not
+    claim adapter-level role enforcement or production injection resistance.
+    """
+
     prompt_id: str
     prompt_version: str
     operation_id: str
@@ -45,6 +58,7 @@ class PromptManifest:
     instruction_template: str
     content_hash: str
     approval_state: PromptApprovalState
+    role_assurance: PromptRoleAssurance
     synthetic_fixture_ids: tuple[str, ...]
     safe_fallback: str
 
@@ -60,6 +74,7 @@ ENGINEERING_PROMPT_MANIFEST: Final = PromptManifest(
     instruction_template=ENGINEERING_INSTRUCTION,
     content_hash=sha256(ENGINEERING_INSTRUCTION.encode("utf-8")).hexdigest(),
     approval_state=PromptApprovalState.ENGINEERING_ONLY,
+    role_assurance=PromptRoleAssurance.ADAPTER_ROLE_BINDING_NOT_VERIFIED,
     synthetic_fixture_ids=("synthetic.literal.v1", "synthetic.abstention.v1"),
     safe_fallback="DETERMINISTIC_P7_INTAKE",
 )
@@ -79,6 +94,8 @@ class PromptRegistry:
                 raise PromptPackageError("prompt package content hash is invalid")
             if manifest.approval_state is not PromptApprovalState.ENGINEERING_ONLY:
                 raise PromptPackageError("prompt package approval state is invalid")
+            if manifest.role_assurance is not PromptRoleAssurance.ADAPTER_ROLE_BINDING_NOT_VERIFIED:
+                raise PromptPackageError("prompt adapter role assurance is invalid")
             values[key] = manifest
         self._manifests = MappingProxyType(values)
 

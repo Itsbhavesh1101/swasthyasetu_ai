@@ -9,6 +9,7 @@ from hashlib import sha256
 from typing import cast
 
 import pytest
+from pydantic import ValidationError
 
 from app.modules.ai_orchestration.contracts import (
     REQUEST_CONTRACT_VERSION,
@@ -36,6 +37,7 @@ from app.modules.clinical_intake.extraction.contracts import (
     SourceInput,
     derive_candidate_id,
 )
+from app.modules.clinical_intake.extraction.prompts import ENGINEERING_PROMPT_MANIFEST
 
 NOW = datetime(2026, 10, 19, 8, tzinfo=UTC)
 TEXT = "I report synthetic pain"
@@ -181,6 +183,7 @@ async def test_extractor_builds_one_bounded_request_and_returns_only_unconfirmed
         }
     }
     assert "system_prompt" not in request.input
+    assert ENGINEERING_PROMPT_MANIFEST.instruction_template not in repr(request.input)
 
 
 async def test_engineering_package_is_default_off_and_never_calls_capability() -> None:
@@ -192,6 +195,30 @@ async def test_engineering_package_is_default_off_and_never_calls_capability() -
 
     assert outcome.failure is not None
     assert outcome.failure.code is ExtractionFailureCode.PACKAGE_UNAVAILABLE
+    assert capability.requests == []
+
+
+@pytest.mark.parametrize("invalid_text", ["invalid-\ud800-source", "invalid-\udfff-source"])
+async def test_invalid_unicode_is_rejected_before_provider_invocation(
+    invalid_text: str,
+) -> None:
+    capability = ScriptedCapability(RuntimeError("must not be called"))
+
+    with pytest.raises(ValidationError):
+        invalid_task = ClinicalExtractionTask(
+            request_id="req_synthetic_0001",
+            language_code="en",
+            source=SourceInput(
+                source_id="source_synthetic_001",
+                source_version="1.0.0",
+                content_hash="0" * 64,
+                text=invalid_text,
+            ),
+        )
+        await ClinicalIntakeExtractor(
+            capability=capability, engineering_mode=True, clock=lambda: NOW
+        ).extract(invalid_task)
+
     assert capability.requests == []
 
 

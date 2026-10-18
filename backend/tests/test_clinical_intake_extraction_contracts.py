@@ -125,6 +125,36 @@ def test_source_rejects_hash_drift_non_normalized_oversize_and_extra_fields(
         SourceInput.model_validate(raw)
 
 
+@pytest.mark.parametrize("invalid_text", ["invalid-\ud800-source", "invalid-\udfff-source"])
+def test_source_rejects_lone_surrogates_with_a_safe_validation_error(
+    invalid_text: str,
+) -> None:
+    with pytest.raises(ValidationError) as captured:
+        SourceInput(
+            source_id="source_synthetic_001",
+            source_version="1.0.0",
+            content_hash="0" * 64,
+            text=invalid_text,
+        )
+
+    rendered = str(captured.value)
+    assert "valid UTF-8" in rendered
+    assert "invalid-" not in rendered
+
+
+def test_source_accepts_valid_nfc_unicode_and_emoji() -> None:
+    text = "I report café pain 😊"
+
+    source = SourceInput(
+        source_id="source_synthetic_001",
+        source_version="1.0.0",
+        content_hash=sha256(text.encode("utf-8")).hexdigest(),
+        text=text,
+    )
+
+    assert source.text == text
+
+
 @pytest.mark.parametrize("language", ["hi", "en-US", "EN", "", "unknown"])
 def test_task_rejects_every_unapproved_language(language: str) -> None:
     with pytest.raises(ValidationError, match="language"):

@@ -48,9 +48,20 @@ class _StrictModel(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         frozen=True,
+        hide_input_in_errors=True,
         str_strip_whitespace=False,
         arbitrary_types_allowed=True,
     )
+
+    @field_validator("*", mode="before", check_fields=False)
+    @classmethod
+    def require_valid_utf8(cls, value: object) -> object:
+        if isinstance(value, str):
+            try:
+                value.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                raise ValueError("text fields must contain valid UTF-8 Unicode") from None
+        return value
 
 
 class CandidateFieldKey(StrEnum):
@@ -104,7 +115,7 @@ class SourceInput(_StrictModel):
             raise ValueError("source text must already be NFC and LF normalized")
         if any(ord(character) < 32 and character not in {"\n", "\t"} for character in self.text):
             raise ValueError("source text contains an unsupported control character")
-        if sha256(self.text.encode("utf-8")).hexdigest() != self.content_hash:
+        if sha256(self.text.encode("utf-8", errors="strict")).hexdigest() != self.content_hash:
             raise ValueError("source content hash does not match normalized text")
         return self
 
@@ -319,7 +330,12 @@ class ExtractionEnvelope(_StrictModel):
         for reason in (self.abstention_reason, self.refusal_reason):
             if reason is not None and not _MACHINE_REASON.fullmatch(reason):
                 raise ValueError("reasons must be bounded machine codes")
-        serialized = json.dumps(self.model_dump(mode="json"), separators=(",", ":"))
-        if len(serialized.encode("utf-8")) > MAX_TASK_OUTPUT_BYTES:
+        try:
+            serialized = json.dumps(
+                self.model_dump(mode="json"), separators=(",", ":"), ensure_ascii=False
+            ).encode("utf-8", errors="strict")
+        except UnicodeEncodeError:
+            raise ValueError("extraction output contains invalid Unicode") from None
+        if len(serialized) > MAX_TASK_OUTPUT_BYTES:
             raise ValueError("extraction output exceeds the serialized byte limit")
         return self

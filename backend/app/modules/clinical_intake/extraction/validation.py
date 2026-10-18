@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import Final
 
 from app.modules.clinical_intake.extraction.contracts import (
     CandidateFact,
@@ -17,20 +18,14 @@ class ExtractionValidationError(ValueError):
     """Safe machine validation failure without patient or provider content."""
 
 
-_ABSTENTION_PATTERNS = tuple(
-    re.compile(pattern, re.IGNORECASE)
-    for pattern in (
-        r"\b(?:no|not|never|without|deny|denies|denied|cannot|can't|don't|doesn't|didn't)\b",
-        r"\b(?:maybe|might|could|possibly|unsure|uncertain|if|hypothetical)\b",
-        r"\b(?:previously|last year|years? ago|history of|used to)\b",
-        r"\bmy (?:mother|father|sister|brother|friend|caregiver)\b",
-        r"\b(?:he|she|they) (?:said|has|have|had)\b",
-        (
-            r"ignore previous|developer message|system\s*(?::|message|>)|<system|"
-            r"tool(?:s|_call)?|reveal secrets"
-        ),
-        r"swdub3j",
-    )
+# This is deliberately a tiny engineering-fixture authority proof, not a clinical
+# language parser. Everything outside these exact source forms and literals is rejected.
+_ENGINEERING_CLAIM_FORMS: Final = (
+    re.compile(r"\AI report (?P<claim>.+)\Z"),
+    re.compile(r"\AI have a (?P<claim>.+)\Z"),
+)
+_ENGINEERING_CLAIM_LITERALS: Final = frozenset(
+    {"synthetic pain", "synthetic headache", "café pain", "café pain 😊"}
 )
 
 
@@ -57,6 +52,16 @@ def _validate_candidate(task: ClinicalExtractionTask, candidate: CandidateFact) 
     expected_id = derive_candidate_id(candidate.field_key, candidate.evidence, candidate.value)
     if candidate.candidate_id != expected_id:
         raise ExtractionValidationError("EXTRACTION_CANDIDATE_IDENTITY_INVALID")
+    for source_form in _ENGINEERING_CLAIM_FORMS:
+        match = source_form.fullmatch(task.source.text)
+        if (
+            match is not None
+            and match.group("claim") in _ENGINEERING_CLAIM_LITERALS
+            and candidate.evidence.start == match.start("claim")
+            and candidate.evidence.end == match.end("claim")
+        ):
+            return
+    raise ExtractionValidationError("EXTRACTION_SOURCE_AUTHORITY_UNPROVEN")
 
 
 def validate_extraction(
@@ -73,8 +78,4 @@ def validate_extraction(
     for contradiction in envelope.contradiction_candidates:
         _validate_span(task, contradiction.left)
         _validate_span(task, contradiction.right)
-    if envelope.candidate_facts and any(
-        pattern.search(task.source.text) for pattern in _ABSTENTION_PATTERNS
-    ):
-        raise ExtractionValidationError("EXTRACTION_REQUIRES_ABSTENTION")
     return envelope
