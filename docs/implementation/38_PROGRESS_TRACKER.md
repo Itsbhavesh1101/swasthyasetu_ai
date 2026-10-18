@@ -1002,3 +1002,33 @@ P8-A remains subject to independent review. P8 remains PARTIAL; P8-B/P8-C remain
 External-provider, clinical, privacy, consent, retention, and production activation approvals remain
 pending.
 ```
+
+---
+
+# 39. P8-B Clinical Extraction Schema and Prompt Package
+
+```text
+Work unit: P8-B — Clinical Intake Extraction Schemas, Prompt Package and Validation
+Status: IMPLEMENTATION COMPLETE — REMOTE CI PENDING / INDEPENDENT REVIEW REQUIRED
+Date: 2026-10-19
+Branch: phase/p8-b-clinical-extraction-schema-prompts
+Base commit: 9d764d381a3c669baac4374ba67dde33536db211
+Package: detached clinical_intake/extraction contracts, compile-time engineering prompt registry,
+conservative source/evidence validation, and one-call P8-A capability application service.
+Authority: all outputs are immutable AI_EXTRACTED_UNCONFIRMED candidates; literal English
+engineering fixtures only; diagnosis, treatment, clinical scores, final triage, confirmation,
+provider/referral data, and later-phase policy outputs are outside the closed schema.
+Safety/privacy: default off; no runtime registration, API, persistence, event, telemetry content,
+provider SDK, network adapter, or external egress. Deterministic P7 intake remains the fallback.
+Validation: exact source version/hash and Unicode half-open spans, literal quote/value support,
+server-derived proposal IDs, prompt/schema/provider/model/source correlation, whole-output rejection,
+and conservative abstention for negation, temporality, third-party, hypothetical, uncertainty, and
+prompt-injection content.
+Schema/migrations/dependencies/frontend: unchanged. Alembic head remains p7a_0007.
+Acceptance: AC-P8-003/004/006/007/008/009/010 implementation evidence added; AC-P8-001/002 and
+P8-A evidence preserved. P8-B is subject to independent review; P8-C is NOT STARTED; P8 is PARTIAL.
+Remote CI: PENDING on the final implementation SHA.
+Open gates: production prompt/schema semantics, clinical evidence sufficiency, real-patient external
+egress/consent/security/institutional/regulatory review, retention, and governed confirmation remain
+unapproved and unimplemented.
+```

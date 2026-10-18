@@ -239,6 +239,12 @@ orchestration boundary and `backend/app/adapters/ai/` for explicitly composed di
 deterministic offline adapters. It owns no HTTP route, database table, clinical prompt/schema, or
 live provider integration.
 
+P8-B implements `backend/app/modules/clinical_intake/extraction/` as a detached, default-off,
+engineering-only package over the P8-A structured-generation capability. It owns strict task and
+candidate schemas, an immutable compile-time prompt manifest, source/evidence/provenance guards,
+and a transient application service. It is not imported by the default clinical-intake runtime,
+owns no route or persistence, and cannot promote candidates into P7 or clinical records.
+
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle
 and provenance values remain independently owned. Each module exposes domain contracts through
