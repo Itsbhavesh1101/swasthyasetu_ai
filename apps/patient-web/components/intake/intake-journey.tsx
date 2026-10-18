@@ -11,7 +11,18 @@ import { LoadingState } from "../ui-primitives";
 import { UrgentHelpLink } from "../urgent-help-link";
 import { AnswerControl } from "./answer-control";
 
-function answerBody(question: IntakeQuestion, form: FormData, version: number) {
+export function answerBody(question: IntakeQuestion, form: FormData, version: number) {
+  const requestedDisposition = String(form.get("response_disposition") ?? "ANSWERED");
+  const allowedDisposition =
+    requestedDisposition === "UNKNOWN"
+      ? question.allow_unknown
+      : requestedDisposition === "PREFER_NOT_TO_ANSWER"
+        ? question.allow_prefer_not_to_answer
+        : requestedDisposition === "SKIPPED"
+          ? question.allow_skip || question.requiredness === "OPTIONAL"
+          : requestedDisposition === "ANSWERED";
+  const responseDisposition = allowedDisposition ? requestedDisposition : "ANSWERED";
+  const answered = responseDisposition === "ANSWERED";
   const selected = form.getAll("selected_option_ids").map(String);
   const raw = form.get("value");
   let value: string | boolean | number | null = raw === null ? null : String(raw);
@@ -24,12 +35,15 @@ function answerBody(question: IntakeQuestion, form: FormData, version: number) {
     answer: {
       schema_version: "intake-answer.v1",
       answer_type: question.answer_type,
-      value: ["SINGLE_CHOICE", "MULTI_CHOICE"].includes(question.answer_type) ? null : value,
-      selected_option_ids: selected.length ? selected : null,
-      unit: form.get("unit") ? String(form.get("unit")) : null,
-      response_disposition: "ANSWERED",
+      value:
+        !answered || ["SINGLE_CHOICE", "MULTI_CHOICE"].includes(question.answer_type)
+          ? null
+          : value,
+      selected_option_ids: answered && selected.length ? selected : null,
+      unit: answered && form.get("unit") ? String(form.get("unit")) : null,
+      response_disposition: responseDisposition,
       language_code: "en",
-      original_text: question.answer_type === "TEXT" ? String(raw ?? "") : null,
+      original_text: answered && question.answer_type === "TEXT" ? String(raw ?? "") : null,
     },
     source_type: question.answer_type === "TEXT" ? "PATIENT_TEXT" : "PATIENT_TOUCH",
     expected_version: version,
@@ -83,9 +97,13 @@ export function IntakeJourney({
     event.preventDefault();
     if (!intake?.current_question || busy) return;
     setBusy(true);
+    const form = new FormData(event.currentTarget);
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    if (submitter instanceof HTMLButtonElement && submitter.name)
+      form.set(submitter.name, submitter.value);
     const result = await intakeRequest(`/api/intake/${encodeURIComponent(intakeId)}/answers`, {
       method: "POST",
-      body: answerBody(intake.current_question, new FormData(event.currentTarget), intake.version),
+      body: answerBody(intake.current_question, form, intake.version),
     });
     setBusy(false);
     if (!result.ok) {
@@ -247,6 +265,42 @@ export function IntakeJourney({
             <button className="button button--primary" disabled={busy} type="submit">
               {busy ? "Saving…" : "Save and continue"}
             </button>
+            {question.allow_unknown ? (
+              <button
+                className="button button--secondary"
+                disabled={busy}
+                formNoValidate
+                name="response_disposition"
+                type="submit"
+                value="UNKNOWN"
+              >
+                I do not know
+              </button>
+            ) : null}
+            {question.allow_prefer_not_to_answer ? (
+              <button
+                className="button button--secondary"
+                disabled={busy}
+                formNoValidate
+                name="response_disposition"
+                type="submit"
+                value="PREFER_NOT_TO_ANSWER"
+              >
+                Prefer not to answer
+              </button>
+            ) : null}
+            {question.allow_skip || question.requiredness === "OPTIONAL" ? (
+              <button
+                className="button button--secondary"
+                disabled={busy}
+                formNoValidate
+                name="response_disposition"
+                type="submit"
+                value="SKIPPED"
+              >
+                Skip this question
+              </button>
+            ) : null}
             <Link
               className="action-link action-link--secondary"
               href={`/intake/${intakeId}/review`}

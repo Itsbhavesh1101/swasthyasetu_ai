@@ -505,8 +505,10 @@ Existing backend, migration, Docker/PostgreSQL, frontend, and security CI jobs r
 | `AC-P7-009` | AYUSH appears only for approved registered pack; no bundled invented content. |
 | `AC-P7-010` | Completion and all final copy identify a non-diagnostic draft. |
 
-P7-C implements this mapping for the explicitly gated English engineering flow. This does not
-approve production clinical content, Hindi clinical localization, AYUSH content, or safety policy.
+P7-C implements this mapping for the English engineering flow only when local/test also explicitly
+enables `engineering_clinical_intake`. The default remains unavailable, and staging/pilot/production
+ignore this engineering opt-in. This does not approve production clinical content, Hindi clinical
+localization, AYUSH content, or safety policy.
 
 ---
 

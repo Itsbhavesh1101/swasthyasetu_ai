@@ -297,23 +297,12 @@ async def _authorize_encounter(
     request: Request,
     encounter_id: OpaqueId,
     authorization: str | None,
+    *,
+    for_write: bool,
 ) -> tuple[object, Session]:
     encounter = await request.app.state.capability_registry.resolve(ENCOUNTERS_READ).get_encounter(
         encounter_id
     )
-    if encounter.patient_id is not None:
-        raise ApplicationError(
-            code=ErrorCode.AUTHORIZATION_DENIED,
-            message="Patient-linked intake is not available in this phase.",
-        )
-    if encounter.encounter_type not in {
-        EncounterType.GENERAL_INTAKE,
-        EncounterType.KIOSK_INTAKE,
-    } or encounter.status not in {EncounterStatus.CREATED, EncounterStatus.IN_PROGRESS}:
-        raise ApplicationError(
-            code=ErrorCode.INVALID_STATE_TRANSITION,
-            message="This encounter cannot use structured intake.",
-        )
     session = await request.app.state.capability_registry.resolve(
         SESSIONS_VALIDATE
     ).validate_session(
@@ -326,6 +315,21 @@ async def _authorize_encounter(
         purpose=ConsentPurpose.GENERAL_PRODUCT_USE,
         required_scope=ConsentScope(("clinical_intake",)),
     )
+    if encounter.patient_id is not None:
+        raise ApplicationError(
+            code=ErrorCode.AUTHORIZATION_DENIED,
+            message="Patient-linked intake is not available in this phase.",
+        )
+    if encounter.encounter_type not in {
+        EncounterType.GENERAL_INTAKE,
+        EncounterType.KIOSK_INTAKE,
+    } or (
+        for_write and encounter.status not in {EncounterStatus.CREATED, EncounterStatus.IN_PROGRESS}
+    ):
+        raise ApplicationError(
+            code=ErrorCode.INVALID_STATE_TRANSITION,
+            message="This encounter cannot use structured intake.",
+        )
     return encounter, session
 
 
@@ -334,9 +338,13 @@ async def _authorize_intake(
     service: ClinicalIntakeService,
     intake_id: OpaqueId,
     authorization: str | None,
+    *,
+    for_write: bool,
 ) -> tuple[object, Session]:
     intake = await service.get_intake(intake_id)
-    encounter, session = await _authorize_encounter(request, intake.encounter_id, authorization)
+    encounter, session = await _authorize_encounter(
+        request, intake.encounter_id, authorization, for_write=for_write
+    )
     return encounter, session
 
 
@@ -375,7 +383,9 @@ def build_clinical_intake_router(*, service: ClinicalIntakeService) -> APIRouter
         authorization: Annotated[str | None, Header()] = None,
     ) -> IntakeView:
         response.headers["Cache-Control"] = "no-store"
-        _, session = await _authorize_encounter(request, OpaqueId(encounter_id), authorization)
+        _, session = await _authorize_encounter(
+            request, OpaqueId(encounter_id), authorization, for_write=True
+        )
         snapshot = await service.start_snapshot(
             OpaqueId(encounter_id),
             pack_ids=payload.pack_ids,
@@ -392,7 +402,9 @@ def build_clinical_intake_router(*, service: ClinicalIntakeService) -> APIRouter
         authorization: Annotated[str | None, Header()] = None,
     ) -> IntakeView:
         response.headers["Cache-Control"] = "no-store"
-        _, session = await _authorize_intake(request, service, OpaqueId(intake_id), authorization)
+        _, session = await _authorize_intake(
+            request, service, OpaqueId(intake_id), authorization, for_write=False
+        )
         return intake_view(
             await service.get_snapshot(
                 OpaqueId(intake_id), language=session.language_preference or "en"
@@ -408,7 +420,9 @@ def build_clinical_intake_router(*, service: ClinicalIntakeService) -> APIRouter
         authorization: Annotated[str | None, Header()] = None,
     ) -> IntakeView:
         response.headers["Cache-Control"] = "no-store"
-        _, session = await _authorize_intake(request, service, OpaqueId(intake_id), authorization)
+        _, session = await _authorize_intake(
+            request, service, OpaqueId(intake_id), authorization, for_write=True
+        )
         if payload.answer.language_code != (session.language_preference or "en"):
             raise ApplicationError(
                 code=ErrorCode.VALIDATION_ERROR,
@@ -449,7 +463,9 @@ def build_clinical_intake_router(*, service: ClinicalIntakeService) -> APIRouter
         authorization: Annotated[str | None, Header()] = None,
     ) -> IntakeView:
         response.headers["Cache-Control"] = "no-store"
-        _, session = await _authorize_intake(request, service, OpaqueId(intake_id), authorization)
+        _, session = await _authorize_intake(
+            request, service, OpaqueId(intake_id), authorization, for_write=True
+        )
         return intake_view(
             await service.complete_snapshot(
                 OpaqueId(intake_id),

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { POST as start } from "../app/api/intake/start/route";
 import { GET as read } from "../app/api/intake/[intakeId]/route";
 import { POST as answer } from "../app/api/intake/[intakeId]/answers/route";
+import { validIntake } from "../lib/intake/server";
 
 const sessionId = "1f0bb868-b00b-41c6-9335-f9c8b96ce7b1";
 const encounterId = "2f0bb868-b00b-41c6-9335-f9c8b96ce7b2";
@@ -116,6 +117,67 @@ describe("clinical intake BFF", () => {
         message: "The intake response could not be verified.",
       },
     });
+  });
+
+  it.each([
+    {
+      current_question: {
+        ...view().current_question,
+        constraints: { min_length: 1, max_length: 500, injected: "not-allowed" },
+      },
+    },
+    {
+      answers: [
+        {
+          answer_id: "4f0bb868-b00b-41c6-9335-f9c8b96ce7b4",
+          question_id: "core.chief_complaint",
+          question_version: "engineering.1",
+          answer_type: "TEXT",
+          value: { sensitive: "must-not-pass" },
+          selected_option_ids: null,
+          unit: null,
+          response_disposition: "ANSWERED",
+          source_label: "Patient provided",
+        },
+      ],
+    },
+    { engine_state: "UNTRUSTED_STATE" },
+    { completion_ready: true },
+  ])("rejects malformed nested backend intake data", async (malformed) => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(view(malformed))));
+    const response = await read(request(`/api/intake/${intakeId}`), {
+      params: Promise.resolve({ intakeId }),
+    });
+    expect(response.status).toBe(502);
+    expect(JSON.stringify(await response.json())).not.toContain("must-not-pass");
+  });
+
+  it("accepts bounded typed NUMBER response data", () => {
+    expect(
+      validIntake(
+        view({
+          current_question: {
+            ...view().current_question,
+            answer_type: "NUMBER",
+            constraints: { minimum: "0", maximum: "10", unit: "kg" },
+          },
+          answers: [
+            {
+              answer_id: "4f0bb868-b00b-41c6-9335-f9c8b96ce7b4",
+              question_id: "synthetic.number",
+              question_version: "1",
+              answer_type: "NUMBER",
+              value: "2.5",
+              selected_option_ids: null,
+              unit: "kg",
+              response_disposition: "ANSWERED",
+              source_label: "Patient provided",
+            },
+          ],
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("rejects cross-origin answers before any backend request", async () => {

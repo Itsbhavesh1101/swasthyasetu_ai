@@ -427,8 +427,16 @@ Response:
 
 Returns the authorized minimized structured draft, persisted version, pinned pack identities,
 latest answer views, missing-information summary, and deterministic engine state.
+An existing completed draft remains readable when its encounter later becomes terminal, but only
+while the exact owning session is active and its consent remains valid. Terminal encounter state
+never authorizes a start, answer, or completion mutation.
 
 ## POST `/api/v1/intakes/{intake_id}/answers`
+
+The server re-evaluates the persisted pre-mutation engine state. It accepts only the exact current
+`NextQuestion`/`ClarificationRequired` identity or a previously accepted question that remains an
+eligible correction; registered but early, conditional, or dependency-blocked questions fail with
+`VALIDATION_ERROR` and make no writes.
 
 Request:
 

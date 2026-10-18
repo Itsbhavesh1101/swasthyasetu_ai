@@ -30,6 +30,11 @@ default. P2-C feature configuration accepts immutable JSON using
 synthetic names, for example `SWASTHYASETU_FEATURES={"enabled":["example_feature"]}`. No feature
 is enabled by default.
 
+The non-clinical P7 engineering questionnaire additionally requires `local` or `test` plus the
+explicit opt-in `SWASTHYASETU_FEATURES__ENABLED='["engineering_clinical_intake"]'`. Staging,
+pilot, and production ignore that engineering flag and remain unavailable until approved content
+is registered.
+
 ## PostgreSQL and migrations
 
 P3-A uses SQLAlchemy's async engine with the explicit `postgresql+psycopg` driver. Each application
@@ -229,8 +234,9 @@ reuse. P7-C registers the module and structured intake start/read/answer/complet
 operation revalidates the exact encounter session and bounded SESSION consent; answer, questionnaire
 index, projection, and version changes commit atomically. Encounter-owned general-intake start uses
 a PostgreSQL advisory transaction lock to return/create one resumable pseudonymous episode per
-session. The only bundled content is an English local/test engineering fixture; other languages and
-environments fail closed. Alembic remains `p7a_0007`.
+session. The only bundled content is an English engineering fixture that requires both local/test
+and the explicit `engineering_clinical_intake` feature flag. Other languages, a missing flag, and
+staging/pilot/production fail closed. Alembic remains `p7a_0007`.
 
 Consent and session services retain their module-owned transactions. Intake performs a fresh public
 capability check on every request immediately before its own mutation transaction; it does not

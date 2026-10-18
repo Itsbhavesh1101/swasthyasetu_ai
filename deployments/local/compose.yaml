@@ -29,6 +29,7 @@ services:
       SWASTHYASETU_DEBUG: "false"
       SWASTHYASETU_ENVIRONMENT: local
       SWASTHYASETU_LOG_LEVEL: INFO
+      SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake"]'
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB must be set}
     ports:

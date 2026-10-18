@@ -11,6 +11,7 @@ from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
 from app.config.settings import Environment
+from app.modules.clinical_intake.content import ENGINEERING_CONTENT_FEATURE
 from app.modules.clinical_intake.public import build_clinical_intake_registration
 from app.modules.consent.public import build_consent_registration
 from app.modules.encounters.public import build_encounter_service, build_encounters_registration
@@ -18,7 +19,11 @@ from app.modules.identity.public import build_identity_registration
 from app.modules.patients.public import build_patient_service, build_patients_registration
 from app.modules.provenance.public import build_provenance_registration, build_provenance_service
 from app.modules.sessions.public import build_sessions_registration
-from app.shared.feature_flags import ConfigurationFeatureFlagProvider, FeatureFlagService
+from app.shared.feature_flags import (
+    ConfigurationFeatureFlagProvider,
+    FeatureFlag,
+    FeatureFlagService,
+)
 from app.shared.modules import ModuleRegistration, ModuleRegistry
 from app.shared.observability import (
     ObservabilityRuntime,
@@ -85,8 +90,10 @@ def create_app(
             build_provenance_registration(service=provenance_service),
             build_clinical_intake_registration(
                 database=resolved_database,
-                engineering_content_enabled=resolved_settings.environment
-                in {Environment.LOCAL, Environment.TEST},
+                engineering_content_enabled=(
+                    resolved_settings.environment in {Environment.LOCAL, Environment.TEST}
+                    and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_CONTENT_FEATURE))
+                ),
             ),
         )
     else:

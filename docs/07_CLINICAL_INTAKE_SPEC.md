@@ -488,8 +488,11 @@ pack/version or question/version keys, dependency cycles, unresolved rules, unsu
 contracts, enabled voice-only questions, and unapproved production packs. No filesystem scanning,
 entry-point discovery, remote code, or global mutable service locator is allowed.
 
-P7 ships an engineering-safe core structural pack. Complaint, specialty, and AYUSH content may be
-registered later only through reviewed code/configuration and deployment.
+P7 ships an engineering-safe core structural pack. It is fail-closed by default and activates only
+when the process is both `local`/`test` and explicitly opts in with the
+`engineering_clinical_intake` feature flag. The flag cannot activate it in staging, pilot, or
+production. Complaint, specialty, and AYUSH content may be registered later only through reviewed
+code/configuration and deployment.
 
 ---
 
@@ -550,6 +553,12 @@ Evaluation order is stable:
 4. calculate configured missing required information;
 5. select the lowest `(pack.order, question.order, pack_id, question_id)` eligible unanswered item;
 6. otherwise return completion-ready.
+
+The application layer evaluates this persisted pre-mutation result before accepting an answer. A
+caller may answer only the selected question or correct a previously accepted question that would
+again be selected when its prior answers are removed. Pack membership alone is not answer
+authority. Completed reads and idempotent completion retries validate non-empty, unique, resolvable
+pinned instances and their terminal status before returning `CompletionReady`.
 
 Equal input and registry versions must produce equal output. Engine/version and rule IDs are recorded
 for reproducibility. P7 completion is impossible while unresolved required missing information or

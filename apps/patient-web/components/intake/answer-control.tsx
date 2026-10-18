@@ -81,7 +81,10 @@ export function AnswerControl({ question, disabled }: Props) {
             type="number"
           />
           {typeof question.constraints.unit === "string" ? (
-            <span>{question.constraints.unit}</span>
+            <>
+              <input name="unit" type="hidden" value={question.constraints.unit} />
+              <span>{question.constraints.unit}</span>
+            </>
           ) : null}
         </div>
       );

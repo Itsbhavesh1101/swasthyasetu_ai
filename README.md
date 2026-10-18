@@ -85,8 +85,9 @@ content, network access, or AI behavior.
 P7-C activates the explicit clinical-intake module, exact-session and SESSION-consent checks,
 server-pinned question-pack versions, transactional append-only answers/projections, deterministic
 review/completion APIs, and the patient BFF/question/review experience. A neutral English CORE pack
-is an explicitly local/test-only engineering fixture; Hindi and non-local deployments fail closed
-until governed clinical content is approved. Alembic remains `p7a_0007` and no dependency was added.
+is a fail-closed engineering fixture requiring both a local/test environment and the explicit
+`engineering_clinical_intake` feature flag; Hindi and non-local deployments fail closed until
+governed clinical content is approved. Alembic remains `p7a_0007` and no dependency was added.
 
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared

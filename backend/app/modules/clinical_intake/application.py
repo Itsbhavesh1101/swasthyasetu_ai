@@ -30,10 +30,12 @@ from app.modules.clinical_intake.domain import (
 from app.modules.clinical_intake.engine import (
     ENGINE_VERSION,
     AdaptiveIntakeEngine,
+    ClarificationRequired,
     CompletionReady,
     EngineInput,
     EngineResult,
     InvalidAnswerForQuestionError,
+    NextQuestion,
 )
 from app.modules.clinical_intake.infrastructure import (
     PostgresClinicalIntakeRepository,
@@ -135,27 +137,47 @@ class ClinicalIntakeService:
         *,
         language: str,
     ) -> EngineInput:
+        identities = self._validate_instances(intake, instances, language=language)
+        return EngineInput(
+            intake=intake,
+            selected_pack_identities=identities,
+            answers=answers,
+            contradictions=intake.contradictions,
+            language=language,
+        )
+
+    def _validate_instances(
+        self,
+        intake: ClinicalIntake,
+        instances: tuple[QuestionnaireInstance, ...],
+        *,
+        language: str,
+    ) -> tuple[tuple[str, str], ...]:
         identities = self._instance_identities(instances)
         if not identities or len(identities) != len(set(identities)):
             raise ApplicationError(
                 code=ErrorCode.PROCESSING_FAILED,
                 message="The saved intake configuration is inconsistent.",
             )
+        expected_status = {
+            ClinicalIntakeStatus.IN_PROGRESS: QuestionnaireStatus.ACTIVE,
+            ClinicalIntakeStatus.COMPLETED: QuestionnaireStatus.COMPLETED,
+            ClinicalIntakeStatus.ABANDONED: QuestionnaireStatus.ABANDONED,
+        }[intake.status]
+        if any(instance.status is not expected_status for instance in instances):
+            raise ApplicationError(
+                code=ErrorCode.PROCESSING_FAILED,
+                message="The saved intake configuration is inconsistent.",
+            )
         try:
             self._registry.activate(identities, language=language)
-            return EngineInput(
-                intake=intake,
-                selected_pack_identities=identities,
-                answers=answers,
-                contradictions=intake.contradictions,
-                language=language,
-            )
         except ValueError as error:
             raise ApplicationError(
                 code=ErrorCode.POLICY_UNAVAILABLE,
                 message="The saved intake content is no longer available.",
                 cause=error,
             ) from error
+        return identities
 
     async def start_snapshot(
         self, encounter_id: OpaqueId, *, pack_ids: tuple[str, ...], language: str
@@ -255,6 +277,7 @@ class ClinicalIntakeService:
         language: str,
     ) -> EngineResult:
         if intake.status is ClinicalIntakeStatus.COMPLETED:
+            self._validate_instances(intake, instances, language=language)
             return CompletionReady()
         if intake.status is ClinicalIntakeStatus.ABANDONED:
             raise ApplicationError(
@@ -320,6 +343,55 @@ class ClinicalIntakeService:
             )
         return replace(intake, chief_complaint=complaint)
 
+    @staticmethod
+    def _is_selected_question(
+        result: EngineResult, question_id: str, question_version: str
+    ) -> bool:
+        return isinstance(result, (NextQuestion, ClarificationRequired)) and (
+            result.question.question_id,
+            result.question.question_version,
+        ) == (question_id, question_version)
+
+    def _require_answer_authority(
+        self,
+        intake: ClinicalIntake,
+        instances: tuple[QuestionnaireInstance, ...],
+        answers: tuple[IntakeAnswer, ...],
+        *,
+        question_id: str,
+        question_version: str,
+        language: str,
+    ) -> None:
+        persisted_result = self._engine.evaluate(
+            self._engine_input(intake, instances, answers, language=language)
+        )
+        if self._is_selected_question(persisted_result, question_id, question_version):
+            return
+        if not any(
+            answer.question_id == question_id and answer.question_version == question_version
+            for answer in answers
+        ):
+            raise ApplicationError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="The question is not currently available for an answer.",
+            )
+        without_correction_target = tuple(
+            answer for answer in answers if answer.question_id != question_id
+        )
+        correction_result = self._engine.evaluate(
+            self._engine_input(
+                intake,
+                instances,
+                without_correction_target,
+                language=language,
+            )
+        )
+        if not self._is_selected_question(correction_result, question_id, question_version):
+            raise ApplicationError(
+                code=ErrorCode.VALIDATION_ERROR,
+                message="The question is not currently available for correction.",
+            )
+
     async def submit_answer(
         self,
         intake_id: OpaqueId,
@@ -355,6 +427,14 @@ class ClinicalIntakeService:
                 answers = await self._answers.list_for_intake(transaction, intake_id)
                 instances = await self._instances.list_for_encounter(
                     transaction, intake.encounter_id
+                )
+                self._require_answer_authority(
+                    intake,
+                    instances,
+                    answers,
+                    question_id=value.question_id,
+                    question_version=value.question_version,
+                    language=language,
                 )
                 answered_at = self._next_timestamp(now, answers)
                 answer = IntakeAnswer(
@@ -493,7 +573,12 @@ class ClinicalIntakeService:
                     transaction, intake.encounter_id
                 )
                 if intake.status is ClinicalIntakeStatus.COMPLETED:
-                    return IntakeSnapshot(intake, answers, instances, CompletionReady())
+                    return IntakeSnapshot(
+                        intake,
+                        answers,
+                        instances,
+                        self._result(intake, instances, answers, language=language),
+                    )
                 if intake.status is not ClinicalIntakeStatus.IN_PROGRESS:
                     raise ApplicationError(
                         code=ErrorCode.INVALID_STATE_TRANSITION,

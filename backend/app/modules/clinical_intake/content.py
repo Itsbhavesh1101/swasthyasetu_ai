@@ -19,6 +19,7 @@ from app.modules.clinical_intake.contracts import (
 
 ENGINEERING_CORE_PACK_ID = "core.intake"
 ENGINEERING_CORE_PACK_VERSION = "engineering.1"
+ENGINEERING_CONTENT_FEATURE = "engineering_clinical_intake"
 
 
 @dataclass(frozen=True, slots=True)

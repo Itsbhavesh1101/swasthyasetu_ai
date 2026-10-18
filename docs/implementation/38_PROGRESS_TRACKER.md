@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P7-C — IMPLEMENTED; branch CI verification pending
-**Current recommended next action:** Review P7-C evidence and approve/merge separately; do not begin P8 from this branch.
+**Current macro stage:** P7-C Review Fix 01 — IMPLEMENTED; final branch CI verification pending
+**Current recommended next action:** Verify the P7-C repair evidence and approve/merge separately; do not begin P8 from this branch.
 
 ---
 
@@ -828,8 +828,9 @@ PostgreSQL-serialized general-intake encounter start; one intake per encounter; 
 append-only answer correction; atomic questionnaire index/projection/version updates; deterministic
 read/review/completion; same-origin no-store BFF; accessible question and review routes.
 
-Clinical content: neutral English `core.intake@engineering.1` fixture, activated only for explicit
-local/test environments. Hindi and non-local deployment content fail closed. No AI, safety,
+Clinical content: neutral English `core.intake@engineering.1` fixture, activated only when a
+local/test environment also explicitly enables `engineering_clinical_intake`. Missing opt-in,
+Hindi, and non-local deployment content fail closed. No AI, safety,
 diagnosis, clinical threshold, AYUSH pack, abandon endpoint, dependency, schema, or migration added.
 
 Alembic head: `p7a_0007`.
@@ -842,6 +843,30 @@ AC-P7-009 keeps AYUSH absent until approved; AC-P7-010 verifies draft-only, non-
 and completion copy. All results are engineering acceptance only.
 
 P7-C and P7 status remain PARTIAL until final branch CI and review evidence are recorded.
+```
+
+---
+
+# 35. P7-C Review Fix 01 — Intake Authority and Coverage
+
+```text
+Review repair: IMPLEMENTED; FINAL CI PENDING
+Branch: phase/p7-c-intake-apis-patient-ui / PR #21
+Authority: persisted pre-mutation engine selection gates new answers; eligible corrections are
+re-evaluated without their prior answer history, while early, conditional, or dependency-blocked
+writes fail before persistence.
+Completed drafts: exact-session and consent-protected reads remain available after encounter
+termination; all writes still require a writable encounter. Completed reads and retries validate
+pinned instance identity, resolvability, uniqueness, and terminal status.
+Typed controls/BFF: configured NUMBER units are server-derived hidden values; all eight submission
+shapes and allowed non-answer dispositions have request tests; nested response alternatives are
+strictly bounded and reject unexpected objects and keys.
+Concurrency/rollback: real PostgreSQL tests cover competing starts and answers, stage-injected
+rollback, exact-subject IDOR, consent withdrawal, closed sessions, terminal reads, and corrupted
+completed-instance rejection.
+Feature policy: engineering content requires environment AND explicit opt-in and can never activate
+in staging, pilot, or production. Production clinical approval remains unavailable.
+Schema/dependencies: unchanged. Alembic head remains p7a_0007.
 ```
 
 ---
