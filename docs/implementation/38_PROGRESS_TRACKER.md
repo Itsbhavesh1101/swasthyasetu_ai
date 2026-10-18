@@ -971,3 +971,32 @@ implementation commit cb7cc030e69aa74826f71924df7c6e06b1c94009.
 P8 status: PARTIAL. P8-B and P8-C: NOT STARTED.
 Next recommended unit after independent review and merge: P8-B — task-specific clinical extraction.
 ```
+
+---
+
+# 38. P8-A Review Fix 01 — Deadline and Failure Boundaries
+
+```text
+Work unit: P8-A review fix 01 — fail-closed provider results and total deadline
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION PENDING
+Date: 2026-10-19
+Branch: phase/p8-a-ai-orchestration-provider-ports
+Reviewed commit: 47a6010c5bb48b4528ca822c094f153aecdec7ce
+Finding 1: malformed, wrong-type, structurally invalid, mismatched, or unsafe provider return values
+are contained and normalized to nonretryable LLM_SCHEMA_INVALID without leaking raw values.
+Finding 2: project-owned ContractValidationError raised by an adapter is normalized to nonretryable
+LLM_SCHEMA_INVALID with the completed-attempt count and no exception detail exposure.
+Finding 3: retry backoff is bounded by the remaining total deadline; timeout and unexpected sleeper
+failures are normalized without starting another attempt, while cancellation still propagates.
+Focused evidence: 83 AI contract/orchestration/registration/privacy tests pass, including 44
+orchestration deadline/retry/failure-boundary tests.
+Regression evidence: backend quality passes 573 tests with 97 PostgreSQL-marked tests skipped in
+the network-free gate; all 97 real PostgreSQL tests pass; frontend quality passes 88 tests and all
+production builds. Alembic head remains p7a_0007.
+Scope: no schema, migration, dependency, API, adapter, Docker, Compose, frontend, P8-B, or P8-C
+change. No provider/model/network egress was added.
+Remote CI: PENDING on the review-fix commit; all six required jobs must pass before final handoff.
+P8-A remains subject to independent review. P8 remains PARTIAL; P8-B/P8-C remain NOT STARTED.
+External-provider, clinical, privacy, consent, retention, and production activation approvals remain
+pending.
+```

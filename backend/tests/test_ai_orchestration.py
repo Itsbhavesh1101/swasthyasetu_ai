@@ -4,6 +4,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 import pytest
 
@@ -13,6 +14,7 @@ from app.modules.ai_orchestration.application import AIOrchestrationService
 from app.modules.ai_orchestration.contracts import (
     REQUEST_CONTRACT_VERSION,
     RESULT_CONTRACT_VERSION,
+    ContractValidationError,
     FinishReason,
     ResultProvenance,
     SourceReference,
@@ -366,7 +368,141 @@ async def test_result_version_or_correlation_mismatch_fails_without_retry() -> N
     assert len(provider.requests) == 1
 
 
-async def test_unknown_provider_exception_is_isolated_without_sensitive_detail() -> None:
+@pytest.mark.parametrize("invalid_result", [None, {"candidate": "synthetic-sensitive"}])
+async def test_wrong_provider_result_type_fails_closed_without_retry(
+    invalid_result: object,
+) -> None:
+    clock = ControlledClock()
+    request = make_request(clock, retry_budget=2)
+    attempts = 0
+
+    class InvalidResultProvider(DisabledLLMProvider):
+        @property
+        def provider_id(self) -> str:
+            return "offline_fake"
+
+        async def generate_structured(self, attempted: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del attempted
+            attempts += 1
+            return cast(StructuredLLMResult, invalid_result)
+
+    records: list[tuple[object, ...]] = []
+
+    class RecordingTelemetry:
+        def record(
+            self,
+            recorded_request: StructuredLLMRequest,
+            *,
+            provider_id: str,
+            attempt_count: int,
+            result: StructuredLLMResult | None,
+            failure: LLMFailureCategory | None,
+        ) -> None:
+            records.append((recorded_request, provider_id, attempt_count, result, failure))
+
+    provider = InvalidResultProvider()
+    orchestrator = AIOrchestrationService(
+        provider=provider,
+        clock=clock.now,
+        sleeper=clock.sleep,
+        telemetry=RecordingTelemetry(),
+    )
+
+    outcome = await orchestrator.generate_structured(request)
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.SCHEMA_INVALID
+    assert outcome.failure.attempt_count == 1
+    assert outcome.failure.retryable is False
+    assert attempts == 1
+    assert "synthetic-sensitive" not in repr(outcome)
+    assert records[0][3] is None
+    assert records[0][4] is LLMFailureCategory.SCHEMA_INVALID
+    assert "synthetic-sensitive" not in repr(records)
+
+
+@pytest.mark.parametrize(
+    "mismatched",
+    [
+        lambda request: replace(make_result(request), request_id="req_mismatch_0001"),
+        lambda request: replace(make_result(request), prompt_version="2.0.0"),
+        lambda request: replace(make_result(request), provider_id="unexpected_provider"),
+        lambda request: replace(
+            make_result(request),
+            provenance=replace(
+                make_result(request).provenance,
+                source_references=(SourceReference("source_mismatch_0001", "1", "b" * 64),),
+            ),
+        ),
+    ],
+)
+async def test_result_correlation_mismatches_fail_closed_without_retry(
+    mismatched: Callable[[StructuredLLMRequest], StructuredLLMResult],
+) -> None:
+    clock = ControlledClock()
+    request = make_request(clock, retry_budget=2)
+    provider = DeterministicOfflineLLMProvider(
+        (DeterministicLLMFixture(request=request, outcomes=(mismatched(request),)),)
+    )
+
+    outcome = await service(provider, clock).generate_structured(request)
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.SCHEMA_INVALID
+    assert outcome.failure.attempt_count == 1
+    assert outcome.failure.retryable is False
+    assert len(provider.requests) == 1
+
+
+async def test_structurally_invalid_result_instance_fails_closed_without_attribute_error() -> None:
+    clock = ControlledClock()
+    request = make_request(clock, retry_budget=2)
+    invalid = make_result(request)
+    object.__setattr__(invalid, "attempt_count", "not-an-integer")
+    provider = DeterministicOfflineLLMProvider(
+        (DeterministicLLMFixture(request=request, outcomes=(invalid,)),)
+    )
+
+    outcome = await service(provider, clock).generate_structured(request)
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.SCHEMA_INVALID
+    assert outcome.failure.attempt_count == 1
+    assert len(provider.requests) == 1
+
+
+async def test_provider_contract_validation_error_is_schema_invalid_and_never_retried(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    marker = "synthetic-sensitive-contract-detail"
+    clock = ControlledClock()
+    attempts = 0
+
+    class InvalidContractProvider(DisabledLLMProvider):
+        async def generate_structured(self, request: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del request
+            attempts += 1
+            raise ContractValidationError(marker)
+
+    outcome = await service(InvalidContractProvider(), clock).generate_structured(
+        make_request(clock, retry_budget=3)
+    )
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.SCHEMA_INVALID
+    assert outcome.failure.attempt_count == 1
+    assert outcome.failure.retryable is False
+    assert attempts == 1
+    assert marker not in repr(outcome)
+    assert marker not in str(outcome.failure)
+    assert marker not in caplog.text
+
+
+async def test_unknown_provider_exception_is_isolated_without_sensitive_detail(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     marker = "synthetic-sensitive-provider-detail"
     clock = ControlledClock()
 
@@ -381,6 +517,122 @@ async def test_unknown_provider_exception_is_isolated_without_sensitive_detail()
     assert outcome.failure.category is LLMFailureCategory.UNKNOWN
     assert marker not in repr(outcome)
     assert marker not in str(outcome.failure)
+    assert marker not in caplog.text
+
+
+async def test_blocking_retry_sleeper_is_bounded_by_total_deadline() -> None:
+    clock = ControlledClock()
+    request = replace(
+        make_request(clock, retry_budget=1),
+        deadline_at=clock.current + timedelta(milliseconds=100),
+    )
+    attempts = 0
+
+    class RetryableProvider(DisabledLLMProvider):
+        async def generate_structured(self, attempted: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del attempted
+            attempts += 1
+            raise ProviderFailure(LLMFailureCategory.PROVIDER_UNAVAILABLE, retryable=True)
+
+    async def blocking_sleep(seconds: float) -> None:
+        del seconds
+        await asyncio.Event().wait()
+
+    outcome = await asyncio.wait_for(
+        service(RetryableProvider(), clock, sleeper=blocking_sleep).generate_structured(request),
+        timeout=0.5,
+    )
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.TIMEOUT
+    assert outcome.failure.attempt_count == 1
+    assert outcome.failure.retryable is False
+    assert attempts == 1
+
+
+async def test_retry_sleeper_exception_is_normalized_without_sensitive_detail(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    marker = "synthetic-sensitive-sleeper-detail"
+    clock = ControlledClock()
+    attempts = 0
+
+    class RetryableProvider(DisabledLLMProvider):
+        async def generate_structured(self, attempted: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del attempted
+            attempts += 1
+            raise ProviderFailure(LLMFailureCategory.PROVIDER_UNAVAILABLE, retryable=True)
+
+    async def broken_sleep(seconds: float) -> None:
+        del seconds
+        raise RuntimeError(marker)
+
+    outcome = await service(RetryableProvider(), clock, sleeper=broken_sleep).generate_structured(
+        make_request(clock, retry_budget=1)
+    )
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.UNKNOWN
+    assert outcome.failure.attempt_count == 1
+    assert outcome.failure.retryable is False
+    assert attempts == 1
+    assert marker not in repr(outcome)
+    assert marker not in str(outcome.failure)
+    assert marker not in caplog.text
+
+
+async def test_deadline_is_checked_after_retry_sleep_before_next_attempt() -> None:
+    clock = ControlledClock()
+    request = replace(
+        make_request(clock, retry_budget=1),
+        deadline_at=clock.current + timedelta(milliseconds=100),
+    )
+    attempts = 0
+
+    class RetryableProvider(DisabledLLMProvider):
+        async def generate_structured(self, attempted: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del attempted
+            attempts += 1
+            raise ProviderFailure(LLMFailureCategory.PROVIDER_UNAVAILABLE, retryable=True)
+
+    async def overlong_controlled_sleep(seconds: float) -> None:
+        del seconds
+        clock.current += timedelta(milliseconds=150)
+
+    outcome = await service(
+        RetryableProvider(), clock, sleeper=overlong_controlled_sleep
+    ).generate_structured(request)
+
+    assert outcome.failure is not None
+    assert outcome.failure.category is LLMFailureCategory.TIMEOUT
+    assert outcome.failure.attempt_count == 1
+    assert attempts == 1
+
+
+async def test_cancellation_during_retry_backoff_propagates_without_new_attempt() -> None:
+    clock = ControlledClock()
+    attempts = 0
+
+    class RetryableProvider(DisabledLLMProvider):
+        async def generate_structured(self, attempted: StructuredLLMRequest) -> StructuredLLMResult:
+            nonlocal attempts
+            del attempted
+            attempts += 1
+            raise ProviderFailure(LLMFailureCategory.PROVIDER_UNAVAILABLE, retryable=True)
+
+    async def cancelled_sleep(seconds: float) -> None:
+        del seconds
+        raise asyncio.CancelledError
+
+    with pytest.raises(asyncio.CancelledError):
+        await service(RetryableProvider(), clock, sleeper=cancelled_sleep).generate_structured(
+            make_request(clock, retry_budget=1)
+        )
+
+    assert attempts == 1
 
 
 async def test_telemetry_failure_cannot_change_successful_outcome() -> None:
