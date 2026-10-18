@@ -1009,7 +1009,7 @@ pending.
 
 ```text
 Work unit: P8-B — Clinical Intake Extraction Schemas, Prompt Package and Validation
-Status: IMPLEMENTATION COMPLETE — REMOTE CI PENDING / INDEPENDENT REVIEW REQUIRED
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFIED / INDEPENDENT REVIEW REQUIRED
 Date: 2026-10-19
 Branch: phase/p8-b-clinical-extraction-schema-prompts
 Base commit: 9d764d381a3c669baac4374ba67dde33536db211
@@ -1027,7 +1027,9 @@ prompt-injection content.
 Schema/migrations/dependencies/frontend: unchanged. Alembic head remains p7a_0007.
 Acceptance: AC-P8-003/004/006/007/008/009/010 implementation evidence added; AC-P8-001/002 and
 P8-A evidence preserved. P8-B is subject to independent review; P8-C is NOT STARTED; P8 is PARTIAL.
-Remote CI: PENDING on the final implementation SHA.
+Remote CI: VERIFIED — GitHub Actions run 39170768507 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit 17d40eea8568efc55bd3a6dbab3041d998c8b110.
 Open gates: production prompt/schema semantics, clinical evidence sufficiency, real-patient external
 egress/consent/security/institutional/regulatory review, retention, and governed confirmation remain
 unapproved and unimplemented.
