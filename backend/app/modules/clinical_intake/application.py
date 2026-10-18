@@ -461,6 +461,12 @@ class ClinicalIntakeService:
                 projected = replace(
                     projected, missing_information=self._engine.missing_information(engine_input)
                 )
+                # Acquire the aggregate's optimistic-write lock before persisting child rows.
+                # This gives competing submissions one lock order and lets a stale loser fail
+                # as a resource conflict instead of waiting on child-row locks until timeout.
+                saved = await self._intakes.save(
+                    transaction, projected, expected_version=expected_version, updated_at=now
+                )
                 await self._answers.add(transaction, answer)
                 updated_instances = []
                 next_question_id = getattr(getattr(result, "question", None), "question_id", None)
@@ -516,9 +522,6 @@ class ClinicalIntakeService:
                         code=ErrorCode.VALIDATION_ERROR,
                         message="The question is not part of this intake.",
                     )
-                saved = await self._intakes.save(
-                    transaction, projected, expected_version=expected_version, updated_at=now
-                )
                 return IntakeSnapshot(saved, proposed, tuple(updated_instances), result)
         except InvalidAnswerForQuestionError as error:
             raise ApplicationError(
