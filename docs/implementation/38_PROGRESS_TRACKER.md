@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** Pre-P8 prerequisite specification pack — specs complete subject to user review
-**Current recommended next action:** Review and merge the specification pack separately, then begin P8-A — AI gateway + provider ports/mock.
+**Current macro stage:** P8-A AI orchestration/provider ports — complete; P8 remains partial
+**Current recommended next action:** Complete independent PR review and merge P8-A separately before starting P8-B.
 
 ---
 
@@ -44,7 +44,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
-| P8 | AI Gateway + Structured Extraction | NOT STARTED | Prerequisite specs are complete subject to user review; AC-P8-001..010 are not yet verified. |
+| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A is complete with all six required CI jobs passing. P8-B/P8-C are not started. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
@@ -929,4 +929,76 @@ Traceability: AC-P8-001..010 are mapped to future P8-A/B/C evidence and remain N
 P7 status: COMPLETE. P8/P8-A/P8-B/P8-C status: NOT STARTED.
 Schema/dependencies/code/CI: unchanged. Alembic head remains p7a_0007.
 Next recommended unit after review and merge: P8-A — AI gateway + provider ports/mock.
+```
+
+---
+
+# 37. P8-A AI Orchestration, Provider Port & Offline Mock
+
+```text
+Phase/Sub-phase: P8-A — AI Orchestration, Provider Port & Offline Mock
+Status: COMPLETE
+Date: 2026-10-18
+Branch: phase/p8-a-ai-orchestration-provider-ports
+Base commit: b510e502f58fbd964f3011f25616a03425c7c347
+Architecture: project-owned in-process orchestration over an async LLMProvider Protocol, registered
+explicitly through the sealed module/capability registry; no runtime discovery or service locator.
+Contracts: immutable strict bounded generic request/result/source/provenance/usage values; exact
+supported versions and correlation; unknown fields, non-finite values, oversize/deep collections,
+forbidden provider authority, raw retention, and incompatible results fail closed.
+Providers: disabled/unconfigured adapter is the runtime default. The deterministic exact-fixture
+offline fake is explicit engineering tooling and is rejected in staging, pilot, and production.
+Runtime policy: one 30-second maximum total deadline; retry budget capped at three; bounded backoff;
+only explicitly retryable timeout, rate-limit, and provider-unavailable failures may retry. Auth,
+refusal, content-policy, schema/version, cancellation, caller validation, and unknown failures do not.
+Privacy/telemetry: raw request/result content, source refs, provider request IDs, credentials, and
+patient/session/encounter IDs are not logged or emitted. OTel spans/metrics contain only allowlisted
+operational/version metadata; request correlation is excluded from metric labels.
+Scope: no API, persistence, migration, live provider, external egress, clinical prompt/schema,
+fact promotion, P8-C messaging, safety/triage, frontend, service/container, or dependency change.
+Local evidence: 71 focused contract/orchestration/registration/privacy/deadline/retry tests pass;
+complete network-free backend regression passes 561 tests
+with one expected host-capability skip and PostgreSQL-marked tests excluded.
+Real integration: all 97 PostgreSQL tests pass; Alembic heads/upgrade/current/check stay clean at
+p7a_0007. Non-root backend image build, explicit container migration, live/database-aware readiness,
+all frontend quality/build gates, and all 13 Playwright Chromium journeys pass locally.
+Acceptance: AC-P8-001 PASS; AC-P8-002 PASS; P8-A evidence for AC-P8-004/005/006 PASS/PARTIAL.
+AC-P8-003/007/008/009/010 and all P8-B/P8-C evidence remain NOT YET VERIFIED.
+Migration/dependencies: unchanged. Alembic head remains p7a_0007.
+Remote CI: VERIFIED — GitHub Actions run 39155451018 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit cb7cc030e69aa74826f71924df7c6e06b1c94009.
+P8 status: PARTIAL. P8-B and P8-C: NOT STARTED.
+Next recommended unit after independent review and merge: P8-B — task-specific clinical extraction.
+```
+
+---
+
+# 38. P8-A Review Fix 01 — Deadline and Failure Boundaries
+
+```text
+Work unit: P8-A review fix 01 — fail-closed provider results and total deadline
+Status: COMPLETE — REMOTE CI VERIFIED
+Date: 2026-10-19
+Branch: phase/p8-a-ai-orchestration-provider-ports
+Reviewed commit: 47a6010c5bb48b4528ca822c094f153aecdec7ce
+Finding 1: malformed, wrong-type, structurally invalid, mismatched, or unsafe provider return values
+are contained and normalized to nonretryable LLM_SCHEMA_INVALID without leaking raw values.
+Finding 2: project-owned ContractValidationError raised by an adapter is normalized to nonretryable
+LLM_SCHEMA_INVALID with the completed-attempt count and no exception detail exposure.
+Finding 3: retry backoff is bounded by the remaining total deadline; timeout and unexpected sleeper
+failures are normalized without starting another attempt, while cancellation still propagates.
+Focused evidence: 83 AI contract/orchestration/registration/privacy tests pass, including 44
+orchestration deadline/retry/failure-boundary tests.
+Regression evidence: backend quality passes 573 tests with 97 PostgreSQL-marked tests skipped in
+the network-free gate; all 97 real PostgreSQL tests pass; frontend quality passes 88 tests and all
+production builds. Alembic head remains p7a_0007.
+Scope: no schema, migration, dependency, API, adapter, Docker, Compose, frontend, P8-B, or P8-C
+change. No provider/model/network egress was added.
+Remote CI: VERIFIED — GitHub Actions run 39158621025 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on repair
+commit 94ca6d0d385355a72588ffed04ecd59cb26dcc85.
+P8-A remains subject to independent review. P8 remains PARTIAL; P8-B/P8-C remain NOT STARTED.
+External-provider, clinical, privacy, consent, retention, and production activation approvals remain
+pending.
 ```

@@ -183,6 +183,7 @@ backend/app/modules/
   patients/
   encounters/
   clinical_intake/
+  ai_orchestration/
   safety/
   mental_health/
   documents/
@@ -232,6 +233,11 @@ P4-C implements `backend/app/modules/consent/` with cohesive `domain.py`, `event
 owns consent persistence and lifecycle rules, exposes typed internal capabilities, and delegates
 SESSION subject authentication to the registered `sessions.validate` capability. Shared bearer
 syntax parsing remains transport-only in `backend/app/api/security/bearer.py`.
+
+P8-A implements `backend/app/modules/ai_orchestration/` as an in-process provider-neutral
+orchestration boundary and `backend/app/adapters/ai/` for explicitly composed disabled and
+deterministic offline adapters. It owns no HTTP route, database table, clinical prompt/schema, or
+live provider integration.
 
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle

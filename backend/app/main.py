@@ -11,6 +11,8 @@ from app.api.middleware import RequestContextMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
 from app.config.settings import Environment
+from app.modules.ai_orchestration.providers import LLMProvider
+from app.modules.ai_orchestration.public import build_ai_orchestration_registration
 from app.modules.clinical_intake.content import ENGINEERING_CONTENT_FEATURE
 from app.modules.clinical_intake.public import build_clinical_intake_registration
 from app.modules.consent.public import build_consent_registration
@@ -43,6 +45,7 @@ def create_app(
     observability: ObservabilityRuntime | None = None,
     feature_flags: FeatureFlagService | None = None,
     database: DatabaseRuntime | None = None,
+    llm_provider: LLMProvider | None = None,
 ) -> FastAPI:
     """Create an application from explicitly supplied, compile-time registrations."""
     resolved_settings = settings or Settings()
@@ -79,6 +82,12 @@ def create_app(
             encounters=encounter_service,
         )
         resolved_module_registrations = (
+            build_ai_orchestration_registration(
+                environment=resolved_settings.environment,
+                enabled=resolved_settings.llm.enabled,
+                observability=resolved_observability,
+                provider=llm_provider,
+            ),
             build_identity_registration(database=resolved_database),
             build_sessions_registration(
                 settings=resolved_settings.sessions,

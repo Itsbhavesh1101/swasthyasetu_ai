@@ -89,6 +89,12 @@ is a fail-closed engineering fixture requiring both a local/test environment and
 `engineering_clinical_intake` feature flag; Hindi and non-local deployments fail closed until
 governed clinical content is approved. Alembic remains `p7a_0007` and no dependency was added.
 
+P8-A adds an in-process, provider-neutral AI orchestration boundary with immutable bounded generic
+contracts, a closed internal failure taxonomy, one total deadline, and narrowly retryable transient
+failures. The default provider is disabled/unconfigured; the deterministic offline fake is explicit
+and rejected in staging, pilot, and production. No live provider, patient-facing route, clinical
+prompt/schema, persistence, migration, dependency, or patient-data egress is introduced.
+
 P1-C provides the non-root backend container, local PostgreSQL service, cross-platform quality
 gates, Chromium smoke execution, security scans, and GitHub Actions workflow. P2 provides shared
 types/errors/configuration, compile-time module and capability registration, safe/off feature flags,

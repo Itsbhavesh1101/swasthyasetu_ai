@@ -44,6 +44,7 @@ def test_p5c_registers_runtime_modules_and_capabilities() -> None:
     application = create_app(Settings(_env_file=None))
 
     assert application.state.module_registry.module_ids == (
+        "ai_orchestration",
         "clinical_intake",
         "consent",
         "encounters",
