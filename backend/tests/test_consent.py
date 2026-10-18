@@ -232,6 +232,7 @@ def test_default_application_registers_consent_and_exposes_no_public_check_route
     application = create_app(Settings(_env_file=None))
 
     assert application.state.module_registry.module_ids == (
+        "ai_orchestration",
         "clinical_intake",
         "consent",
         "encounters",
