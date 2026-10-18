@@ -24,3 +24,10 @@ P0 control documents live under `codex/` and `implementation/`. Files marked **T
 - `05_DATABASE_SCHEMA.md`
 - `06_API_CONTRACTS.md`
 
+## AI, privacy, testing, and error policy
+
+- `13_AI_ORCHESTRATION_SPEC.md`
+- `14_LLM_EXTRACTION_SPEC.md`
+- `26_PRIVACY_CONSENT_SPEC.md`
+- `30_TESTING_STRATEGY.md`
+- `33_ERROR_HANDLING_POLICY.md`
