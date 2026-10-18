@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P8-A AI orchestration/provider ports — implementation complete; remote verification pending
-**Current recommended next action:** Verify all six P8-A CI jobs and complete independent PR review before merge; P8-B remains deferred.
+**Current macro stage:** P8-A AI orchestration/provider ports — complete; P8 remains partial
+**Current recommended next action:** Complete independent PR review and merge P8-A separately before starting P8-B.
 
 ---
 
@@ -44,7 +44,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
-| P8 | AI Gateway + Structured Extraction | PARTIAL | Pre-P8 specifications are merged; P8-A implementation is complete with remote CI pending. P8-B/P8-C are not started. |
+| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A is complete with all six required CI jobs passing. P8-B/P8-C are not started. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
@@ -937,7 +937,7 @@ Next recommended unit after review and merge: P8-A — AI gateway + provider por
 
 ```text
 Phase/Sub-phase: P8-A — AI Orchestration, Provider Port & Offline Mock
-Status: IMPLEMENTATION COMPLETE — REMOTE VERIFICATION PENDING
+Status: COMPLETE
 Date: 2026-10-18
 Branch: phase/p8-a-ai-orchestration-provider-ports
 Base commit: b510e502f58fbd964f3011f25616a03425c7c347
@@ -965,7 +965,9 @@ all frontend quality/build gates, and all 13 Playwright Chromium journeys pass l
 Acceptance: AC-P8-001 PASS; AC-P8-002 PASS; P8-A evidence for AC-P8-004/005/006 PASS/PARTIAL.
 AC-P8-003/007/008/009/010 and all P8-B/P8-C evidence remain NOT YET VERIFIED.
 Migration/dependencies: unchanged. Alembic head remains p7a_0007.
-Remote CI: PENDING.
+Remote CI: VERIFIED — GitHub Actions run 39155451018 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit cb7cc030e69aa74826f71924df7c6e06b1c94009.
 P8 status: PARTIAL. P8-B and P8-C: NOT STARTED.
 Next recommended unit after independent review and merge: P8-B — task-specific clinical extraction.
 ```
