@@ -118,7 +118,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `08_SAFETY_AND_TRIAGE_POLICY.md` | NOT STARTED |
+| `08_SAFETY_AND_TRIAGE_POLICY.md` | DRAFT — NOT CLINICALLY APPROVED / real clinical rules NOT STARTED |
 
 ## Before P10
 
@@ -1146,4 +1146,38 @@ Remote CI: VERIFIED — GitHub Actions run 39240064163 passed Backend quality, F
 Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on the
 implementation commit. The documentation-only evidence commit must pass the same six jobs on its
 exact final SHA before handoff.
+```
+
+---
+
+# 43. P9-A Review Repair 01 — Registry Integrity and Error Boundaries
+
+```text
+Work unit: P9-A review repair 01
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION REQUIRED / INDEPENDENT REVIEW REQUIRED
+Date: 2026-10-19
+Branch: phase/p9-a-safety-decision-types-policy-registry
+Reviewed head: 6dd860d58e2b036d245f32857c4f7a68a199d7ba
+Registry integrity: registration now validates and stores immutable scalar snapshots rather than
+caller-owned metadata references. all(), require(), and get_active_policy() reconstruct and
+revalidate detached metadata, so mutation before or after a returned read cannot alter later reads.
+Exact registered-key, selected-identity, policy type, checksum, approval, activation, and protected
+environment checks remain fail closed.
+Error privacy: require() validates bounded machine identities and uses cause-free lookup. Valid but
+unknown identities still raise UnknownPolicyError, while malformed identities raise the typed
+InvalidPolicyMetadataError without preserving caller content in exception causes or tracebacks.
+Selection bounds: ActivePolicySelection and require() share the metadata limits of 128 characters
+for policy IDs and 64 for versions, with exact-limit and limit-plus-one regression coverage.
+Tracker correction: the Before P9 row now truthfully marks 08_SAFETY_AND_TRIAGE_POLICY.md as DRAFT
+— NOT CLINICALLY APPROVED, while real clinical rules remain NOT STARTED.
+Local verification: 61 focused tests pass; network-free backend passes 759 with 97 PostgreSQL tests
+skipped; all 97 real PostgreSQL tests pass; frontend passes 88 tests and all three production
+builds; Docker build/migration/non-root/live/readiness checks and all 13 Playwright journeys pass.
+Ruff, strict mypy, compile/import, Alembic current/check, privacy, architecture, dependency, scope,
+and diff audits pass. Alembic remains p7a_0007 and dependencies/lockfiles are unchanged.
+Scope: no evaluator, clinical rule, route, API, persistence, migration, frontend, provider, egress,
+runtime activation, P9-B/P9-C, or P8-C patient-facing AI change. All clinical and P8-C approval
+gates remain open.
+Remote CI: pending on the repair commit; the exact final run ID and six conclusions must be reported
+in PR #26 and the handoff before this repair is considered verified.
 ```

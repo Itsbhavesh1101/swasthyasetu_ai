@@ -2,6 +2,7 @@
 
 from dataclasses import FrozenInstanceError, replace
 from pathlib import Path
+from traceback import format_exception
 from typing import Any
 
 import pytest
@@ -9,6 +10,8 @@ import pytest
 from app.config.settings import Environment
 from app.main import create_app
 from app.modules.safety.policies import (
+    MAX_POLICY_ID_LENGTH,
+    MAX_POLICY_VERSION_LENGTH,
     SYNTHETIC_PHYSICAL_SAFETY_METADATA,
     ActivePolicySelection,
     AmbiguousPolicySelectionError,
@@ -36,6 +39,18 @@ def inactive_metadata(policy_id: str = "future-policy") -> SafetyPolicyMetadata:
         activation_state=PolicyActivationState.INACTIVE,
         supported_environments=(),
         reason_code_namespace="FUTURE_",
+    )
+
+
+def engineering_metadata() -> SafetyPolicyMetadata:
+    return SafetyPolicyMetadata.create(
+        policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+        policy_id="synthetic-registry-integrity",
+        policy_version="engineering.1",
+        approval_state=PolicyApprovalState.ENGINEERING_ONLY,
+        activation_state=PolicyActivationState.ENGINEERING_TEST_ONLY,
+        supported_environments=(Environment.LOCAL, Environment.TEST),
+        reason_code_namespace="SYNTHETIC_",
     )
 
 
@@ -184,8 +199,66 @@ def test_explicit_synthetic_registry_exposes_metadata_only_in_engineering_enviro
         build_synthetic_policy_registry().get_active_policy(
             policy_type=SafetyPolicyType.PHYSICAL_SAFETY, environment=environment
         )
-        is SYNTHETIC_PHYSICAL_SAFETY_METADATA
+        == SYNTHETIC_PHYSICAL_SAFETY_METADATA
     )
+
+
+def test_post_registration_caller_mutation_cannot_change_active_policy_snapshot() -> None:
+    metadata = engineering_metadata()
+    registry = SafetyPolicyRegistry(policies=(metadata,), selections=(selection_for(metadata),))
+
+    object.__setattr__(metadata, "policy_version", "engineering.2")
+    object.__setattr__(metadata, "reason_code_namespace", "MUTATED_")
+
+    selected = registry.get_active_policy(
+        policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+        environment=Environment.LOCAL,
+    )
+    assert selected.policy_version == "engineering.1"
+    assert selected.reason_code_namespace == "SYNTHETIC_"
+    assert selected is not metadata
+
+
+def test_mutating_returned_active_metadata_cannot_compromise_later_reads() -> None:
+    registry = build_synthetic_policy_registry()
+    returned = registry.get_active_policy(
+        policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+        environment=Environment.TEST,
+    )
+    object.__setattr__(returned, "policy_version", "engineering.999")
+    object.__setattr__(returned, "reason_code_namespace", "MUTATED_")
+
+    reread = registry.get_active_policy(
+        policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+        environment=Environment.TEST,
+    )
+    assert reread == SYNTHETIC_PHYSICAL_SAFETY_METADATA
+    assert reread is not returned
+
+
+def test_post_registration_and_returned_mutation_cannot_change_require_snapshot() -> None:
+    metadata = inactive_metadata()
+    registry = SafetyPolicyRegistry(policies=(metadata,))
+    object.__setattr__(metadata, "reason_code_namespace", "MUTATED_")
+
+    returned = registry.require(policy_id="future-policy", policy_version="draft.1")
+    assert returned.reason_code_namespace == "FUTURE_"
+    assert returned is not metadata
+    object.__setattr__(returned, "policy_id", "mutated-policy")
+
+    reread = registry.require(policy_id="future-policy", policy_version="draft.1")
+    assert reread.policy_id == "future-policy"
+    assert reread is not returned
+
+
+def test_mutating_metadata_returned_by_all_cannot_change_registry_state() -> None:
+    registry = build_synthetic_policy_registry()
+    returned = registry.all()[0]
+    object.__setattr__(returned, "metadata_checksum", "0" * 64)
+
+    reread = registry.all()[0]
+    assert reread == SYNTHETIC_PHYSICAL_SAFETY_METADATA
+    assert reread is not returned
 
 
 @pytest.mark.parametrize(
@@ -223,6 +296,73 @@ def test_unknown_mismatched_and_inactive_selection_are_rejected() -> None:
     with pytest.raises(UnknownPolicyError):
         SafetyPolicyRegistry(policies=(fixture,)).require(
             policy_id=fixture.policy_id, policy_version="missing"
+        )
+
+
+def test_unknown_lookup_has_no_caller_controlled_exception_cause_or_trace_content() -> None:
+    privacy_canary = "privacy-canary-sensitive-marker"
+    with pytest.raises(UnknownPolicyError) as caught:
+        build_default_policy_registry().require(
+            policy_id=privacy_canary, policy_version="version.1"
+        )
+
+    rendered = "".join(
+        format_exception(type(caught.value), caught.value, caught.value.__traceback__)
+    )
+    assert privacy_canary not in str(caught.value)
+    assert privacy_canary not in rendered
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+
+
+@pytest.mark.parametrize(
+    ("policy_id", "policy_version"),
+    [
+        ("A-not-machine-id", "version.1"),
+        ("a" * (MAX_POLICY_ID_LENGTH + 1), "version.1"),
+        ("valid-policy", "v" * (MAX_POLICY_VERSION_LENGTH + 1)),
+        ("valid-policy", "not valid"),
+        (None, "version.1"),
+    ],
+)
+def test_malformed_lookup_inputs_fail_with_safe_typed_errors(
+    policy_id: Any, policy_version: Any
+) -> None:
+    with pytest.raises(InvalidPolicyMetadataError) as caught:
+        build_default_policy_registry().require(policy_id=policy_id, policy_version=policy_version)
+    assert caught.value.__cause__ is None
+    assert caught.value.__context__ is None
+
+
+def test_selection_and_lookup_accept_exact_identity_length_boundaries() -> None:
+    policy_id = "a" * MAX_POLICY_ID_LENGTH
+    policy_version = "1" * MAX_POLICY_VERSION_LENGTH
+    selection = ActivePolicySelection(
+        policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+        policy_id=policy_id,
+        policy_version=policy_version,
+    )
+    assert selection.policy_id == policy_id
+    assert selection.policy_version == policy_version
+    with pytest.raises(UnknownPolicyError):
+        build_default_policy_registry().require(policy_id=policy_id, policy_version=policy_version)
+
+
+@pytest.mark.parametrize(
+    ("policy_id", "policy_version"),
+    [
+        ("a" * (MAX_POLICY_ID_LENGTH + 1), "version.1"),
+        ("valid-policy", "1" * (MAX_POLICY_VERSION_LENGTH + 1)),
+    ],
+)
+def test_selection_rejects_identity_above_canonical_bounds(
+    policy_id: str, policy_version: str
+) -> None:
+    with pytest.raises(InvalidPolicyMetadataError):
+        ActivePolicySelection(
+            policy_type=SafetyPolicyType.PHYSICAL_SAFETY,
+            policy_id=policy_id,
+            policy_version=policy_version,
         )
 
 

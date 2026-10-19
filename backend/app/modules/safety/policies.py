@@ -16,6 +16,8 @@ _POLICY_ID_PATTERN = re.compile(r"^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$")
 _VERSION_PATTERN = re.compile(r"^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*$")
 _NAMESPACE_PATTERN = re.compile(r"^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*_$")
 _CHECKSUM_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+MAX_POLICY_ID_LENGTH = 128
+MAX_POLICY_VERSION_LENGTH = 64
 _ENGINEERING_ENVIRONMENTS = frozenset({Environment.LOCAL, Environment.TEST})
 _PROTECTED_ENVIRONMENTS = frozenset(
     {Environment.STAGING, Environment.PILOT, Environment.PRODUCTION}
@@ -62,6 +64,33 @@ class PolicyApprovalState(StrEnum):
 class PolicyActivationState(StrEnum):
     INACTIVE = "INACTIVE"
     ENGINEERING_TEST_ONLY = "ENGINEERING_TEST_ONLY"
+
+
+type _PolicySnapshot = tuple[
+    SafetyPolicyType,
+    str,
+    str,
+    PolicyApprovalState,
+    PolicyActivationState,
+    tuple[Environment, ...],
+    str,
+    str,
+]
+
+
+def _validate_policy_identity(*, policy_id: object, policy_version: object) -> None:
+    if (
+        not isinstance(policy_id, str)
+        or not 1 <= len(policy_id) <= MAX_POLICY_ID_LENGTH
+        or _POLICY_ID_PATTERN.fullmatch(policy_id) is None
+    ):
+        raise InvalidPolicyMetadataError("invalid policy ID")
+    if (
+        not isinstance(policy_version, str)
+        or not 1 <= len(policy_version) <= MAX_POLICY_VERSION_LENGTH
+        or _VERSION_PATTERN.fullmatch(policy_version) is None
+    ):
+        raise InvalidPolicyMetadataError("invalid policy version")
 
 
 def _canonical_metadata_bytes(
@@ -117,14 +146,7 @@ class SafetyPolicyMetadata:
     def __post_init__(self) -> None:
         if not isinstance(self.policy_type, SafetyPolicyType):
             raise InvalidPolicyMetadataError("invalid policy type")
-        if not isinstance(self.policy_id, str) or not 1 <= len(self.policy_id) <= 128:
-            raise InvalidPolicyMetadataError("invalid policy ID")
-        if _POLICY_ID_PATTERN.fullmatch(self.policy_id) is None:
-            raise InvalidPolicyMetadataError("invalid policy ID")
-        if not isinstance(self.policy_version, str) or not 1 <= len(self.policy_version) <= 64:
-            raise InvalidPolicyMetadataError("invalid policy version")
-        if _VERSION_PATTERN.fullmatch(self.policy_version) is None:
-            raise InvalidPolicyMetadataError("invalid policy version")
+        _validate_policy_identity(policy_id=self.policy_id, policy_version=self.policy_version)
         if not isinstance(self.approval_state, PolicyApprovalState):
             raise InvalidPolicyMetadataError("invalid approval state")
         if not isinstance(self.activation_state, PolicyActivationState):
@@ -243,24 +265,55 @@ class ActivePolicySelection:
     def __post_init__(self) -> None:
         if not isinstance(self.policy_type, SafetyPolicyType):
             raise InvalidPolicyMetadataError("invalid policy type")
-        if (
-            not isinstance(self.policy_id, str)
-            or _POLICY_ID_PATTERN.fullmatch(self.policy_id) is None
-        ):
-            raise InvalidPolicyMetadataError("invalid policy ID")
-        if (
-            not isinstance(self.policy_version, str)
-            or _VERSION_PATTERN.fullmatch(self.policy_version) is None
-        ):
-            raise InvalidPolicyMetadataError("invalid policy version")
+        _validate_policy_identity(policy_id=self.policy_id, policy_version=self.policy_version)
+
+
+def _snapshot_policy(policy: SafetyPolicyMetadata) -> _PolicySnapshot:
+    """Validate and detach policy metadata from every caller-owned instance."""
+
+    validated = SafetyPolicyMetadata(
+        policy_type=policy.policy_type,
+        policy_id=policy.policy_id,
+        policy_version=policy.policy_version,
+        approval_state=policy.approval_state,
+        activation_state=policy.activation_state,
+        supported_environments=policy.supported_environments,
+        reason_code_namespace=policy.reason_code_namespace,
+        metadata_checksum=policy.metadata_checksum,
+    )
+    return (
+        validated.policy_type,
+        validated.policy_id,
+        validated.policy_version,
+        validated.approval_state,
+        validated.activation_state,
+        validated.supported_environments,
+        validated.reason_code_namespace,
+        validated.metadata_checksum,
+    )
+
+
+def _restore_policy(snapshot: _PolicySnapshot) -> SafetyPolicyMetadata:
+    """Revalidate an immutable registry snapshot at every read boundary."""
+
+    return SafetyPolicyMetadata(
+        policy_type=snapshot[0],
+        policy_id=snapshot[1],
+        policy_version=snapshot[2],
+        approval_state=snapshot[3],
+        activation_state=snapshot[4],
+        supported_environments=snapshot[5],
+        reason_code_namespace=snapshot[6],
+        metadata_checksum=snapshot[7],
+    )
 
 
 @dataclass(frozen=True, slots=True, init=False)
 class SafetyPolicyRegistry:
     """Immutable explicit registry; it contains metadata, not a policy engine."""
 
-    _policies: Mapping[tuple[str, str], SafetyPolicyMetadata]
-    _selections: Mapping[SafetyPolicyType, SafetyPolicyMetadata]
+    _policies: Mapping[tuple[str, str], _PolicySnapshot]
+    _selections: Mapping[SafetyPolicyType, tuple[str, str]]
 
     def __init__(
         self,
@@ -277,32 +330,28 @@ class SafetyPolicyRegistry:
         ):
             raise InvalidPolicyMetadataError("invalid policy selections")
 
-        registrations: dict[tuple[str, str], SafetyPolicyMetadata] = {}
+        registrations: dict[tuple[str, str], _PolicySnapshot] = {}
         for policy in policies:
-            SafetyPolicyMetadata(
-                policy_type=policy.policy_type,
-                policy_id=policy.policy_id,
-                policy_version=policy.policy_version,
-                approval_state=policy.approval_state,
-                activation_state=policy.activation_state,
-                supported_environments=policy.supported_environments,
-                reason_code_namespace=policy.reason_code_namespace,
-                metadata_checksum=policy.metadata_checksum,
-            )
-            if policy.identity in registrations:
+            snapshot = _snapshot_policy(policy)
+            identity = (snapshot[1], snapshot[2])
+            if identity in registrations:
                 raise DuplicatePolicyRegistrationError("duplicate policy registration")
-            registrations[policy.identity] = policy
+            registrations[identity] = snapshot
 
-        selected: dict[SafetyPolicyType, SafetyPolicyMetadata] = {}
+        selected: dict[SafetyPolicyType, tuple[str, str]] = {}
         for selection in selections:
             if selection.policy_type in selected:
                 raise AmbiguousPolicySelectionError("duplicate active policy selection")
-            policy = registrations.get((selection.policy_id, selection.policy_version))
-            if policy is None or policy.policy_type is not selection.policy_type:
+            identity = (selection.policy_id, selection.policy_version)
+            snapshot = registrations.get(identity)
+            if snapshot is None:
+                raise UnknownPolicyError("unknown policy selection")
+            policy = _restore_policy(snapshot)
+            if policy.identity != identity or policy.policy_type is not selection.policy_type:
                 raise UnknownPolicyError("unknown policy selection")
             if policy.activation_state is PolicyActivationState.INACTIVE:
                 raise PolicyUnavailableError("selected policy is inactive")
-            selected[selection.policy_type] = policy
+            selected[selection.policy_type] = identity
 
         ordered_registrations = dict(sorted(registrations.items()))
         object.__setattr__(
@@ -317,13 +366,24 @@ class SafetyPolicyRegistry:
         )
 
     def all(self) -> tuple[SafetyPolicyMetadata, ...]:
-        return tuple(self._policies.values())
+        policies: list[SafetyPolicyMetadata] = []
+        for identity, snapshot in self._policies.items():
+            policy = _restore_policy(snapshot)
+            if policy.identity != identity:
+                raise InvalidPolicyMetadataError("registry identity mismatch")
+            policies.append(policy)
+        return tuple(policies)
 
     def require(self, *, policy_id: str, policy_version: str) -> SafetyPolicyMetadata:
-        try:
-            return self._policies[(policy_id, policy_version)]
-        except KeyError as exc:
-            raise UnknownPolicyError("unknown policy identity") from exc
+        _validate_policy_identity(policy_id=policy_id, policy_version=policy_version)
+        identity = (policy_id, policy_version)
+        snapshot = self._policies.get(identity)
+        if snapshot is None:
+            raise UnknownPolicyError("unknown policy identity")
+        policy = _restore_policy(snapshot)
+        if policy.identity != identity:
+            raise InvalidPolicyMetadataError("registry identity mismatch")
+        return policy
 
     def get_active_policy(
         self, *, policy_type: SafetyPolicyType, environment: Environment
@@ -332,9 +392,15 @@ class SafetyPolicyRegistry:
             raise InvalidPolicyMetadataError("invalid policy type")
         if not isinstance(environment, Environment):
             raise InvalidPolicyMetadataError("invalid environment")
-        policy = self._selections.get(policy_type)
-        if policy is None:
+        identity = self._selections.get(policy_type)
+        if identity is None:
             raise PolicyUnavailableError("active policy is unavailable")
+        snapshot = self._policies.get(identity)
+        if snapshot is None:
+            raise InvalidPolicyMetadataError("registry selection mismatch")
+        policy = _restore_policy(snapshot)
+        if policy.identity != identity or policy.policy_type is not policy_type:
+            raise InvalidPolicyMetadataError("registry selection mismatch")
         if environment in _PROTECTED_ENVIRONMENTS:
             raise PolicyEnvironmentRejectedError("policy rejected in protected environment")
         if (
