@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P9-C Stage 2 safe presentation/degraded-state engineering subset merged; P8 and P9 remain partial, P10 remains not started, and the Pre-P10 clinician/provenance specifications await independent review
-**Current recommended next action:** Independently review the Pre-P10 specifications and readiness-gate findings; only then scope the isolated P10-A domain/test-only subset, while all live clinician-access and P8-C/P9-C patient-facing gates remain blocked.
+**Current macro stage:** P10-A deterministic source-backed summary domain safe engineering subset implemented pending independent review; P10 is in progress while P8 and P9 remain partial
+**Current recommended next action:** Independently review the P10-A domain/test-only implementation and its exact-SHA evidence. Do not begin P10-B/C/D or live clinical use while the 0/9 readiness approvals and all P8-C/P9-C Stage 3 gates remain open.
 
 ---
 
@@ -46,7 +46,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
-| P10 | Clinician Dashboard + Summary | NOT STARTED | Pre-P10 specifications are completed subject to independent review; live clinician identity, assignment, lawful access, summary persistence and review workflows remain open/blocked. |
+| P10 | Clinician Dashboard + Summary | IN PROGRESS | P10-A safe engineering domain/test subset is implemented pending independent review. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
@@ -1309,4 +1309,30 @@ Architecture: documentation-only; no runtime, API, persistence, migration, depen
 CI, infrastructure, feature-flag or clinical-policy change. Alembic remains p7a_0007.
 Next action: independent review of both canonical specifications and the readiness-gate matrix,
 then a separate prompt for the bounded P10-A subset if accepted. Do not start P10-B/C/D.
+```
+
+---
+
+# 47. P10-A Deterministic Source-Backed Summary Domain
+
+```text
+Work unit: P10-A — isolated synthetic/offline summary-domain foundation
+Status: COMPLETE SAFE ENGINEERING SUBSET — PENDING INDEPENDENT REVIEW
+Baseline: main @ 9498972eceaa1ec6c647fd8e4dcb7f2e84748583
+Pre-P10 evidence: PR #29 merged at the exact baseline; both canonical specifications remain
+technical prerequisites rather than clinical, institutional or production approval.
+Implementation: frozen bounded summary/source/section/readiness/freshness values, strict P5 fact
+versus P7 patient-reported source contracts, exact-copy deterministic draft projection, explicit
+synthetic coverage and unresolved-conflict handling, and pure source-version drift classification.
+Safety/privacy: fixtures use nonmedical SYNTHETIC_* labels only; sensitive labels are repr-hidden;
+errors are typed and content-free. P8 candidates and P9 synthetic decisions are prohibited inputs.
+No claim is generated, rewritten, diagnosed, treated, routed, signed, approved or promoted.
+Architecture: summaries remains inert unless directly imported by tests. No runtime registration,
+public capability, application service, API/BFF/UI, repository read, ORM/table/migration,
+audit/outbox, provider/LLM, network/file I/O, dependency, lockfile, CI or infrastructure change.
+Acceptance honesty: the subset provides partial engineering evidence toward AC-P10-004 and domain
+provenance mechanics related to AC-P10-007. AC-P10-001..009 remain NOT YET VERIFIED/NOT ACCEPTED
+for live clinical workflows. P10-B, sensitive P10-C and P10-D remain BLOCKED by the 0/9 gate matrix.
+Governance: P8 and P9 remain PARTIAL; every P8-C/P9-C Stage 3 restriction remains unchanged.
+Alembic remains p7a_0007. P10 macro is IN PROGRESS pending independent acceptance, never COMPLETE.
 ```
