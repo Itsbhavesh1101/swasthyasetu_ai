@@ -1278,6 +1278,8 @@ P7/P8-C: P7 remains non-diagnostic and does not claim urgency assessment. Every 
 remains open and unchanged, including trusted role binding, AI-specific consent/egress, provider
 terms/residency, retention/deletion, confirmation/canonical mutation, idempotency/concurrency/replay,
 threat/privacy/clinical-safety review, and explicit production enablement. P8-C and P8 remain PARTIAL.
-Remote CI: pending on the implementation commit. All six mandatory jobs must pass on the exact final
-SHA before handoff; the verified run ID and conclusions will be reported without changing scope.
+Remote CI: VERIFIED — GitHub Actions run 39277176339 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit 576acd5fe0b039eb4fb0977be22c0c333f5b3c18. This documentation-only evidence
+commit must pass the same six jobs on its exact final SHA before handoff.
 ```
