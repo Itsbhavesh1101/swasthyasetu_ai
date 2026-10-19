@@ -4,3 +4,4 @@
 - `36_DEPENDENCY_MAP.md` — phase/module/capability dependencies
 - `37_DECISION_LOG.md` — accepted architecture/product decisions
 - `38_PROGRESS_TRACKER.md` — live phase status
+- `P11_READINESS_GATE_REVIEW.md` — Pre-P11 document/OCR approval and implementation gates
