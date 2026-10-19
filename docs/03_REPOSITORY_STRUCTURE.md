@@ -251,6 +251,12 @@ orchestrator/offline adapter and P8-B extractor with exact synthetic fixtures, w
 records why patient-facing Stage 3 remains blocked. No production integration file, message route,
 BFF handler, patient UI, persistence model, migration, or live provider is introduced.
 
+P9-A implements `backend/app/modules/safety/` as a framework-independent contract and guarded
+metadata-registry boundary. It owns the closed route vocabulary, immutable decision result,
+versioned policy metadata, and explicit fail-closed selection. Its only fixture is synthetic,
+metadata-only, and restricted to local/test environments. It owns no evaluator, clinical rules,
+runtime registration, HTTP route, persistence, migration, or patient-facing behavior.
+
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle
 and provenance values remain independently owned. Each module exposes domain contracts through
