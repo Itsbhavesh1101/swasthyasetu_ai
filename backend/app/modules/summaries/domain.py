@@ -126,6 +126,7 @@ class SourceDriftReason(StrEnum):
     SOURCE_CHANGED = "SOURCE_CHANGED"
     SOURCE_UNAVAILABLE = "SOURCE_UNAVAILABLE"
     TERMINAL_SOURCE = "TERMINAL_SOURCE"
+    NEW_SOURCE = "NEW_SOURCE"
     NEW_CONFLICT = "NEW_CONFLICT"
 
 
@@ -256,6 +257,24 @@ class SummarySection:
             raise _fail(SummaryValidationCode.INVALID_TYPE)
         if any(item.source.section_id is not self.section_id for item in self.assertions):
             raise _fail(SummaryValidationCode.INVALID_SOURCE)
+        if self.assertions:
+            expected_readiness = (
+                SectionReadiness.RECORDED
+                if all(
+                    item.source.source_kind is SummarySourceKind.P5_CLINICAL_FACT
+                    and item.source.p5_verification_state is VerificationState.CLINICIAN_CONFIRMED
+                    for item in self.assertions
+                )
+                else SectionReadiness.UNVERIFIED
+            )
+            if self.readiness is not expected_readiness:
+                raise _fail(SummaryValidationCode.INVALID_VALUE)
+        elif self.readiness not in {
+            SectionReadiness.UNKNOWN,
+            SectionReadiness.NOT_RECORDED,
+            SectionReadiness.UNAVAILABLE,
+        }:
+            raise _fail(SummaryValidationCode.INVALID_VALUE)
         if self.review_required != any(
             item.conflict_state is AssertionConflictState.REVIEW_REQUIRED
             for item in self.assertions
@@ -289,11 +308,18 @@ class ClinicalSummaryDraft:
             raise _fail(SummaryValidationCode.INVALID_VALUE)
         if any(source.encounter_id != self.encounter_id for source in self.source_references):
             raise _fail(SummaryValidationCode.INVALID_SCOPE)
+        assertions = tuple(
+            assertion for section in self.sections for assertion in section.assertions
+        )
         expected = tuple(
             assertion.source for section in self.sections for assertion in section.assertions
         )
         if self.source_references != expected:
             raise _fail(SummaryValidationCode.INVALID_SOURCE)
+        if len({assertion.assertion_id for assertion in assertions}) != len(assertions) or len(
+            {assertion.source.source_id for assertion in assertions}
+        ) != len(assertions):
+            raise _fail(SummaryValidationCode.DUPLICATE_IDENTITY)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)

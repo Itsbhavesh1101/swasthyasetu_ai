@@ -276,6 +276,136 @@ def test_conflict_key_and_state_must_agree() -> None:
         assertion(conflict_state=AssertionConflictState.REVIEW_REQUIRED)
 
 
+@pytest.mark.parametrize(
+    ("item", "readiness"),
+    [
+        (
+            assertion(
+                source=p7_source(section_id=SummarySectionId.CHIEF_COMPLAINT),
+            ),
+            SectionReadiness.RECORDED,
+        ),
+        (
+            assertion(
+                source=p5_source(p5_verification_state=VerificationState.EXTRACTED),
+            ),
+            SectionReadiness.RECORDED,
+        ),
+        (assertion(), SectionReadiness.NOT_RECORDED),
+        (assertion(), SectionReadiness.UNAVAILABLE),
+        (assertion(), SectionReadiness.UNKNOWN),
+    ],
+)
+def test_direct_section_rejects_forged_populated_readiness(
+    item: SummaryAssertion, readiness: SectionReadiness
+) -> None:
+    with pytest.raises(SummaryValidationError, match="INVALID_VALUE"):
+        SummarySection(
+            section_id=SummarySectionId.CHIEF_COMPLAINT,
+            readiness=readiness,
+            assertions=(item,),
+            review_required=False,
+        )
+
+
+@pytest.mark.parametrize("readiness", [SectionReadiness.RECORDED, SectionReadiness.UNVERIFIED])
+def test_direct_section_rejects_forged_empty_readiness(readiness: SectionReadiness) -> None:
+    with pytest.raises(SummaryValidationError, match="INVALID_VALUE"):
+        SummarySection(
+            section_id=SummarySectionId.CHIEF_COMPLAINT,
+            readiness=readiness,
+            assertions=(),
+            review_required=False,
+        )
+
+
+def test_direct_section_accepts_only_semantically_matching_readiness() -> None:
+    p7_item = assertion(source=p7_source(section_id=SummarySectionId.CHIEF_COMPLAINT))
+    extracted = assertion(
+        assertion_id=oid(11),
+        source=p5_source(
+            source_id=oid(3),
+            p5_verification_state=VerificationState.EXTRACTED,
+        ),
+    )
+    assert section(SummarySectionId.CHIEF_COMPLAINT, (assertion(),)).readiness is (
+        SectionReadiness.RECORDED
+    )
+    assert (
+        SummarySection(
+            section_id=SummarySectionId.CHIEF_COMPLAINT,
+            readiness=SectionReadiness.UNVERIFIED,
+            assertions=(p7_item, extracted),
+            review_required=False,
+        ).readiness
+        is SectionReadiness.UNVERIFIED
+    )
+    for readiness in (
+        SectionReadiness.UNKNOWN,
+        SectionReadiness.NOT_RECORDED,
+        SectionReadiness.UNAVAILABLE,
+    ):
+        assert (
+            SummarySection(
+                section_id=SummarySectionId.ALLERGIES,
+                readiness=readiness,
+                assertions=(),
+                review_required=False,
+            ).readiness
+            is readiness
+        )
+
+
+@pytest.mark.parametrize("duplicate_kind", ["assertion", "source"])
+@pytest.mark.parametrize("cross_section", [False, True])
+def test_direct_draft_rejects_global_duplicate_identities(
+    duplicate_kind: str, cross_section: bool
+) -> None:
+    first = assertion()
+    second_section_id = SummarySectionId.HPI if cross_section else SummarySectionId.CHIEF_COMPLAINT
+    second_source = p5_source(
+        source_id=first.source.source_id if duplicate_kind == "source" else oid(2),
+        section_id=second_section_id,
+    )
+    second = assertion(
+        assertion_id=first.assertion_id if duplicate_kind == "assertion" else oid(11),
+        source=second_source,
+    )
+    sections = tuple(
+        SummarySection(
+            section_id=section_id,
+            readiness=(
+                SectionReadiness.RECORDED
+                if section_id is SummarySectionId.CHIEF_COMPLAINT
+                or (cross_section and section_id is SummarySectionId.HPI)
+                else SectionReadiness.UNKNOWN
+            ),
+            assertions=(
+                (first,)
+                if section_id is SummarySectionId.CHIEF_COMPLAINT
+                else (second,)
+                if cross_section and section_id is SummarySectionId.HPI
+                else ()
+            ),
+            review_required=False,
+        )
+        for section_id in CANONICAL_SECTION_ORDER
+    )
+    if not cross_section:
+        sections = (
+            SummarySection(
+                section_id=SummarySectionId.CHIEF_COMPLAINT,
+                readiness=SectionReadiness.RECORDED,
+                assertions=(first, second),
+                review_required=False,
+            ),
+            *sections[1:],
+        )
+    references = tuple(item.source for value in sections for item in value.assertions)
+    with pytest.raises(SummaryValidationError, match="DUPLICATE_IDENTITY"):
+        draft(sections=sections, source_references=references)
+
+
 def test_replace_cannot_promote_draft_or_change_source_scope() -> None:
     value = draft()
     with pytest.raises(SummaryValidationError):

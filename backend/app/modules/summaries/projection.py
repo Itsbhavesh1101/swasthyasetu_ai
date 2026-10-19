@@ -184,6 +184,12 @@ def _check_source_freshness(draft: object, current: object) -> SummaryFreshnessR
         reasons.add(SourceDriftReason.SNAPSHOT_CHANGED)
         affected.update(CANONICAL_SECTION_ORDER)
 
+    draft_source_ids = {reference.source_id for reference in draft.source_references}
+    for source_id, added_state in current_by_id.items():
+        if source_id not in draft_source_ids:
+            reasons.add(SourceDriftReason.NEW_SOURCE)
+            affected.add(added_state.section_id)
+
     for reference in draft.source_references:
         state = current_by_id.get(reference.source_id)
         if state is None or state.availability in {

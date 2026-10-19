@@ -114,6 +114,8 @@ class CurrentSourceState:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class CurrentSourceSnapshot:
+    """Complete relevant scoped source set supplied for synthetic comparison."""
+
     encounter_id: OpaqueId = field(repr=False)
     snapshot_token: str = field(repr=False)
     sources: tuple[CurrentSourceState, ...]

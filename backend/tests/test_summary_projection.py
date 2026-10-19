@@ -401,6 +401,77 @@ def test_new_conflict_requires_review_without_mutating_draft() -> None:
     assert repr(draft) == before
 
 
+def test_new_same_encounter_source_marks_its_section_stale() -> None:
+    value = projection_input()
+    draft = build_engineering_draft(value)
+    new_item = source_projection(
+        2,
+        section_id=SummarySectionId.HPI,
+        label="SYNTHETIC_HPI_A",
+    )
+    result = check_source_freshness(
+        draft,
+        current_snapshot(
+            value,
+            sources=(current_state(value.sources[0]), current_state(new_item)),
+        ),
+    )
+    assert result.freshness is SummaryFreshness.STALE
+    assert result.affected_sections == (SummarySectionId.HPI,)
+    assert tuple(reason.value for reason in result.reasons) == ("NEW_SOURCE",)
+
+
+def test_new_source_in_formerly_empty_section_is_detected_independent_of_order() -> None:
+    value = projection_input()
+    draft = build_engineering_draft(value)
+    new_item = source_projection(
+        2,
+        section_id=SummarySectionId.ALLERGIES,
+        label="SYNTHETIC_ALLERGY_A",
+        source_kind=SummarySourceKind.P7_PATIENT_REPORTED,
+    )
+    states = (current_state(value.sources[0]), current_state(new_item))
+    forward = check_source_freshness(draft, current_snapshot(value, sources=states))
+    reverse = check_source_freshness(
+        draft, current_snapshot(value, sources=tuple(reversed(states)))
+    )
+    assert forward == reverse
+    assert forward.freshness is SummaryFreshness.STALE
+    assert forward.affected_sections == (SummarySectionId.ALLERGIES,)
+
+
+def test_new_source_with_explicit_conflict_requires_review() -> None:
+    value = projection_input()
+    draft = build_engineering_draft(value)
+    new_item = source_projection(2, label="SYNTHETIC_COMPLAINT_B")
+    result = check_source_freshness(
+        draft,
+        current_snapshot(
+            value,
+            sources=(current_state(value.sources[0]), current_state(new_item)),
+            conflict_sections=(SummarySectionId.CHIEF_COMPLAINT,),
+        ),
+    )
+    assert result.freshness is SummaryFreshness.REVIEW_REQUIRED
+    assert result.affected_sections == (SummarySectionId.CHIEF_COMPLAINT,)
+    assert {reason.value for reason in result.reasons} == {"NEW_CONFLICT", "NEW_SOURCE"}
+
+
+def test_cross_encounter_new_source_fails_closed_without_identifier_echo() -> None:
+    value = projection_input()
+    draft = build_engineering_draft(value)
+    new_item = source_projection(2, encounter_id=oid(999))
+    with pytest.raises(SummaryValidationError, match="INVALID_SCOPE") as caught:
+        check_source_freshness(
+            draft,
+            current_snapshot(
+                value,
+                sources=(current_state(value.sources[0]), current_state(new_item)),
+            ),
+        )
+    assert str(oid(999)) not in str(caught.value)
+
+
 def test_current_snapshot_rejects_scope_identity_and_duplicate_source_mismatch() -> None:
     value = projection_input()
     draft = build_engineering_draft(value)
