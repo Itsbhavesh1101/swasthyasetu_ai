@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P8-C safe engineering subset implemented; patient-facing integration remains governance-blocked and P8 remains partial
-**Current recommended next action:** Review the P8-C gate record and obtain the recorded clinical, identity, privacy/consent, retention, confirmation, and idempotency decisions before any Stage 3 implementation.
+**Current macro stage:** P9-A safety contracts and guarded metadata registry implemented; P9 remains partial and clinical policy/evaluation is approval-blocked
+**Current recommended next action:** Independently review P9-A and obtain a recorded, versioned clinical policy approval before P9-B clinical evaluation or P9-C patient integration.
 
 ---
 
@@ -45,7 +45,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
-| P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
+| P9 | Physical Safety Framework | PARTIAL | P9-A contract/registry foundation implemented; real policy, P9-B evaluation, and P9-C integration require separate approval and work. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
@@ -118,7 +118,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `08_SAFETY_AND_TRIAGE_POLICY.md` | NOT STARTED |
+| `08_SAFETY_AND_TRIAGE_POLICY.md` | DRAFT — NOT CLINICALLY APPROVED / real clinical rules NOT STARTED |
 
 ## Before P10
 
@@ -1105,4 +1105,79 @@ Open approvals: clinical scope/languages/copy; trusted role binding; specific AI
 provider/processor/residency terms; persistence/retention/deletion; withdrawal and in-flight
 handling; confirmation/canonical mutation; create-message idempotency/concurrency/replay; threat,
 privacy, and clinical safety reviews; explicit production enablement.
+```
+
+---
+
+# 42. P9-A Safety Decision Types and Guarded Policy Registry
+
+```text
+Work unit: P9-A — Safety Decision Types and Guarded Policy Registry
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFIED / INDEPENDENT REVIEW REQUIRED
+Date: 2026-10-19
+Branch: phase/p9-a-safety-decision-types-policy-registry
+Base commit: 9a6f5b1190909ab90aa7c0cc87a160a851d84763
+Contracts: exact five-route vocabulary and an immutable, bounded SafetyDecision with deterministic
+machine reason codes, exact policy identity/version, strict flags, and UTC timestamp normalization.
+Registry: immutable explicit registration/selection, canonical metadata checksum, duplicate/tamper/
+unknown/inactive rejection, deterministic ordering, and typed content-free closed failures.
+Fixture: metadata-only synthetic engineering identity; explicitly selectable only in LOCAL/TEST;
+the actual boundary rejects STAGING/PILOT/PRODUCTION. No clinical-approved state or clinical rules
+exist.
+Governance: docs/08_SAFETY_AND_TRIAGE_POLICY.md is a DRAFT architecture/approval gate containing no
+medical criteria. An approved, source-traceable, versioned policy and recorded clinical review are
+still required before P9-B/P9-C or patient use.
+Default/runtime: default registry is empty and unavailable. No evaluator, safety API, runtime module
+registration, persistence/table/migration, frontend, external provider, network egress, or P7/P8
+state mutation was added. Alembic head remains p7a_0007; dependencies and lockfiles are unchanged.
+Acceptance: AC-P9-001 and the typed-shape portion of AC-P9-002 have P9-A evidence. The unavailable
+policy portion of AC-P9-006 and synthetic distinction/environment guard portion of AC-P9-007 have
+evidence. AC-P9-003/004/005/008 and every clinically meaningful outcome remain deferred to an
+approved policy, P9-B, and P9-C. P9-B/P9-C are NOT STARTED; P9 remains PARTIAL.
+Local verification: 48 focused tests pass; network-free backend passes 746 with 97 PostgreSQL tests
+skipped; all 97 real PostgreSQL tests pass; frontend passes 88 tests and all three production
+builds; Docker build/migration/non-root/live/readiness checks pass. Playwright passes all 13
+journeys under the CI retry contract; the known intake-navigation first-attempt timeout reproduced
+and the affected journey also passed independently without retry. Ruff, strict mypy, compile/import,
+Alembic current/check, privacy/scope/route/egress/dependency/diff audits pass.
+P8-C: every Stage 3 blocker in P8_C_INTEGRATION_GATE_REVIEW.md remains open and unchanged; P8-C and
+P8 remain PARTIAL.
+Remote CI: VERIFIED — GitHub Actions run 39240064163 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on the
+implementation commit. The documentation-only evidence commit must pass the same six jobs on its
+exact final SHA before handoff.
+```
+
+---
+
+# 43. P9-A Review Repair 01 — Registry Integrity and Error Boundaries
+
+```text
+Work unit: P9-A review repair 01
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION REQUIRED / INDEPENDENT REVIEW REQUIRED
+Date: 2026-10-19
+Branch: phase/p9-a-safety-decision-types-policy-registry
+Reviewed head: 6dd860d58e2b036d245f32857c4f7a68a199d7ba
+Registry integrity: registration now validates and stores immutable scalar snapshots rather than
+caller-owned metadata references. all(), require(), and get_active_policy() reconstruct and
+revalidate detached metadata, so mutation before or after a returned read cannot alter later reads.
+Exact registered-key, selected-identity, policy type, checksum, approval, activation, and protected
+environment checks remain fail closed.
+Error privacy: require() validates bounded machine identities and uses cause-free lookup. Valid but
+unknown identities still raise UnknownPolicyError, while malformed identities raise the typed
+InvalidPolicyMetadataError without preserving caller content in exception causes or tracebacks.
+Selection bounds: ActivePolicySelection and require() share the metadata limits of 128 characters
+for policy IDs and 64 for versions, with exact-limit and limit-plus-one regression coverage.
+Tracker correction: the Before P9 row now truthfully marks 08_SAFETY_AND_TRIAGE_POLICY.md as DRAFT
+— NOT CLINICALLY APPROVED, while real clinical rules remain NOT STARTED.
+Local verification: 61 focused tests pass; network-free backend passes 759 with 97 PostgreSQL tests
+skipped; all 97 real PostgreSQL tests pass; frontend passes 88 tests and all three production
+builds; Docker build/migration/non-root/live/readiness checks and all 13 Playwright journeys pass.
+Ruff, strict mypy, compile/import, Alembic current/check, privacy, architecture, dependency, scope,
+and diff audits pass. Alembic remains p7a_0007 and dependencies/lockfiles are unchanged.
+Scope: no evaluator, clinical rule, route, API, persistence, migration, frontend, provider, egress,
+runtime activation, P9-B/P9-C, or P8-C patient-facing AI change. All clinical and P8-C approval
+gates remain open.
+Remote CI: pending on the repair commit; the exact final run ID and six conclusions must be reported
+in PR #26 and the handoff before this repair is considered verified.
 ```
