@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P9-B engineering-only deterministic safety mechanics implemented; P9 remains partial and clinical policy/patient integration is approval-blocked
-**Current recommended next action:** Independently review P9-B and obtain a recorded, versioned clinical policy approval before any real clinical evaluation or P9-C patient integration.
+**Current macro stage:** P9-C safe presentation/degraded-state engineering subset implemented; P9 remains partial and patient safety routing is approval-blocked
+**Current recommended next action:** Independently review P9-C and obtain the recorded clinical, content, privacy, security, data-governance and production-enablement approvals listed in the P9-C gate review before any real safety API, persistence or patient routing.
 
 ---
 
@@ -45,7 +45,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
-| P9 | Physical Safety Framework | PARTIAL | P9-A is merged; P9-B synthetic engineering mechanics are implemented pending review; real policy activation and P9-C are blocked/not started. |
+| P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B are merged. P9-C Stage 2 provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
@@ -1231,4 +1231,55 @@ Remote CI: VERIFIED — GitHub Actions run 39266042012 passed Backend quality, F
 Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
 implementation commit 00b27be76b849164a0471291da74079ed40e8340. This documentation-only evidence
 commit must pass the same six jobs on its final SHA before handoff.
+```
+
+---
+
+# 45. P9-C Gated Safety Result Presentation and Degraded-Mode Evidence
+
+```text
+Work unit: P9-C — gated safety result presentation and degraded-mode engineering evidence
+Status: PARTIAL — SAFE PRESENTATION ENGINEERING SUBSET / PATIENT ROUTING BLOCKED
+Date: 2026-10-19
+Branch: phase/p9-c-guarded-safety-result-presentation
+Base commit: 541fa9033349162c4bf1abb5d6cdfe7a6cd8d6fd
+Gate decision: no clinician-approved real policy, route semantics, patient copy, persistence contract,
+API authorization design, or pilot/production enablement is recorded. The required gate matrix names
+the accountable approval roles and keeps every Stage 3 gate open. No draft, checksum, flag, consent,
+synthetic fixture, or test result is treated as clinical authority.
+Stage 2 contract: a closed safety-presentation.v1 projection accepts only the exact P9-B synthetic
+policy identity, exact bounded keys and route tokens, sorted unique SYNTHETIC_ reasons, consistent
+flags, and a fresh UTC timestamp. LOCAL/TEST require explicit selection. Unknown or protected
+environments, malformed data, stale/future/invalid clocks, getter failures, and missing decisions
+fail closed to an immutable unavailable/degraded state that always blocks hypothetical self-care.
+Presentation proof: a disconnected component used only by unit tests prominently identifies
+engineering test data as not a medical assessment. It renders machine tokens only and exposes no
+advice, CTA, link, form, patient identity, source evidence, provider output, or health data.
+Unavailable/degraded states state that no safety assessment has been performed. The production app
+does not import or route to this component; /results remains unavailable and /urgent-help remains the
+independent generic shell resource.
+Architecture: no backend application/service/API/BFF route, capability registration, ORM/table,
+migration, outbox/audit record, patient signal parser, persistence, P7/P8 mutation, provider/egress,
+runtime synthetic import, dependency, or lockfile change. Alembic remains p7a_0007 and no safety
+table exists. P9-A/P9-B deterministic mechanics remain unchanged and have no real safety authority.
+Acceptance: AC-P9-001..008 gain only the explicitly bounded Stage 2 schema, isolation, inaccessible
+synthetic rendering, and degraded/fail-closed presentation evidence. Clinically valid decisions,
+real precedence and uncertainty rules, approved patient actions, persistence, authenticated APIs,
+P15 self-care release, and pilot/production activation remain NOT APPROVED/NOT VERIFIED.
+Local verification: 127 focused safety tests pass; network-free backend passes 825 tests with 97
+PostgreSQL tests skipped; all 97 real PostgreSQL tests pass; frontend passes 128 tests (124 patient,
+2 UI, 1 clinician, 1 admin) and all three production builds. All 13 Playwright journeys pass in a
+clean sequential run; the CI-style parallel run also exited successfully after two truthful flaky
+retries (one route-navigation timeout and one intake-start timing failure). Clean Alembic upgrade/
+current/check and downgrade/re-upgrade, Docker build/migration/non-root/live/database-readiness,
+compile/import, Ruff, strict mypy, privacy/route/table/egress/scope/diff audits, source secret scan,
+filesystem dependency/configuration scan, and backend image vulnerability scan pass.
+P7/P8-C: P7 remains non-diagnostic and does not claim urgency assessment. Every P8-C Stage 3 gate
+remains open and unchanged, including trusted role binding, AI-specific consent/egress, provider
+terms/residency, retention/deletion, confirmation/canonical mutation, idempotency/concurrency/replay,
+threat/privacy/clinical-safety review, and explicit production enablement. P8-C and P8 remain PARTIAL.
+Remote CI: VERIFIED — GitHub Actions run 39277176339 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit 576acd5fe0b039eb4fb0977be22c0c333f5b3c18. This documentation-only evidence
+commit must pass the same six jobs on its exact final SHA before handoff.
 ```

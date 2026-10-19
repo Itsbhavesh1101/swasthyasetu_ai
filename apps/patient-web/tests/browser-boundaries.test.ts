@@ -9,6 +9,7 @@ const browserSourceRoots = [
   join(applicationRoot, "app"),
   join(applicationRoot, "components"),
   join(applicationRoot, "lib", "onboarding", "client.ts"),
+  join(applicationRoot, "lib", "safety"),
 ];
 
 function sourceFiles(directory: string): string[] {

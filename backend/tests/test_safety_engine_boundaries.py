@@ -1,4 +1,4 @@
-"""Adversarial fixture, privacy, and architecture boundaries for P9-B."""
+"""Adversarial fixture, privacy, and architecture boundaries for P9-B/P9-C."""
 
 from dataclasses import fields, replace
 from pathlib import Path
@@ -219,7 +219,7 @@ def test_safety_code_has_no_runtime_provider_network_or_persistence_imports() ->
         assert forbidden not in source
 
 
-def test_p9b_adds_no_api_runtime_binding_table_or_frontend_route() -> None:
+def test_safety_engine_and_presentation_have_no_api_binding_table_or_frontend_route() -> None:
     repository_root = Path(__file__).parents[2]
     application_root = repository_root / "backend" / "app"
     paths = create_app().openapi()["paths"]
@@ -233,5 +233,33 @@ def test_p9b_adds_no_api_runtime_binding_table_or_frontend_route() -> None:
     assert "safety_decisions" not in migrations
     assert "policy_versions" not in migrations
 
-    frontend_files = tuple((repository_root / "apps").rglob("*safety*"))
-    assert frontend_files == ()
+    patient_app = repository_root / "apps" / "patient-web"
+    safety_files = {
+        path.relative_to(patient_app).as_posix()
+        for root in (
+            patient_app / "components" / "safety",
+            patient_app / "lib" / "safety",
+        )
+        for path in root.rglob("*")
+        if path.is_file()
+    }
+    safety_files.update(
+        path.relative_to(patient_app).as_posix()
+        for path in (patient_app / "tests").rglob("*safety*")
+        if path.is_file()
+    )
+    assert safety_files == {
+        "lib/safety/presentation.ts",
+        "tests/safety-presentation.test.tsx",
+        "tests/support/synthetic-safety-preview.tsx",
+    }
+    assert not (patient_app / "app" / "safety").exists()
+    assert not (patient_app / "app" / "api" / "safety").exists()
+
+    production_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for root in (patient_app / "app", patient_app / "components")
+        for path in root.rglob("*.tsx")
+    )
+    assert "SyntheticSafetyPreview" not in production_sources
+    assert "projectSyntheticSafetyPresentation" not in production_sources
