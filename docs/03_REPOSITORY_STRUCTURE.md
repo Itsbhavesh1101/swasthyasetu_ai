@@ -259,11 +259,11 @@ and `synthetic.py` plus focused engine/boundary tests. These files implement onl
 compile-time, nonmedical rule fixture and a pure local/test evaluator bound to the P9-A registry;
 they add no clinical rules, runtime registration, API, persistence, provider, or patient path.
 P9-C adds a strict pure view-state projection in `apps/patient-web/lib/safety/` and a disconnected
-engineering component in `apps/patient-web/components/safety/`. They are imported only by focused
-tests, accept only the exact P9-B synthetic identity in local/test, and fail closed elsewhere. No
-App Router page, BFF handler, public safety API, patient result, clinical copy, runtime data source,
-or self-care action imports them. The safety module owns no clinical rules, runtime registration,
-HTTP route, persistence, migration, or patient-facing behavior.
+rendering harness under `apps/patient-web/tests/support/`. The harness is test-only; the projector is
+used by focused tests, accepts only the exact P9-B synthetic identity in local/test, and fails closed
+elsewhere. No App Router page, BFF handler, public safety API, patient result, clinical copy, runtime
+data source, or self-care action imports them. The safety module owns no clinical rules, runtime
+registration, HTTP route, persistence, migration, or patient-facing behavior.
 
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle

@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { SyntheticSafetyPreview } from "../components/safety/synthetic-safety-preview";
+import { SyntheticSafetyPreview } from "./support/synthetic-safety-preview";
 import {
   projectSyntheticSafetyPresentation,
   type SafetyPresentationState,
@@ -114,6 +116,101 @@ describe("P9-C synthetic safety presentation contract", () => {
   });
 
   it.each([
+    ["single hole", Array(1)],
+    ["leading hole", [, "SYNTHETIC_B"]],
+    ["trailing hole", ["SYNTHETIC_A", ,]],
+    ["undefined element", [undefined]],
+    ["null element", [null]],
+    ["invalid element", ["privacy-canary"]],
+    ["too many elements", Array.from({ length: 17 }, (_, index) => `SYNTHETIC_${index}`)],
+    ["duplicate elements", ["SYNTHETIC_A", "SYNTHETIC_A"]],
+    ["unsorted elements", ["SYNTHETIC_B", "SYNTHETIC_A"]],
+  ])("rejects adversarial reason arrays with a %s", (_label, reason_codes) => {
+    const state = project(syntheticDecision({ reason_codes }));
+    expect(state).toEqual({
+      contract_version: "safety-presentation.v1",
+      kind: "DEGRADED",
+      blocks_self_care: true,
+      code: "INVALID_OR_INCOMPATIBLE_RESULT",
+    });
+    expect(JSON.stringify(state)).not.toContain("privacy-canary");
+    expect(JSON.stringify(state)).not.toContain("undefined");
+  });
+
+  it("rejects non-enumerable and symbol extra own keys without reading or echoing them", () => {
+    const hidden = syntheticDecision();
+    Object.defineProperty(hidden, "patient_id", {
+      enumerable: false,
+      value: "hidden-privacy-canary",
+    });
+    const symbol = syntheticDecision();
+    Object.defineProperty(symbol, Symbol("source_evidence"), {
+      enumerable: false,
+      get() {
+        throw new Error("symbol-privacy-canary");
+      },
+    });
+
+    for (const decision of [hidden, symbol]) {
+      const state = project(decision);
+      expect(state.kind).toBe("DEGRADED");
+      expect(JSON.stringify(state)).not.toContain("privacy-canary");
+    }
+  });
+
+  it("contains hostile own-key and array-index traps without echoing their canaries", () => {
+    const ownKeyCanary = "own-key-privacy-canary";
+    const hostileDecision = new Proxy(syntheticDecision(), {
+      ownKeys() {
+        throw new Error(ownKeyCanary);
+      },
+    });
+    const reasonCanary = "reason-index-privacy-canary";
+    const hostileReasons = ["SYNTHETIC_A"];
+    Object.defineProperty(hostileReasons, 0, {
+      enumerable: true,
+      get() {
+        throw new Error(reasonCanary);
+      },
+    });
+
+    for (const decision of [hostileDecision, syntheticDecision({ reason_codes: hostileReasons })]) {
+      const state = project(decision);
+      expect(state.kind).toBe("DEGRADED");
+      expect(JSON.stringify(state)).not.toContain("privacy-canary");
+    }
+  });
+
+  it.each([
+    ["second precision", "2026-10-19T12:00:00Z"],
+    ["millisecond precision", "2026-10-19T12:00:00.000Z"],
+  ])("accepts canonical UTC %s", (_label, created_at) => {
+    expect(project(syntheticDecision({ created_at })).kind).toBe("ENGINEERING_SYNTHETIC_PREVIEW");
+  });
+
+  it.each([
+    ["February 30", "2026-02-30T12:00:00Z", "2026-03-02T12:00:30Z"],
+    ["non-leap February 29", "2025-02-29T12:00:00Z", "2025-03-01T12:00:30Z"],
+    ["hour 24", "2026-10-19T24:00:00Z", "2026-10-20T00:00:30Z"],
+  ])(
+    "rejects calendar-invalid UTC %s even when normalization looks fresh",
+    (_label, created_at, observedAt) => {
+      expect(
+        projectSyntheticSafetyPresentation({
+          decision: syntheticDecision({ created_at }),
+          environment: "TEST",
+          observedAt: new Date(observedAt),
+        }),
+      ).toEqual({
+        contract_version: "safety-presentation.v1",
+        kind: "DEGRADED",
+        blocks_self_care: true,
+        code: "INVALID_OR_INCOMPATIBLE_RESULT",
+      });
+    },
+  );
+
+  it.each([
     ["EMERGENCY", false, true],
     ["PRIORITY_REVIEW", false, true],
     ["ROUTINE_CARE", false, true],
@@ -174,6 +271,33 @@ describe("P9-C synthetic safety presentation contract", () => {
 });
 
 describe("P9-C isolated synthetic preview component", () => {
+  it("exists only in test support and has no production import path", () => {
+    const patientRoot = process.cwd();
+    const productionPreview = join(
+      patientRoot,
+      "components",
+      "safety",
+      "synthetic-safety-preview.tsx",
+    );
+    const productionRoots = [join(patientRoot, "app"), join(patientRoot, "components")];
+    function walk(path: string): string[] {
+      if (!existsSync(path)) return [];
+      return readdirSync(path).flatMap((entry) => {
+        const candidate = join(path, entry);
+        return statSync(candidate).isDirectory() ? walk(candidate) : [candidate];
+      });
+    }
+    const sourceFiles = productionRoots.flatMap((root) => walk(root));
+
+    expect(existsSync(productionPreview)).toBe(false);
+    expect(
+      sourceFiles
+        .filter((path) => /\.(?:ts|tsx)$/.test(path))
+        .map((path) => readFileSync(path, "utf8"))
+        .join("\n"),
+    ).not.toContain("SyntheticSafetyPreview");
+  });
+
   it("labels toy data prominently and exposes only harmless machine literals", () => {
     const { container } = render(<SyntheticSafetyPreview state={project()} />);
 

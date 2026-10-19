@@ -91,25 +91,34 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function hasExactKeys(value: Record<string, unknown>): boolean {
-  const keys = Object.keys(value);
-  return keys.length === DECISION_KEYS.size && keys.every((key) => DECISION_KEYS.has(key));
+  const keys = Reflect.ownKeys(value);
+  if (keys.length !== DECISION_KEYS.size) return false;
+  for (const key of keys) {
+    if (typeof key !== "string" || !DECISION_KEYS.has(key)) return false;
+  }
+  return true;
 }
 
 function isReasonCodes(value: unknown): value is string[] {
   if (!Array.isArray(value) || value.length === 0 || value.length > MAX_REASON_CODES) return false;
-  if (
-    value.some(
-      (reason) => typeof reason !== "string" || reason.length > 64 || !REASON_CODE.test(reason),
-    )
-  ) {
-    return false;
+  const seen = new Set<string>();
+  let previous: string | undefined;
+  for (let index = 0; index < value.length; index += 1) {
+    if (!Object.hasOwn(value, index)) return false;
+    const reason: unknown = value[index];
+    if (
+      typeof reason !== "string" ||
+      reason.length > 64 ||
+      !REASON_CODE.test(reason) ||
+      seen.has(reason) ||
+      (previous !== undefined && previous >= reason)
+    ) {
+      return false;
+    }
+    seen.add(reason);
+    previous = reason;
   }
-  return (
-    new Set(value).size === value.length &&
-    value.every((reason, index) => {
-      return index === 0 || value[index - 1]! < reason;
-    })
-  );
+  return true;
 }
 
 function isValidTimestamp(value: unknown, observedAt: Date): value is string {
@@ -117,6 +126,9 @@ function isValidTimestamp(value: unknown, observedAt: Date): value is string {
   const createdAtMs = Date.parse(value);
   const observedAtMs = observedAt.getTime();
   if (!Number.isFinite(createdAtMs) || !Number.isFinite(observedAtMs)) return false;
+  const canonical = new Date(createdAtMs).toISOString();
+  const expected = value.includes(".") ? canonical : canonical.replace(".000Z", "Z");
+  if (value !== expected) return false;
   const ageMs = observedAtMs - createdAtMs;
   return ageMs >= 0 && ageMs <= MAX_PREVIEW_AGE_MS;
 }

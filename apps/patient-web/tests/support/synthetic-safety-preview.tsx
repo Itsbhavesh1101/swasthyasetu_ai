@@ -1,6 +1,6 @@
 import type { SafetyPresentationState } from "../../lib/safety/presentation";
 
-/** Disconnected engineering harness component. Application routes must not import it. */
+/** Vitest-only rendering harness. Production code must never import this module. */
 export function SyntheticSafetyPreview({ state }: Readonly<{ state: SafetyPresentationState }>) {
   if (state.kind !== "ENGINEERING_SYNTHETIC_PREVIEW") {
     return (

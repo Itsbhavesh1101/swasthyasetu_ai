@@ -245,19 +245,21 @@ def test_safety_engine_and_presentation_have_no_api_binding_table_or_frontend_ro
     }
     safety_files.update(
         path.relative_to(patient_app).as_posix()
-        for path in (patient_app / "tests").glob("*safety*")
+        for path in (patient_app / "tests").rglob("*safety*")
         if path.is_file()
     )
     assert safety_files == {
-        "components/safety/synthetic-safety-preview.tsx",
         "lib/safety/presentation.ts",
         "tests/safety-presentation.test.tsx",
+        "tests/support/synthetic-safety-preview.tsx",
     }
     assert not (patient_app / "app" / "safety").exists()
     assert not (patient_app / "app" / "api" / "safety").exists()
 
-    route_sources = "\n".join(
-        path.read_text(encoding="utf-8") for path in (patient_app / "app").rglob("*.tsx")
+    production_sources = "\n".join(
+        path.read_text(encoding="utf-8")
+        for root in (patient_app / "app", patient_app / "components")
+        for path in root.rglob("*.tsx")
     )
-    assert "SyntheticSafetyPreview" not in route_sources
-    assert "projectSyntheticSafetyPresentation" not in route_sources
+    assert "SyntheticSafetyPreview" not in production_sources
+    assert "projectSyntheticSafetyPresentation" not in production_sources
