@@ -1,5 +1,7 @@
 """Pure synthetic document processing-attempt tests."""
 
+import traceback
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
@@ -71,6 +73,91 @@ def test_attempt_start_and_completion_are_immutable_and_utc() -> None:
 def test_direct_constructor_rejects_malformed_state(changes: dict[str, object]) -> None:
     with pytest.raises(ProcessingGuardError):
         queued(**changes)
+
+
+@pytest.mark.parametrize(
+    ("status", "classification"),
+    [
+        (AttemptStatus.FAILED, RetryClassification.NEEDS_REVIEW),
+        (AttemptStatus.NEEDS_REVIEW, RetryClassification.TERMINAL),
+        (AttemptStatus.NEEDS_REVIEW, RetryClassification.RETRYABLE),
+        (AttemptStatus.CANCELLED, RetryClassification.RETRYABLE),
+        (AttemptStatus.CANCELLED, RetryClassification.TERMINAL),
+    ],
+)
+def test_direct_constructor_rejects_contradictory_terminal_classifications(
+    status: AttemptStatus, classification: RetryClassification
+) -> None:
+    with pytest.raises(ProcessingGuardError) as raised:
+        queued(
+            stage=AttemptStage.COMPLETED,
+            status=status,
+            started_at=NOW,
+            completed_at=NOW + timedelta(seconds=1),
+            failure_code=AttemptFailureCode.REFUSED,
+            retry_classification=classification,
+        )
+    assert raised.value.code is ProcessingGuardCode.INVALID_STATE
+
+
+def test_direct_constructor_rejects_forged_failure_code_without_echo() -> None:
+    canary = "private-canary-failure-code"
+    with pytest.raises(ProcessingGuardError) as raised:
+        queued(
+            stage=AttemptStage.COMPLETED,
+            status=AttemptStatus.FAILED,
+            started_at=NOW,
+            completed_at=NOW + timedelta(seconds=1),
+            failure_code=canary,
+            retry_classification=RetryClassification.TERMINAL,
+        )
+    assert raised.value.code is ProcessingGuardCode.INVALID_TYPE
+    assert canary not in "".join(traceback.format_exception(raised.value))
+
+
+@pytest.mark.parametrize("generation", [True, 1.0])
+@pytest.mark.parametrize("transition", ["start", "succeed", "fail"])
+def test_public_transitions_reject_generation_lookalikes(
+    generation: object, transition: str
+) -> None:
+    attempt = queued()
+    if transition != "start":
+        attempt = attempt.start(at=NOW, generation=1)
+    with pytest.raises(ProcessingGuardError) as raised:
+        if transition == "start":
+            attempt.start(at=NOW, generation=generation)  # type: ignore[arg-type]
+        elif transition == "succeed":
+            attempt.succeed(at=NOW, generation=generation)  # type: ignore[arg-type]
+        else:
+            attempt.fail(
+                at=NOW,
+                generation=generation,  # type: ignore[arg-type]
+                code=AttemptFailureCode.REFUSED,
+                classification=RetryClassification.TERMINAL,
+            )
+    assert raised.value.code is ProcessingGuardCode.INVALID_TYPE
+
+
+def test_direct_constructor_accepts_only_coherent_failed_and_review_states() -> None:
+    running = queued().start(at=NOW, generation=1)
+    failed = replace(
+        running,
+        stage=AttemptStage.COMPLETED,
+        status=AttemptStatus.FAILED,
+        completed_at=NOW + timedelta(seconds=1),
+        failure_code=AttemptFailureCode.ENGINE_UNAVAILABLE,
+        retry_classification=RetryClassification.RETRYABLE,
+    )
+    review = replace(
+        running,
+        stage=AttemptStage.COMPLETED,
+        status=AttemptStatus.NEEDS_REVIEW,
+        completed_at=NOW + timedelta(seconds=1),
+        failure_code=AttemptFailureCode.MALFORMED_RESULT,
+        retry_classification=RetryClassification.NEEDS_REVIEW,
+    )
+    assert failed.status is AttemptStatus.FAILED
+    assert review.status is AttemptStatus.NEEDS_REVIEW
 
 
 def test_stale_generation_terminal_replay_and_deadline_fail_closed() -> None:

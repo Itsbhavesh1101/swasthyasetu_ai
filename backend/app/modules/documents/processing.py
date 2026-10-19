@@ -119,6 +119,8 @@ class ProcessingAttempt:
             or not isinstance(self.retry_classification, RetryClassification)
         ):
             raise _error(ProcessingGuardCode.INVALID_TYPE)
+        if self.failure_code is not None and not isinstance(self.failure_code, AttemptFailureCode):
+            raise _error(ProcessingGuardCode.INVALID_TYPE)
         created = _utc(self.created_at)
         deadline = _utc(self.deadline_at)
         started = None if self.started_at is None else _utc(self.started_at)
@@ -157,18 +159,32 @@ class ProcessingAttempt:
                 and self.failure_code is None
                 and self.retry_classification is RetryClassification.NONE
             )
-        else:
+        elif self.status is AttemptStatus.FAILED:
             valid = (
                 self.stage is AttemptStage.COMPLETED
                 and started is not None
                 and completed is not None
                 and self.failure_code is not None
-                and self.retry_classification is not RetryClassification.NONE
+                and self.retry_classification
+                in {RetryClassification.RETRYABLE, RetryClassification.TERMINAL}
             )
+        elif self.status is AttemptStatus.NEEDS_REVIEW:
+            valid = (
+                self.stage is AttemptStage.COMPLETED
+                and started is not None
+                and completed is not None
+                and self.failure_code is not None
+                and self.retry_classification is RetryClassification.NEEDS_REVIEW
+            )
+        else:
+            # Live cancellation orchestration is outside this synthetic-only subset.
+            valid = False
         if not valid:
             raise _error(ProcessingGuardCode.INVALID_STATE)
 
     def _check(self, generation: int) -> None:
+        if type(generation) is not int:
+            raise _error(ProcessingGuardCode.INVALID_TYPE)
         if generation != self.generation:
             raise _error(ProcessingGuardCode.STALE_GENERATION)
 
@@ -204,7 +220,8 @@ class ProcessingAttempt:
         if (
             self.status is not AttemptStatus.RUNNING
             or not isinstance(code, AttemptFailureCode)
-            or classification in {RetryClassification.NONE}
+            or not isinstance(classification, RetryClassification)
+            or classification is RetryClassification.NONE
         ):
             raise _error(ProcessingGuardCode.INVALID_STATE)
         status = (

@@ -1,9 +1,10 @@
 """Strict synthetic parser/OCR contract tests."""
 
+import traceback
 from dataclasses import FrozenInstanceError, replace
 from datetime import UTC, datetime, timedelta, timezone
 from math import inf, nan
-from typing import Any
+from typing import Any, cast
 from uuid import UUID
 
 import pytest
@@ -181,6 +182,22 @@ def test_request_rejects_versions_deadlines_and_hints(changes: dict[str, Any]) -
         request(**changes)
 
 
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"language_hints": (["private-canary"],)},
+        {"script_hints": (False,)},
+    ],
+)
+def test_request_rejects_hostile_hint_types_with_typed_content_free_error(
+    changes: dict[str, Any],
+) -> None:
+    with pytest.raises(DocumentContractError) as raised:
+        request(**changes)
+    assert raised.value.code is DocumentContractCode.INVALID_VALUE
+    assert "private-canary" not in "".join(traceback.format_exception(raised.value))
+
+
 def test_request_normalizes_aware_deadline_to_utc_and_is_immutable() -> None:
     value = request(
         deadline_at=(NOW + timedelta(hours=5, seconds=5)).astimezone(timezone(timedelta(hours=5)))
@@ -226,12 +243,83 @@ def test_sensitive_text_is_hidden_and_authority_tokens_rejected() -> None:
     assert "CLINICIAN" not in str(raised.value)
 
 
+@pytest.mark.parametrize(("language", "script"), [(False, "Latn"), ("en", ["private-canary"])])
+def test_language_descriptor_rejects_nonstring_fields_without_raw_type_errors(
+    language: object, script: object
+) -> None:
+    with pytest.raises(DocumentContractError) as raised:
+        LanguageDescriptor(
+            cast(Any, language),
+            cast(Any, script),
+            Confidence(ConfidenceKind.UNKNOWN, None),
+        )
+    assert raised.value.code is DocumentContractCode.INVALID_TYPE
+    assert "private-canary" not in "".join(traceback.format_exception(raised.value))
+
+
+@pytest.mark.parametrize("rotation", [False, 0.0, 90.0])
+def test_page_rejects_noninteger_rotation_lookalikes(rotation: object) -> None:
+    with pytest.raises(DocumentContractError) as raised:
+        replace(page(1), rotation_degrees=rotation)  # type: ignore[arg-type]
+    assert raised.value.code is DocumentContractCode.INVALID_TYPE
+
+
 def test_page_rejects_unsorted_duplicate_and_dangling_table_cells() -> None:
     with pytest.raises(DocumentContractError):
         replace(page(1), blocks=(block(2, 1), block(1, 0)))
     cell = TableCell("cell.1", "missing.block", 0, 0, 1, 1, box())
     with pytest.raises(DocumentContractError):
         replace(page(1), tables=(TableResult("table.1", (cell,)),))
+
+
+def table_cell_block(number: int = 1, order: int = 0) -> TextBlock:
+    return TextBlock(
+        f"cell.block.{number}",
+        BlockKind.TABLE_CELL,
+        f"SYNTHETIC_CELL_{number}",
+        order,
+        box(),
+        Confidence(ConfidenceKind.RECOGNIZER, 0.75),
+    )
+
+
+def test_page_rejects_duplicate_tables_and_non_cell_block_linkage() -> None:
+    linked = table_cell_block()
+    cell = TableCell("cell.1", linked.block_id, 0, 0, 1, 1, box())
+    table = TableResult("table.1", (cell,))
+    valid = replace(page(1), blocks=(linked,), tables=(table,))
+    assert valid.tables == (table,)
+    with pytest.raises(DocumentContractError) as duplicate:
+        replace(valid, tables=(table, table))
+    assert duplicate.value.code is DocumentContractCode.DUPLICATE_IDENTITY
+
+    text = block()
+    wrong_kind = TableResult(
+        "table.2",
+        (TableCell("cell.2", text.block_id, 0, 0, 1, 1, box()),),
+    )
+    with pytest.raises(DocumentContractError) as mismatched:
+        replace(page(1), blocks=(text,), tables=(wrong_kind,))
+    assert mismatched.value.code is DocumentContractCode.IDENTITY_MISMATCH
+
+
+@pytest.mark.parametrize(
+    ("row", "column", "row_span", "column_span"),
+    [
+        (256, 0, 1, 1),
+        (0, 256, 1, 1),
+        (0, 0, 257, 1),
+        (0, 0, 1, 257),
+        (255, 0, 2, 1),
+        (0, 255, 1, 2),
+    ],
+)
+def test_table_cells_reject_oversized_or_overflowing_grid_coordinates(
+    row: int, column: int, row_span: int, column_span: int
+) -> None:
+    with pytest.raises(DocumentContractError) as raised:
+        TableCell("cell.1", "cell.block.1", row, column, row_span, column_span, box())
+    assert raised.value.code is DocumentContractCode.LIMIT_EXCEEDED
 
 
 def test_failed_page_cannot_carry_payload() -> None:
@@ -242,6 +330,28 @@ def test_failed_page_cannot_carry_payload() -> None:
             page(1, failed=True),
             languages=(LanguageDescriptor("en", "Latn", Confidence(ConfidenceKind.UNKNOWN, None)),),
         )
+
+
+def test_result_error_codes_are_closed_and_content_free_at_each_constructor() -> None:
+    canary = "private-canary-result-error"
+    with pytest.raises(DocumentContractError) as page_error:
+        replace(page(1, failed=True), error_code=canary)  # type: ignore[arg-type]
+    with pytest.raises(DocumentContractError) as failed_error:
+        result(
+            status=ResultStatus.FAILED,
+            pages=(page(1, failed=True), page(2, failed=True)),
+            error=cast(Any, canary),
+        )
+    with pytest.raises(DocumentContractError) as partial_error:
+        result(
+            status=ResultStatus.PARTIAL,
+            pages=(page(1), page(2, failed=True)),
+            error=cast(Any, canary),
+        )
+    for raised in (page_error, failed_error, partial_error):
+        assert raised.value.code is DocumentContractCode.INVALID_TYPE
+        rendered = "".join(traceback.format_exception(raised.value))
+        assert canary not in rendered
 
 
 def test_result_reconciles_success_partial_and_failure_coverage() -> None:

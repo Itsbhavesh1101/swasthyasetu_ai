@@ -18,6 +18,7 @@ MAX_PAGES: Final = 32
 MAX_BLOCKS_PER_PAGE: Final = 128
 MAX_TABLES_PER_PAGE: Final = 16
 MAX_CELLS_PER_TABLE: Final = 256
+MAX_TABLE_GRID_EXTENT: Final = MAX_CELLS_PER_TABLE
 MAX_HINTS: Final = 8
 MAX_TEXT_LENGTH: Final = 128
 MAX_ELAPSED_MS: Final = 300_000.0
@@ -197,13 +198,11 @@ def _request_common(request: DocumentParserRequest | OCRRequest, expected_versio
     hints = request.language_hints
     scripts = request.script_hints
     for values in (hints, scripts):
-        if (
-            not isinstance(values, tuple)
-            or len(values) > MAX_HINTS
-            or len(values) != len(set(values))
-        ):
+        if not isinstance(values, tuple) or len(values) > MAX_HINTS:
             raise _fail(DocumentContractCode.INVALID_VALUE)
         if any(not isinstance(item, str) or _HINT.fullmatch(item) is None for item in values):
+            raise _fail(DocumentContractCode.INVALID_VALUE)
+        if len(values) != len(set(values)):
             raise _fail(DocumentContractCode.INVALID_VALUE)
     requested = _utc(request.requested_at)
     deadline = _utc(request.deadline_at)
@@ -310,6 +309,8 @@ class LanguageDescriptor:
     confidence: Confidence
 
     def __post_init__(self) -> None:
+        if not isinstance(self.language, str) or not isinstance(self.script, str):
+            raise _fail(DocumentContractCode.INVALID_TYPE)
         if (
             _HINT.fullmatch(self.language) is None
             or _HINT.fullmatch(self.script) is None
@@ -366,6 +367,15 @@ class TableCell:
             raise _fail(DocumentContractCode.INVALID_TYPE)
         if self.row < 0 or self.column < 0 or self.row_span < 1 or self.column_span < 1:
             raise _fail(DocumentContractCode.INVALID_VALUE)
+        if (
+            self.row >= MAX_TABLE_GRID_EXTENT
+            or self.column >= MAX_TABLE_GRID_EXTENT
+            or self.row_span > MAX_TABLE_GRID_EXTENT
+            or self.column_span > MAX_TABLE_GRID_EXTENT
+            or self.row + self.row_span > MAX_TABLE_GRID_EXTENT
+            or self.column + self.column_span > MAX_TABLE_GRID_EXTENT
+        ):
+            raise _fail(DocumentContractCode.LIMIT_EXCEEDED)
         if not isinstance(self.box, NormalizedBox):
             raise _fail(DocumentContractCode.INVALID_TYPE)
 
@@ -412,9 +422,14 @@ class PageResult:
             or type(self.height) is not int
             or self.width < 1
             or self.height < 1
-            or self.rotation_degrees not in (0, 90, 180, 270)
         ):
             raise _fail(DocumentContractCode.INVALID_VALUE)
+        if type(self.rotation_degrees) is not int:
+            raise _fail(DocumentContractCode.INVALID_TYPE)
+        if self.rotation_degrees not in (0, 90, 180, 270):
+            raise _fail(DocumentContractCode.INVALID_VALUE)
+        if self.error_code is not None and not isinstance(self.error_code, ResultErrorCode):
+            raise _fail(DocumentContractCode.INVALID_TYPE)
         _tuple(self.languages, LanguageDescriptor, MAX_HINTS)
         _tuple(self.blocks, TextBlock, MAX_BLOCKS_PER_PAGE)
         _tuple(self.tables, TableResult, MAX_TABLES_PER_PAGE)
@@ -424,8 +439,15 @@ class PageResult:
             sorted(self.blocks, key=lambda block: (block.reading_order, block.block_id))
         ):
             raise _fail(DocumentContractCode.INVALID_VALUE)
-        block_ids = {block.block_id for block in self.blocks}
-        if any(cell.block_id not in block_ids for table in self.tables for cell in table.cells):
+        if len({table.table_id for table in self.tables}) != len(self.tables):
+            raise _fail(DocumentContractCode.DUPLICATE_IDENTITY)
+        blocks_by_id = {block.block_id: block for block in self.blocks}
+        if any(
+            cell.block_id not in blocks_by_id
+            or blocks_by_id[cell.block_id].kind is not BlockKind.TABLE_CELL
+            for table in self.tables
+            for cell in table.cells
+        ):
             raise _fail(DocumentContractCode.IDENTITY_MISMATCH)
         if self.status is PageStatus.FAILED:
             if self.languages or self.blocks or self.tables or self.error_code is None:
@@ -517,6 +539,8 @@ class DocumentProcessingResult:
             raise _fail(DocumentContractCode.INVALID_TYPE)
         _tuple(self.pages, PageResult, MAX_PAGES)
         _tuple(self.warnings, WarningCode, len(WarningCode))
+        if self.error_code is not None and not isinstance(self.error_code, ResultErrorCode):
+            raise _fail(DocumentContractCode.INVALID_TYPE)
         if self.warnings != tuple(sorted(set(self.warnings), key=lambda item: item.value)):
             raise _fail(DocumentContractCode.DUPLICATE_IDENTITY)
         page_numbers = tuple(page.page_number for page in self.pages)
