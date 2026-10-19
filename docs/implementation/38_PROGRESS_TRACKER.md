@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P10-A deterministic source-backed summary domain safe engineering subset implemented pending independent review; P10 is in progress while P8 and P9 remain partial
-**Current recommended next action:** Independently review the P10-A domain/test-only implementation and its exact-SHA evidence. Do not begin P10-B/C/D or live clinical use while the 0/9 readiness approvals and all P8-C/P9-C Stage 3 gates remain open.
+**Current macro stage:** P11-B parser/OCR contract, deterministic mock and synthetic processing safe engineering subset implemented pending independent review; P11 is partial while P8, P9 and P10 remain partial
+**Current recommended next action:** Independently review the P11-B synthetic-only implementation and its exact-SHA evidence. Do not begin P11-A/C/D/E or live document processing while the 0/9 readiness approvals and all P8-C/P9-C/P10 gates remain open.
 
 ---
 
@@ -47,7 +47,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | IN PROGRESS | P10-A safe engineering domain/test subset is implemented pending independent review. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
-| P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
+| P11 | Document AI / OCR | PARTIAL | P11-B safe engineering subset supplies inert ports/contracts, a test-only mock, pure attempt mechanics and an offline synthetic harness. No live document workflow or OCR provider is approved. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
@@ -1369,4 +1369,31 @@ Architecture: documentation-only; no runtime, API, schema, migration, dependency
 Docker, feature flag, policy, model or dataset change. Alembic remains p7a_0007.
 Next action: independent review of the canonical specification and readiness matrix, then an
 explicit separate phase prompt. Do not start P11-A/B/C/D/E automatically.
+```
+
+---
+
+# 49. P11-B Synthetic Parser/OCR Ports and Processing Contracts
+
+```text
+Work unit: P11-B — safe engineering subset only
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION REQUIRED / INDEPENDENT REVIEW REQUIRED
+Baseline: main @ 449cd917f8a79baf30b7a90fc04cd32d131fb318
+Contracts: distinct provider-neutral DocumentParserPort and OCRPort protocols; frozen bounded
+synthetic requests/results with explicit versions, identity/source/page coverage, geometry,
+confidence-unavailable semantics, deterministic ordering, provider provenance and content-free
+closed failures. OCR output remains evidence only and cannot express clinical authority.
+Test support: deterministic exact-mapping MockOCRAdapter and in-memory benchmark harness exist only
+under backend/tests. They use nonmedical SYNTHETIC_* tokens, perform no I/O or egress, select no
+provider and make no accuracy or clinical-support claim.
+Processing: immutable in-memory attempt transitions reject stale generation, replay, deadline,
+duplicate identity and invalid retry state. Generic JobRequest composition carries bounded
+content-free metadata only; no runtime handler, daemon, automatic retry or durability claim exists.
+Architecture: no upload/file/object-storage access, API/BFF/UI, runtime registration, ORM/table,
+migration, outbox write, production adapter/model, dependency, lockfile, Docker or CI change.
+Alembic remains p7a_0007.
+Acceptance: partial engineering evidence only toward AC-P11-004/005 and offline mechanics of
+AC-P11-003/009. No AC-P11 criterion is accepted for a real document workflow. All 0/9 live P11
+gates remain unapproved; P8-C/P9-C Stage 3 and P10 live clinician/source gates remain blocked.
+P11-A/C/D/E are not started by this work. P7 deterministic manual intake remains available.
 ```
