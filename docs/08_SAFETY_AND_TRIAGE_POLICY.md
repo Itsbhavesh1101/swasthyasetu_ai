@@ -6,7 +6,8 @@
 
 **Runtime authority:** NONE
 
-**Current implementation scope:** P9-A contract and metadata-registry foundation only
+**Current implementation scope:** P9-A contracts/metadata registry plus P9-B synthetic mechanical
+evaluation evidence only
 
 ## Purpose and boundary
 
@@ -33,9 +34,30 @@ engineering-only, contains no rules, and cannot be selected in staging, pilot, o
 - Patient evaluation, decision persistence, APIs, UI, advice, and runtime activation are outside
   P9-A.
 
-Route precedence beyond the explicit clarification invariant requires approved clinical rules and
-P9-B implementation. No route/flag combination in an engineering fixture is evidence of medical
-eligibility for self-care.
+Route precedence for any real patient requires approved clinical rules. No route/flag combination
+in an engineering fixture is evidence of medical eligibility for self-care.
+
+## P9-B synthetic mechanics — not clinical policy
+
+P9-B adds a pure evaluator for one fixed, compile-time engineering fixture. Its closed vocabulary
+contains only nonmedical symbols: `SYNTHETIC_COMPLETE_A`, `SYNTHETIC_OVERRIDE_A`,
+`SYNTHETIC_OVERRIDE_B`, `SYNTHETIC_MISSING_A`, `SYNTHETIC_AMBIGUOUS_A`,
+`SYNTHETIC_EXCLUDE_A`, `SYNTHETIC_PRIORITY_A`, `SYNTHETIC_ROUTINE_A`, and
+`SYNTHETIC_SELF_CARE_A`. These names test ordering and failure mechanics; they do not stand for
+symptoms, measurements, diagnoses, populations, treatments, or approved clinical criteria.
+
+The synthetic evaluator is available only when a caller deliberately supplies both the explicit
+local/test metadata registry and the exactly checksummed engineering fixture. It resolves active
+metadata at every evaluation, rejects staging/pilot/production, and has no API, runtime module
+binding, persistence, provider, network, P7/P8 mutation, or patient-facing output. Importing the
+fixture registers or activates nothing. The rule checksum covers canonical synthetic fixture bytes
+only; it is neither the P9-A metadata checksum nor a signature or approval credential.
+
+Synthetic tests demonstrate hard-override ordering, advisory non-downgrade, clarification for toy
+missing/ambiguous inputs, self-care exclusion, deterministic reason ordering, and fail-closed
+missing/tampered policy behavior. This is engineering evidence only. Real signal definitions,
+clinical precedence, policy-specific reason codes, patient decision persistence, P9-C integration,
+and production rollout remain **OPEN — CLINICAL GOVERNANCE REQUIRED**.
 
 ## Approval required before clinical policy authoring or activation
 
@@ -76,9 +98,9 @@ not manufacture an emergency disposition.
 - patient and clinician copy, accessibility behavior, and escalation operations;
 - validation datasets, acceptance thresholds, monitoring, retirement, and rollback process.
 
-Until these decisions are approved and recorded, P9-B clinical evaluation and P9-C patient
+Until these decisions are approved and recorded, real clinical evaluation and P9-C patient
 integration remain blocked. `SAFE-003`, `SAFE-009`, `FR-SAFE-001..012`, and full AC-P9 acceptance
-are not clinically verified by P9-A metadata tests.
+are not clinically verified by P9-A metadata or P9-B synthetic-mechanics tests.
 
 ## Independence from P8-C
 
