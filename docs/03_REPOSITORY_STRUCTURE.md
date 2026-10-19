@@ -202,6 +202,20 @@ backend/app/modules/
   feature_management/
 ```
 
+P10-A populates `summaries/` only with an inert, framework-independent engineering domain:
+
+```text
+summaries/
+  __init__.py   # inert package; no registration side effect
+  domain.py     # frozen draft, section, source, readiness and freshness values
+  contracts.py  # bounded synthetic source/coverage/current-snapshot inputs
+  projection.py # pure deterministic draft and source-drift projections
+```
+
+It has no public runtime capability, router, application service, ORM model, persistence adapter,
+provider, network/file I/O, or registration in `app/main.py`. P10-A consumes only explicitly
+supplied synthetic projections in tests; live P5/P7 reads and clinician workflows remain blocked.
+
 A mature module should eventually resemble:
 
 ```text
