@@ -1113,7 +1113,7 @@ privacy, and clinical safety reviews; explicit production enablement.
 
 ```text
 Work unit: P9-A — Safety Decision Types and Guarded Policy Registry
-Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION REQUIRED / INDEPENDENT REVIEW REQUIRED
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFIED / INDEPENDENT REVIEW REQUIRED
 Date: 2026-10-19
 Branch: phase/p9-a-safety-decision-types-policy-registry
 Base commit: 9a6f5b1190909ab90aa7c0cc87a160a851d84763
@@ -1142,6 +1142,8 @@ and the affected journey also passed independently without retry. Ruff, strict m
 Alembic current/check, privacy/scope/route/egress/dependency/diff audits pass.
 P8-C: every Stage 3 blocker in P8_C_INTEGRATION_GATE_REVIEW.md remains open and unchanged; P8-C and
 P8 remain PARTIAL.
-Remote CI: must pass all six required jobs on the exact final SHA before handoff; the run ID and
-conclusions will be reported with the PR.
+Remote CI: VERIFIED — GitHub Actions run 39240064163 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on the
+implementation commit. The documentation-only evidence commit must pass the same six jobs on its
+exact final SHA before handoff.
 ```
