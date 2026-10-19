@@ -6,8 +6,8 @@
 
 **Runtime authority:** NONE
 
-**Current implementation scope:** P9-A contracts/metadata registry plus P9-B synthetic mechanical
-evaluation evidence only
+**Current implementation scope:** P9-A contracts/metadata registry, P9-B synthetic mechanical
+evaluation, and P9-C detached presentation/degraded-state engineering evidence only
 
 ## Purpose and boundary
 
@@ -59,6 +59,26 @@ missing/tampered policy behavior. This is engineering evidence only. Real signal
 clinical precedence, policy-specific reason codes, patient decision persistence, P9-C integration,
 and production rollout remain **OPEN — CLINICAL GOVERNANCE REQUIRED**.
 
+## P9-C detached presentation evidence — not patient integration
+
+P9-C adds a closed frontend view-state projection and a pure React component used only by isolated
+tests. The projection accepts the exact P9-B synthetic policy identity and bounded P9-A decision
+shape only when a trusted caller explicitly supplies `LOCAL` or `TEST`. Missing, unknown,
+staging, pilot, and production environments return unavailable before decision data is inspected.
+Malformed, stale, incompatible, extra-field, or privacy-bearing values degrade without echo and
+always block any hypothetical self-care continuation.
+
+The synthetic component states prominently that it is engineering test data and not a medical
+assessment. It renders harmless machine tokens only and has no action, route, network source,
+patient data, clinical advice, or runtime application import. The real `/results` page remains
+unavailable, `/urgent-help` remains generic and independent, and completed P7 intake remains a
+non-diagnostic draft that is not an urgency assessment.
+
+The exact gate evidence and future authorization checklist are recorded in
+`docs/implementation/P9_C_SAFETY_PRESENTATION_GATE_REVIEW.md`. This work is presentation-architecture
+and degraded-state evidence only. It does not activate `safety.evaluate`, authorize patient-facing
+routing, approve policy content or copy, create persistence, or complete P9.
+
 ## Approval required before clinical policy authoring or activation
 
 A future version must record authoritative source material, exact scope and populations,
@@ -100,7 +120,8 @@ not manufacture an emergency disposition.
 
 Until these decisions are approved and recorded, real clinical evaluation and P9-C patient
 integration remain blocked. `SAFE-003`, `SAFE-009`, `FR-SAFE-001..012`, and full AC-P9 acceptance
-are not clinically verified by P9-A metadata or P9-B synthetic-mechanics tests.
+are not clinically verified by P9-A metadata, P9-B synthetic mechanics, or P9-C detached
+presentation tests.
 
 ## Independence from P8-C
 

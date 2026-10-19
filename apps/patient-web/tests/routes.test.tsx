@@ -6,6 +6,7 @@ import ErrorPage from "../app/error";
 import DocumentsPage from "../app/documents/page";
 import LoadingPage from "../app/loading";
 import OfflinePage from "../app/offline/page";
+import ResultsPage from "../app/results/page";
 import UrgentHelpPage from "../app/urgent-help/page";
 
 describe("patient route states", () => {
@@ -26,6 +27,15 @@ describe("patient route states", () => {
     expect(screen.getByText("Not available yet")).toBeVisible();
     expect(screen.getByText(/document upload and review are not enabled/i)).toBeVisible();
     expect(screen.getByRole("button", { name: "Continue unavailable" })).toBeDisabled();
+  });
+
+  it("keeps results honest and unavailable without a safety assessment claim", () => {
+    render(<ResultsPage />);
+
+    expect(screen.getByRole("heading", { level: 1, name: "Results" })).toBeVisible();
+    expect(screen.getByText(/there are no connected results to show/i)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Continue unavailable" })).toBeDisabled();
+    expect(screen.queryByText(/safety assessment completed|cleared|routine care/i)).toBeNull();
   });
 
   it("announces loading state", () => {
