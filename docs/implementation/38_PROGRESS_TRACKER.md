@@ -131,7 +131,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `15_DOCUMENT_AI_OCR_SPEC.md` | NOT STARTED |
+| `15_DOCUMENT_AI_OCR_SPEC.md` | COMPLETE — SPECIFICATION WRITTEN, SUBJECT TO INDEPENDENT REVIEW; not clinical, privacy, production, provider, upload, retention or implementation approval |
 
 ## Before P12
 
@@ -1317,8 +1317,10 @@ then a separate prompt for the bounded P10-A subset if accepted. Do not start P1
 
 ```text
 Work unit: P10-A — isolated synthetic/offline summary-domain foundation
-Status: COMPLETE SAFE ENGINEERING SUBSET — PENDING INDEPENDENT REVIEW
+Status: COMPLETE SAFE ENGINEERING SUBSET — MERGED; live P10 remains PARTIAL/BLOCKED
 Baseline: main @ 9498972eceaa1ec6c647fd8e4dcb7f2e84748583
+Merge evidence: P10-A PR #30 merged at 7aad4dce8c68d008e98287d769d83d109c3cb46b;
+reviewed feature head 400c8f19ccc6a3d1b1e91038665b0a30c3cda432 has the same tree.
 Pre-P10 evidence: PR #29 merged at the exact baseline; both canonical specifications remain
 technical prerequisites rather than clinical, institutional or production approval.
 Implementation: frozen bounded summary/source/section/readiness/freshness values, strict P5 fact
@@ -1335,4 +1337,36 @@ provenance mechanics related to AC-P10-007. AC-P10-001..009 remain NOT YET VERIF
 for live clinical workflows. P10-B, sensitive P10-C and P10-D remain BLOCKED by the 0/9 gate matrix.
 Governance: P8 and P9 remain PARTIAL; every P8-C/P9-C Stage 3 restriction remains unchanged.
 Alembic remains p7a_0007. P10 macro is IN PROGRESS pending independent acceptance, never COMPLETE.
+```
+
+---
+
+# 48. Pre-P11 Document AI / OCR Specification and Readiness Pack
+
+```text
+Work unit: Pre-P11 canonical documentation prerequisites
+Status: COMPLETE — SPECIFICATIONS WRITTEN, SUBJECT TO INDEPENDENT REVIEW; P11 NOT STARTED
+Baseline: main @ 7aad4dce8c68d008e98287d769d83d109c3cb46b
+Deliverables: 15_DOCUMENT_AI_OCR_SPEC.md and P11_READINESS_GATE_REVIEW.md define document
+ownership/lifecycle, secure ingestion/private-object boundaries, separate parser/OCR ports,
+benchmark-gated provider status, processing attempts/jobs/registry, detached candidates,
+provenance/source permission, future UI privacy/accessibility, and P11-A/B/C/D/E ownership.
+Repository truth: documents contains only .gitkeep; conceptual document tables/routes are absent;
+the patient /documents route is unavailable. Existing ObjectStoragePort/local adapter,
+process-local jobs/explicit worker and PostgreSQL outbox are generic primitives, not a medical
+upload pipeline, durable document worker, production object store, or document event integration.
+Gate result: 0/9 gates approved, 5 OPEN, 4 BLOCKED. There is no blanket patient-data, clinical,
+privacy, scanner, storage, provider, retention, source-access, pilot or production approval.
+Safest candidate next subset after independent review is a separately prompted P11-B
+engineering-only parser/OCR port, deterministic nonmedical mock, bounded job-contract and benchmark
+harness subset with no provider dependency, model, upload API, persistence, egress or activation.
+Acceptance truth: FR-DOC-001..023, FR-PROV-001..007 and AC-P11-001..011 are mapped but all remain
+NOT YET IMPLEMENTED / NOT VERIFIED. Documentation is not acceptance evidence.
+Governance: P8-C/P9-C Stage 3 remain blocked; P10 stays PARTIAL with live clinician/source access
+blocked. OCR evidence cannot become clinical truth, P5 overwrite, P9 safety, P10 signed summary or
+P15 self-care. P7 deterministic intake remains available.
+Architecture: documentation-only; no runtime, API, schema, migration, dependency, lockfile, CI,
+Docker, feature flag, policy, model or dataset change. Alembic remains p7a_0007.
+Next action: independent review of the canonical specification and readiness matrix, then an
+explicit separate phase prompt. Do not start P11-A/B/C/D/E automatically.
 ```
