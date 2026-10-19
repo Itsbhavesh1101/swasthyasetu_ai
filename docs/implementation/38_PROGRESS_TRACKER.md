@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P9-C safe presentation/degraded-state engineering subset implemented; P9 remains partial and patient safety routing is approval-blocked
-**Current recommended next action:** Independently review P9-C and obtain the recorded clinical, content, privacy, security, data-governance and production-enablement approvals listed in the P9-C gate review before any real safety API, persistence or patient routing.
+**Current macro stage:** P9-C Stage 2 safe presentation/degraded-state engineering subset merged; P8 and P9 remain partial, P10 remains not started, and the Pre-P10 clinician/provenance specifications await independent review
+**Current recommended next action:** Independently review the Pre-P10 specifications and readiness-gate findings; only then scope the isolated P10-A domain/test-only subset, while all live clinician-access and P8-C/P9-C patient-facing gates remain blocked.
 
 ---
 
@@ -45,8 +45,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
-| P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B are merged. P9-C Stage 2 provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
-| P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
+| P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
+| P10 | Clinician Dashboard + Summary | NOT STARTED | Pre-P10 specifications are completed subject to independent review; live clinician identity, assignment, lawful access, summary persistence and review workflows remain open/blocked. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
@@ -124,8 +124,8 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `12_CLINICAL_PROVENANCE_SPEC.md` | NOT STARTED |
-| `24_CLINICIAN_DASHBOARD_SPEC.md` | NOT STARTED |
+| `12_CLINICAL_PROVENANCE_SPEC.md` | COMPLETE — SPECIFICATION COMPLETED, SUBJECT TO REVIEW; not clinical approval or implementation |
+| `24_CLINICIAN_DASHBOARD_SPEC.md` | COMPLETE — SPECIFICATION COMPLETED, SUBJECT TO REVIEW; not production access approval or implementation |
 
 ## Before P11
 
@@ -1282,4 +1282,31 @@ Remote CI: VERIFIED — GitHub Actions run 39277176339 passed Backend quality, F
 Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
 implementation commit 576acd5fe0b039eb4fb0977be22c0c333f5b3c18. This documentation-only evidence
 commit must pass the same six jobs on its exact final SHA before handoff.
+```
+
+---
+
+# 46. Pre-P10 Clinician and Provenance Specification Pack
+
+```text
+Work unit: Pre-P10 canonical documentation prerequisites
+Status: COMPLETE — SPECIFICATIONS WRITTEN, SUBJECT TO INDEPENDENT REVIEW
+Baseline: main @ 08219993e96e2023500370bcaf4057c29f289df6
+Deliverables: 12_CLINICAL_PROVENANCE_SPEC.md, 24_CLINICIAN_DASHBOARD_SPEC.md, and
+P10_READINESS_GATE_REVIEW.md define source authority, fact disposition/correction, source-traceable
+summary design, clinician queue/overview/UI boundaries, phased ownership and approval gates.
+Repository facts: P5 facts/provenance and P7 deterministic intake are working foundations;
+summaries remains a placeholder and clinician-web remains an empty shell. Permission constants do
+not prove clinician assignment or production identity.
+Gate result: 0/9 gates are approved for live clinician access; 6 are OPEN and 3 are BLOCKED. P10-B,
+P10-C sensitive data, and P10-D remain blocked. After independent specification review, only an
+explicitly scoped P10-A domain/test-only subset is recommended.
+Governance: P8 and P9 remain PARTIAL. Every P8-C and P9-C Stage 3 restriction remains in force;
+P7 answers, P8 candidates, P9 synthetic decisions and P5 clinical facts are not interchangeable.
+Acceptance: AC-P10-001..009 are mapped but NOT YET IMPLEMENTED. Documentation is not clinical,
+privacy, identity, security, data-sharing, migration or production approval.
+Architecture: documentation-only; no runtime, API, persistence, migration, dependency, lockfile,
+CI, infrastructure, feature-flag or clinical-policy change. Alembic remains p7a_0007.
+Next action: independent review of both canonical specifications and the readiness-gate matrix,
+then a separate prompt for the bounded P10-A subset if accepted. Do not start P10-B/C/D.
 ```

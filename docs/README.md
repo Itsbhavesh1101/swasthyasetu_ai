@@ -23,6 +23,8 @@ P0 control documents live under `codex/` and `implementation/`. Files marked **T
 - `04_DOMAIN_MODEL.md`
 - `05_DATABASE_SCHEMA.md`
 - `06_API_CONTRACTS.md`
+- `12_CLINICAL_PROVENANCE_SPEC.md`
+- `24_CLINICIAN_DASHBOARD_SPEC.md`
 
 ## AI, privacy, testing, and error policy
 
