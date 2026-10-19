@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P8-B extraction schema/prompt package — implementation complete; P8 remains partial
-**Current recommended next action:** Complete independent review of P8-B PR #24; do not start P8-C.
+**Current macro stage:** P8-C safe engineering subset implemented; patient-facing integration remains governance-blocked and P8 remains partial
+**Current recommended next action:** Review the P8-C gate record and obtain the recorded clinical, identity, privacy/consent, retention, confirmation, and idempotency decisions before any Stage 3 implementation.
 
 ---
 
@@ -44,7 +44,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P5 | Patient + Encounter + Provenance | COMPLETE | P5-A, P5-B, and P5-C complete; AC-P5-001..008 pass. |
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
-| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A is merged. P8-B implementation and review repairs are complete subject to independent review; P8-C is not started. |
+| P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
 | P9 | Physical Safety Framework | NOT STARTED | Real policy requires clinical approval. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
@@ -1063,4 +1063,46 @@ P8-C changes. Alembic head remains p7a_0007.
 Open gates: clinical approval of production semantics/evidence, approved external-provider adapter,
 role separation assurance, real-patient egress/consent/security/institutional/regulatory review,
 retention, and governed confirmation remain unapproved and unimplemented.
+```
+
+---
+
+# 41. P8-C Gated Intake Integration — Safe Engineering Subset
+
+```text
+Work unit: P8-C — Gated Intake Integration, API and UI
+Status: PARTIAL — SAFE ENGINEERING SUBSET IMPLEMENTED / PATIENT-FACING STAGE 3 BLOCKED
+Date: 2026-10-19
+Branch: phase/p8-c-guarded-clinical-intake-integration
+Base commit: ad3bb6cd709e2f403e6e798d1bac31f9477eaf23
+Governance: P8_C_INTEGRATION_GATE_REVIEW.md records the authoritative evidence, owner, decision
+state, approved scope, future transaction proposal, and Stage 3 approval checklist. No missing
+approval is inferred or invented.
+Authorized integration: exact synthetic fixtures exercise ClinicalIntakeExtractor through the
+AIOrchestrationService and DeterministicOfflineLLMProvider with correlated contract, prompt, schema,
+source provenance, deadline, retry, and provider metadata.
+Safety: candidates remain detached AI_EXTRACTED_UNCONFIRMED values. Disabled/unconfigured providers,
+all closed P8-A failures, schema/provenance/evidence failures, unsupported injection-like input,
+abstention, and refusal produce no fabricated candidate and preserve deterministic P7 availability.
+Privacy/egress: the integration is process-local and network-blocked in tests; no patient text,
+identifier, source reference, or candidate content is logged. No live adapter or external egress is
+added.
+P7/API/schema: P7 state and public routes remain unchanged. No /messages route, BFF handler, patient
+UI, AI persistence/table, migration, event, automatic activation, or canonical fact/answer mutation
+is added.
+Dependencies/migrations: unchanged. Alembic head remains p7a_0007.
+Local verification: 19 new P8-C integration tests pass; the combined P8-A/B/C focused matrix passes
+208 tests; the network-free backend gate passes 698 tests with 97 PostgreSQL-marked tests skipped;
+all 97 real PostgreSQL tests pass; frontend quality passes 88 unit tests and all three production
+builds; Docker build, non-root image, explicit migration, liveness, and database-aware readiness
+pass. Playwright's first 13-test run had one intake-navigation timeout, that journey passed alone,
+and a complete retry passed all 13 journeys. Formatting, lint, strict typing, compile/import,
+Alembic heads/current/check, privacy, route, egress-import, scope, and diff audits pass.
+Remote CI: pending final branch commit.
+Acceptance: synthetic evidence advances AC-P8-002/004/005/006/007/008/009/010, but clinical and
+privacy production acceptance remains unverified. P8 and P8-C remain PARTIAL.
+Open approvals: clinical scope/languages/copy; trusted role binding; specific AI consent and egress;
+provider/processor/residency terms; persistence/retention/deletion; withdrawal and in-flight
+handling; confirmation/canonical mutation; create-message idempotency/concurrency/replay; threat,
+privacy, and clinical safety reviews; explicit production enablement.
 ```
