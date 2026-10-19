@@ -254,7 +254,11 @@ BFF handler, patient UI, persistence model, migration, or live provider is intro
 P9-A implements `backend/app/modules/safety/` as a framework-independent contract and guarded
 metadata-registry boundary. It owns the closed route vocabulary, immutable decision result,
 versioned policy metadata, and explicit fail-closed selection. Its only fixture is synthetic,
-metadata-only, and restricted to local/test environments. It owns no evaluator, clinical rules,
+metadata-only, and restricted to local/test environments. P9-B adds `contracts.py`, `engine.py`,
+and `synthetic.py` plus focused engine/boundary tests. These files implement only a closed,
+compile-time, nonmedical rule fixture and a pure local/test evaluator bound to the P9-A registry;
+they add no clinical rules, runtime registration, API, persistence, provider, or patient path.
+The safety module owns no clinical rules,
 runtime registration, HTTP route, persistence, migration, or patient-facing behavior.
 
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and

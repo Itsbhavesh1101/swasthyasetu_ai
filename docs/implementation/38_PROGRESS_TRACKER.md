@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P9-A safety contracts and guarded metadata registry implemented; P9 remains partial and clinical policy/evaluation is approval-blocked
-**Current recommended next action:** Independently review P9-A and obtain a recorded, versioned clinical policy approval before P9-B clinical evaluation or P9-C patient integration.
+**Current macro stage:** P9-B engineering-only deterministic safety mechanics implemented; P9 remains partial and clinical policy/patient integration is approval-blocked
+**Current recommended next action:** Independently review P9-B and obtain a recorded, versioned clinical policy approval before any real clinical evaluation or P9-C patient integration.
 
 ---
 
@@ -45,7 +45,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P6 | Patient Web Foundation | COMPLETE | P6-A, P6-B, and P6-C complete; AC-P6-001..008 pass and all mandatory P6-C feature-branch CI jobs passed. |
 | P7 | Structured Clinical Intake | COMPLETE | P7-A/P7-B/P7-C complete; PR #21 merged at `926f27a5bda456b616061617dfaf1519e302b9d4`. Production clinical content remains governance-deferred. |
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
-| P9 | Physical Safety Framework | PARTIAL | P9-A contract/registry foundation implemented; real policy, P9-B evaluation, and P9-C integration require separate approval and work. |
+| P9 | Physical Safety Framework | PARTIAL | P9-A is merged; P9-B synthetic engineering mechanics are implemented pending review; real policy activation and P9-C are blocked/not started. |
 | P10 | Clinician Dashboard + Summary | NOT STARTED | Depends on P5/P7. |
 | P11 | Document AI / OCR | NOT STARTED | Requires OCR spec. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
@@ -1180,4 +1180,52 @@ runtime activation, P9-B/P9-C, or P8-C patient-facing AI change. All clinical an
 gates remain open.
 Remote CI: pending on the repair commit; the exact final run ID and six conclusions must be reported
 in PR #26 and the handoff before this repair is considered verified.
+```
+
+---
+
+# 44. P9-B Deterministic Safety Engine — Synthetic Engineering Evidence
+
+```text
+Work unit: P9-B — Deterministic Safety Engine and Synthetic Regression Proof
+Status: IMPLEMENTATION COMPLETE — REMOTE CI VERIFICATION REQUIRED / INDEPENDENT REVIEW REQUIRED
+Date: 2026-10-19
+Branch: phase/p9-b-deterministic-safety-engine
+Base commit: 5c4cdc604f36aa6683e4daf0c3f975f7f3055511
+P9-A: PR #26 is merged at the exact base. Its immutable SafetyDecision and guarded metadata registry
+remain unchanged, and all 61 focused P9-A review-repair tests remain present.
+Contracts: frozen bounded synthetic input/rule/rule-set types expose only a closed nonmedical token
+vocabulary. Rules use fixed symbolic predicates and SYNTHETIC_ reasons; no free text, patient/session/
+encounter identity, clinical measurement, dynamic expression, callback, model score, or provider data
+is accepted. The rule-set checksum covers canonical fixture bytes only and is not clinical approval.
+Engine: the pure evaluator resolves PHYSICAL_SAFETY through the injected registry on every call,
+then requires exact metadata and exact compile-time fixture identity/version/checksum. LOCAL/TEST need
+explicit synthetic selection; default registry and STAGING/PILOT/PRODUCTION fail closed at the actual
+evaluate boundary. Importing the fixture has no registration or activation side effect.
+Synthetic mechanics: tests prove hard override over every lower toy route, ambiguity, exclusion, and
+LOW_RISK advisory; the advisory has no callable or decision authority. Missing/ambiguous toy input
+requires clarification and blocks self-care. Exclusion precedes toy self-care. Deterministic input/
+rule ordering, reason ordering, UTC normalization, repeatability, all five symbolic routes, conflicts,
+tampering, stale identity, malformed input, invalid clocks, and privacy-safe failures are covered.
+Architecture: no safety API, /messages route, runtime module binding, ORM/table/migration, audit/outbox,
+provider, network egress, P7/P8 mutation, frontend/BFF route, patient decision, or dependency change.
+Alembic head remains p7a_0007; safety_decisions and policy_versions tables are absent.
+Acceptance: AC-P9-001 is preserved. AC-P9-002..008 have only the P9-B engineering evidence explicitly
+allowed by the phase prompt. Clinical semantics, real precedence, production model policy, patient
+decision persistence, P9-C/P15 integration, and production activation are NOT APPROVED/NOT VERIFIED.
+Local verification: 127 focused safety tests pass (61 preserved P9-A plus 66 P9-B); network-free
+backend passes 825 tests with 97 PostgreSQL tests skipped; all 97 real PostgreSQL tests pass; frontend
+passes 88 unit tests and all three production builds; all 13 Playwright journeys pass sequentially,
+and the parallel CI retry contract exits successfully. Clean Alembic upgrade/current/check and
+downgrade/re-upgrade, Docker build/migration/non-root/live/database-readiness, compile/import, Ruff,
+strict mypy, privacy/route/table/egress/scope, and diff audits pass.
+P8-C: every Stage 3 approval blocker in P8_C_INTEGRATION_GATE_REVIEW.md remains open and unchanged,
+including clinical scope/copy, trusted role binding, AI-specific consent and egress, provider terms/
+residency, persistence/retention/deletion, withdrawal/in-flight handling, confirmation/canonical
+mutation, message idempotency/concurrency/replay, threat/privacy/clinical-safety review, and explicit
+production enablement. P8-C and P8 remain PARTIAL.
+Phase status: P9-B engineering mechanics are implemented pending independent review; P9-C is NOT
+STARTED; P9 remains PARTIAL. The authoritative docs/08 policy remains DRAFT — NOT CLINICALLY APPROVED
+— NO REAL TRIAGE RULES. Real policy activation and patient rollout remain BLOCKED.
+Remote CI: pending final branch commit and exact-SHA six-job verification.
 ```
