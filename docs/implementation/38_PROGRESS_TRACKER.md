@@ -1227,5 +1227,8 @@ production enablement. P8-C and P8 remain PARTIAL.
 Phase status: P9-B engineering mechanics are implemented pending independent review; P9-C is NOT
 STARTED; P9 remains PARTIAL. The authoritative docs/08 policy remains DRAFT — NOT CLINICALLY APPROVED
 — NO REAL TRIAGE RULES. Real policy activation and patient rollout remain BLOCKED.
-Remote CI: pending final branch commit and exact-SHA six-job verification.
+Remote CI: VERIFIED — GitHub Actions run 39266042012 passed Backend quality, Frontend quality,
+Persistence integration, Docker and PostgreSQL, Playwright Chromium, and Security scans on
+implementation commit 00b27be76b849164a0471291da74079ed40e8340. This documentation-only evidence
+commit must pass the same six jobs on its final SHA before handoff.
 ```
