@@ -245,6 +245,12 @@ candidate schemas, an immutable compile-time prompt manifest, source/evidence/pr
 and a transient application service. It is not imported by the default clinical-intake runtime,
 owns no route or persistence, and cannot promote candidates into P7 or clinical records.
 
+P8-C Stage 2 adds only `backend/tests/test_clinical_intake_extraction_integration.py` and
+`docs/implementation/P8_C_INTEGRATION_GATE_REVIEW.md`. The test composes the existing P8-A
+orchestrator/offline adapter and P8-B extractor with exact synthetic fixtures, while the gate review
+records why patient-facing Stage 3 remains blocked. No production integration file, message route,
+BFF handler, patient UI, persistence model, migration, or live provider is introduced.
+
 P5-A implements framework-independent domain boundaries in `patients/`, `encounters/`, and
 `provenance/`. Patient and typed clinical values live in cohesive domain files; encounter lifecycle
 and provenance values remain independently owned. Each module exposes domain contracts through
