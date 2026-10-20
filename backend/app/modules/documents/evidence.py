@@ -24,21 +24,30 @@ from app.modules.documents.classification import (
 from app.modules.documents.contracts import (
     MAX_BLOCKS_PER_PAGE,
     MAX_CELLS_PER_TABLE,
+    MAX_HINTS,
     MAX_PAGES,
     MAX_TABLES_PER_PAGE,
+    OCR_REQUEST_CONTRACT_VERSION,
+    PARSER_REQUEST_CONTRACT_VERSION,
+    RESULT_CONTRACT_VERSION,
     BlockKind,
+    Confidence,
     DocumentContractError,
     DocumentProcessingResult,
+    LanguageDescriptor,
     NormalizedBox,
     PageResult,
     PageSelection,
     PageStatus,
     ProviderProvenance,
+    ResourceUsage,
+    ResultErrorCode,
     ResultStatus,
     SyntheticSourceRef,
     TableCell,
     TableResult,
     TextBlock,
+    WarningCode,
 )
 from app.modules.documents.registry import (
     ProcessorAuthority,
@@ -171,6 +180,41 @@ def _safe_source(value: object) -> SyntheticSourceRef:
         raise _fail(CandidateContractCode.INVALID_VALUE) from None
 
 
+def _safe_confidence(value: object) -> Confidence:
+    if type(value) is not Confidence:
+        raise _fail(CandidateContractCode.INVALID_TYPE)
+    try:
+        return Confidence(value.kind, value.value)
+    except DocumentContractError:
+        raise _fail(CandidateContractCode.INVALID_VALUE) from None
+
+
+def _validate_languages(value: object) -> None:
+    if type(value) is not tuple:
+        raise _fail(CandidateContractCode.INVALID_TYPE)
+    if len(value) > MAX_HINTS:
+        raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
+    for language in value:
+        if type(language) is not LanguageDescriptor:
+            raise _fail(CandidateContractCode.INVALID_TYPE)
+        confidence = _safe_confidence(language.confidence)
+        try:
+            LanguageDescriptor(language.language, language.script, confidence)
+        except DocumentContractError:
+            raise _fail(CandidateContractCode.INVALID_VALUE) from None
+
+
+def _validate_resource_usage(value: object, succeeded: int) -> None:
+    if type(value) is not ResourceUsage:
+        raise _fail(CandidateContractCode.INVALID_TYPE)
+    try:
+        checked = ResourceUsage(value.elapsed_ms, value.processed_pages, value.peak_memory_bytes)
+    except DocumentContractError:
+        raise _fail(CandidateContractCode.INVALID_VALUE) from None
+    if checked.processed_pages != succeeded:
+        raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
+
+
 @dataclass(frozen=True, slots=True)
 class _ResultSnapshot:
     request_id: OpaqueId = field(repr=False)
@@ -199,7 +243,18 @@ def _result_index(
             or type(value.request_contract_version) is not str
         ):
             raise _fail(CandidateContractCode.INVALID_TYPE)
-        if type(value.pages) is not tuple or len(value.pages) > MAX_PAGES:
+        if (
+            value.result_contract_version != RESULT_CONTRACT_VERSION
+            or value.request_contract_version
+            not in (
+                PARSER_REQUEST_CONTRACT_VERSION,
+                OCR_REQUEST_CONTRACT_VERSION,
+            )
+        ):
+            raise _fail(CandidateContractCode.INVALID_VERSION)
+        if type(value.pages) is not tuple:
+            raise _fail(CandidateContractCode.INVALID_TYPE)
+        if len(value.pages) > MAX_PAGES:
             raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
         if any(type(page) is not PageResult for page in value.pages):
             raise _fail(CandidateContractCode.INVALID_TYPE)
@@ -223,18 +278,45 @@ def _result_index(
             value.provenance.routing_version,
             value.provenance.runtime_backend,
         )
-        if tuple(page.page_number for page in value.pages) != requested_pages:
-            raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
+        if type(value.warnings) is not tuple:
+            raise _fail(CandidateContractCode.INVALID_TYPE)
+        if len(value.warnings) > len(WarningCode):
+            raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
+        if any(type(warning) is not WarningCode for warning in value.warnings):
+            raise _fail(CandidateContractCode.INVALID_TYPE)
+        if value.warnings != tuple(sorted(set(value.warnings), key=lambda item: item.value)):
+            raise _fail(CandidateContractCode.DUPLICATE_IDENTITY)
+        if value.error_code is not None and type(value.error_code) is not ResultErrorCode:
+            raise _fail(CandidateContractCode.INVALID_TYPE)
         index: dict[tuple[int, str, str, str, str], NormalizedBox] = {}
+        page_numbers: list[int] = []
+        page_statuses: list[tuple[int, PageStatus]] = []
         succeeded = 0
         for page in value.pages:
-            if type(page.page_number) is not int or type(page.status) is not PageStatus:
+            if type(page.page_number) is not int or page.page_number < 1:
+                raise _fail(CandidateContractCode.INVALID_VALUE)
+            if type(page.status) is not PageStatus:
                 raise _fail(CandidateContractCode.INVALID_TYPE)
-            if type(page.blocks) is not tuple or len(page.blocks) > MAX_BLOCKS_PER_PAGE:
+            if type(page.width) is not int or type(page.height) is not int:
+                raise _fail(CandidateContractCode.INVALID_TYPE)
+            if page.width < 1 or page.height < 1:
+                raise _fail(CandidateContractCode.INVALID_VALUE)
+            if type(page.rotation_degrees) is not int:
+                raise _fail(CandidateContractCode.INVALID_TYPE)
+            if page.rotation_degrees not in (0, 90, 180, 270):
+                raise _fail(CandidateContractCode.INVALID_VALUE)
+            if page.error_code is not None and type(page.error_code) is not ResultErrorCode:
+                raise _fail(CandidateContractCode.INVALID_TYPE)
+            _validate_languages(page.languages)
+            if type(page.blocks) is not tuple:
+                raise _fail(CandidateContractCode.INVALID_TYPE)
+            if len(page.blocks) > MAX_BLOCKS_PER_PAGE:
                 raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
             if any(type(block) is not TextBlock for block in page.blocks):
                 raise _fail(CandidateContractCode.INVALID_TYPE)
-            if type(page.tables) is not tuple or len(page.tables) > MAX_TABLES_PER_PAGE:
+            if type(page.tables) is not tuple:
+                raise _fail(CandidateContractCode.INVALID_TYPE)
+            if len(page.tables) > MAX_TABLES_PER_PAGE:
                 raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
             if any(type(table) is not TableResult for table in page.tables):
                 raise _fail(CandidateContractCode.INVALID_TYPE)
@@ -242,10 +324,13 @@ def _result_index(
                 succeeded += 1
                 if page.error_code is not None:
                     raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
-            elif page.blocks or page.tables or page.error_code is None:
+            elif page.languages or page.blocks or page.tables or page.error_code is None:
                 raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
             blocks: dict[str, tuple[BlockKind, NormalizedBox]] = {}
+            block_order: list[tuple[int, str]] = []
             for block in page.blocks:
+                # The content-bearing block field is outside this verifier's trust claim.
+                # Structural validation remains text-blind even for hostile values.
                 block_id, kind = block.block_id, block.kind
                 if (
                     type(block_id) is not str
@@ -253,13 +338,21 @@ def _result_index(
                     or type(kind) is not BlockKind
                 ):
                     raise _fail(CandidateContractCode.INVALID_VALUE)
+                if type(block.reading_order) is not int:
+                    raise _fail(CandidateContractCode.INVALID_TYPE)
+                if block.reading_order < 0:
+                    raise _fail(CandidateContractCode.INVALID_VALUE)
                 if block_id in blocks:
                     raise _fail(CandidateContractCode.DUPLICATE_IDENTITY)
+                _safe_confidence(block.confidence)
                 blocks[block_id] = (kind, _safe_box(block.box))
+                block_order.append((block.reading_order, block_id))
                 if kind in {BlockKind.TEXT, BlockKind.TITLE}:
                     index[(page.page_number, EvidenceKind.BLOCK.value, "", "", block_id)] = blocks[
                         block_id
                     ][1]
+            if block_order != sorted(block_order):
+                raise _fail(CandidateContractCode.INVALID_VALUE)
             table_ids: set[str] = set()
             for table in page.tables:
                 if type(table.table_id) is not str or _TOKEN.fullmatch(table.table_id) is None:
@@ -267,20 +360,54 @@ def _result_index(
                 if table.table_id in table_ids:
                     raise _fail(CandidateContractCode.DUPLICATE_IDENTITY)
                 table_ids.add(table.table_id)
-                if type(table.cells) is not tuple or len(table.cells) > MAX_CELLS_PER_TABLE:
+                if type(table.cells) is not tuple:
+                    raise _fail(CandidateContractCode.INVALID_TYPE)
+                if len(table.cells) > MAX_CELLS_PER_TABLE:
                     raise _fail(CandidateContractCode.LIMIT_EXCEEDED)
                 if any(type(cell) is not TableCell for cell in table.cells):
                     raise _fail(CandidateContractCode.INVALID_TYPE)
+                cell_ids: set[str] = set()
+                positions: set[tuple[int, int]] = set()
+                cell_order: list[tuple[int, int, str]] = []
                 for cell in table.cells:
                     if any(
                         type(item) is not str or _TOKEN.fullmatch(item) is None
                         for item in (cell.cell_id, cell.block_id)
                     ):
                         raise _fail(CandidateContractCode.INVALID_VALUE)
+                    if any(
+                        type(item) is not int
+                        for item in (cell.row, cell.column, cell.row_span, cell.column_span)
+                    ):
+                        raise _fail(CandidateContractCode.INVALID_TYPE)
+                    cell_box = _safe_box(cell.box)
+                    try:
+                        checked_cell = TableCell(
+                            cell.cell_id,
+                            cell.block_id,
+                            cell.row,
+                            cell.column,
+                            cell.row_span,
+                            cell.column_span,
+                            cell_box,
+                        )
+                    except DocumentContractError:
+                        raise _fail(CandidateContractCode.INVALID_VALUE) from None
+                    if (
+                        checked_cell.cell_id in cell_ids
+                        or (
+                            checked_cell.row,
+                            checked_cell.column,
+                        )
+                        in positions
+                    ):
+                        raise _fail(CandidateContractCode.DUPLICATE_IDENTITY)
+                    cell_ids.add(checked_cell.cell_id)
+                    positions.add((checked_cell.row, checked_cell.column))
+                    cell_order.append((checked_cell.row, checked_cell.column, checked_cell.cell_id))
                     block_entry = blocks.get(cell.block_id)
                     if block_entry is None or block_entry[0] is not BlockKind.TABLE_CELL:
                         raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
-                    cell_box = _safe_box(cell.box)
                     key = (
                         page.page_number,
                         EvidenceKind.TABLE_CELL.value,
@@ -291,6 +418,13 @@ def _result_index(
                     if key in index:
                         raise _fail(CandidateContractCode.DUPLICATE_IDENTITY)
                     index[key] = cell_box
+                if cell_order != sorted(cell_order):
+                    raise _fail(CandidateContractCode.INVALID_VALUE)
+            page_numbers.append(page.page_number)
+            page_statuses.append((page.page_number, page.status))
+        if tuple(page_numbers) != requested_pages:
+            raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
+        _validate_resource_usage(value.resource_usage, succeeded)
         failed = len(value.pages) - succeeded
         if value.status is ResultStatus.SUCCEEDED and (failed or value.error_code is not None):
             raise _fail(CandidateContractCode.CONTEXT_MISMATCH)
@@ -312,7 +446,7 @@ def _result_index(
                 request_contract_version=value.request_contract_version,
                 routing_version=provenance.routing_version,
                 requested_pages=requested_pages,
-                page_statuses=tuple((page.page_number, page.status) for page in value.pages),
+                page_statuses=tuple(page_statuses),
                 status=value.status,
             ),
             index,

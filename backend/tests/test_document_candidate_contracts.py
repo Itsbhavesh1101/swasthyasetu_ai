@@ -2,7 +2,7 @@
 
 import traceback
 from dataclasses import FrozenInstanceError
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone, tzinfo
 from typing import Any, cast
 from uuid import UUID
 
@@ -34,6 +34,28 @@ from app.modules.documents.contracts import (
 from app.shared.types import OpaqueId
 
 NOW = datetime(2026, 1, 1, tzinfo=UTC)
+
+
+class NoneOffsetTimezone(tzinfo):
+    def utcoffset(self, dt: datetime | None) -> None:
+        return None
+
+    def dst(self, dt: datetime | None) -> None:
+        return None
+
+    def tzname(self, dt: datetime | None) -> str:
+        return "NONE_OFFSET"
+
+
+class ExplodingTimezone(tzinfo):
+    def utcoffset(self, dt: datetime | None) -> timedelta:
+        raise RuntimeError("private-timezone-canary")
+
+    def dst(self, dt: datetime | None) -> None:
+        return None
+
+    def tzname(self, dt: datetime | None) -> str:
+        return "EXPLODING"
 
 
 def oid(value: int) -> OpaqueId:
@@ -90,6 +112,22 @@ def test_candidate_is_detached_immutable_utc_and_repr_safe() -> None:
     rendered = repr(value)
     for secret in ("SYNTHETIC_CANDIDATE_A", "SYNTHETIC_SOURCE_ALPHA", "block.1"):
         assert secret not in rendered
+
+
+def test_candidate_requires_semantically_aware_timestamp_and_hides_timezone_failures() -> None:
+    with pytest.raises(CandidateContractError):
+        candidate(created_at=datetime(2026, 1, 1, tzinfo=NoneOffsetTimezone()))
+
+    with pytest.raises(CandidateContractError) as raised:
+        candidate(created_at=datetime(2026, 1, 1, tzinfo=ExplodingTimezone()))
+    assert "private-timezone-canary" not in "".join(traceback.format_exception(raised.value))
+
+
+def test_snapshot_candidate_revalidates_mutated_timestamp_awareness() -> None:
+    value = candidate()
+    object.__setattr__(value, "created_at", datetime(2026, 1, 1, tzinfo=NoneOffsetTimezone()))
+    with pytest.raises(CandidateContractError):
+        snapshot_candidate(value)
 
 
 @pytest.mark.parametrize(

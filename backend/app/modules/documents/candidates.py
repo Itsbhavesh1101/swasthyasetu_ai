@@ -344,7 +344,16 @@ class SyntheticDocumentCandidate:
             raise _fail(CandidateContractCode.INVALID_VALUE)
         if type(self.created_at) is not datetime or self.created_at.tzinfo is None:
             raise _fail(CandidateContractCode.INVALID_TYPE)
-        created = self.created_at.astimezone(UTC)
+        try:
+            offset = self.created_at.utcoffset()
+        except Exception:
+            raise _fail(CandidateContractCode.INVALID_VALUE) from None
+        if offset is None:
+            raise _fail(CandidateContractCode.INVALID_TYPE)
+        try:
+            created = self.created_at.astimezone(UTC)
+        except Exception:
+            raise _fail(CandidateContractCode.INVALID_VALUE) from None
         if self.disposition is CandidateDisposition.UNCONFIRMED:
             if not evidence or self.reason is not CandidateReason.STRUCTURAL_REFERENCE_ONLY:
                 raise _fail(CandidateContractCode.INVALID_STATUS)

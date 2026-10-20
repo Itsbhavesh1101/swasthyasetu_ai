@@ -16,12 +16,14 @@ from app.modules.documents.candidates import (
 )
 from app.modules.documents.classification import DocumentType, classify_synthetic
 from app.modules.documents.contracts import (
+    MAX_TABLE_GRID_EXTENT,
     OCR_REQUEST_CONTRACT_VERSION,
     RESULT_CONTRACT_VERSION,
     BlockKind,
     Confidence,
     ConfidenceKind,
     DocumentProcessingResult,
+    LanguageDescriptor,
     NormalizedBox,
     PageResult,
     PageSelection,
@@ -34,6 +36,7 @@ from app.modules.documents.contracts import (
     TableCell,
     TableResult,
     TextBlock,
+    WarningCode,
 )
 from app.modules.documents.evidence import (
     SourceAccessStatus,
@@ -151,6 +154,24 @@ def verify(value: object, processed: object) -> StructuralMatchOutcome:
     )
 
 
+def add_second_table_cell(processed: DocumentProcessingResult) -> tuple[TableCell, TableCell]:
+    page = processed.pages[0]
+    box = NormalizedBox(0.1, 0.2, 0.3, 0.4)
+    second_block = TextBlock(
+        "block.cell2",
+        BlockKind.TABLE_CELL,
+        "SYNTHETIC_TOKEN_C",
+        2,
+        box,
+        Confidence(ConfidenceKind.UNKNOWN, None),
+    )
+    first_cell = page.tables[0].cells[0]
+    second_cell = TableCell("cell.2", "block.cell2", 0, 1, 1, 1, box)
+    object.__setattr__(page, "blocks", (*page.blocks, second_block))
+    object.__setattr__(page.tables[0], "cells", (first_cell, second_cell))
+    return first_cell, second_cell
+
+
 def test_matching_is_unconfirmed_deterministic_and_source_access_unverified() -> None:
     value = candidate()
     first = verify(value, result())
@@ -256,6 +277,149 @@ def test_verifier_never_reads_or_formats_ocr_text() -> None:
 def test_mutated_success_result_with_failed_page_is_rejected() -> None:
     processed = result(failed_second=True)
     object.__setattr__(processed, "status", ResultStatus.SUCCEEDED)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [("width", -1), ("height", 0), ("rotation_degrees", 45)],
+)
+def test_mutated_page_geometry_never_matches(field: str, invalid: object) -> None:
+    processed = result()
+    object.__setattr__(processed.pages[0], field, invalid)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid"),
+    [
+        ("row", -1),
+        ("column", "0"),
+        ("row_span", 0),
+        ("column_span", MAX_TABLE_GRID_EXTENT + 1),
+    ],
+)
+def test_mutated_table_cell_grid_never_matches(field: str, invalid: object) -> None:
+    processed = result()
+    object.__setattr__(processed.pages[0].tables[0].cells[0], field, invalid)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_duplicate_and_noncanonical_table_cells_never_match() -> None:
+    duplicate = result()
+    _, duplicate_cell = add_second_table_cell(duplicate)
+    object.__setattr__(duplicate_cell, "cell_id", "cell.1")
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), duplicate)
+
+    noncanonical = result()
+    first_cell, second_cell = add_second_table_cell(noncanonical)
+    object.__setattr__(noncanonical.pages[0].tables[0], "cells", (second_cell, first_cell))
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), noncanonical)
+
+
+@pytest.mark.parametrize("invalid", [-1, "0", [], {}])
+def test_mutated_block_reading_order_never_matches(invalid: object) -> None:
+    processed = result()
+    object.__setattr__(processed.pages[0].blocks[0], "reading_order", invalid)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_noncanonical_block_order_never_matches() -> None:
+    processed = result()
+    object.__setattr__(processed.pages[0], "blocks", tuple(reversed(processed.pages[0].blocks)))
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_mutated_resource_usage_and_warning_graph_never_matches() -> None:
+    processed = result()
+    object.__setattr__(processed.resource_usage, "processed_pages", 1)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    object.__setattr__(processed.resource_usage, "elapsed_ms", float("nan"))
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    object.__setattr__(processed, "warnings", (WarningCode.LOW_CONFIDENCE,) * 2)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_mutated_language_block_confidence_and_cell_position_never_match() -> None:
+    processed = result()
+    language = LanguageDescriptor("en", "Latn", Confidence(ConfidenceKind.UNKNOWN, None))
+    object.__setattr__(language, "language", [])
+    object.__setattr__(processed.pages[0], "languages", (language,))
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    object.__setattr__(processed.pages[0].blocks[0].confidence, "kind", "UNKNOWN")
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    _, second_cell = add_second_table_cell(processed)
+    object.__setattr__(second_cell, "column", 0)
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_fully_failed_result_abstains_without_positive_match() -> None:
+    processed = result()
+    for page in processed.pages:
+        object.__setattr__(page, "blocks", ())
+        object.__setattr__(page, "tables", ())
+        object.__setattr__(page, "languages", ())
+        object.__setattr__(page, "status", PageStatus.FAILED)
+        object.__setattr__(page, "error_code", ResultErrorCode.PAGE_FAILED)
+    object.__setattr__(processed, "status", ResultStatus.FAILED)
+    object.__setattr__(processed, "error_code", ResultErrorCode.PAGE_FAILED)
+    object.__setattr__(processed.resource_usage, "processed_pages", 0)
+    assert verify(candidate(), processed).status is StructuralMatchStatus.ABSTAINED_UNVERIFIED
+
+
+def test_failed_page_with_mutated_language_metadata_is_rejected() -> None:
+    processed = result(failed_second=True)
+    object.__setattr__(
+        processed.pages[1],
+        "languages",
+        (LanguageDescriptor("en", "Latn", Confidence(ConfidenceKind.UNKNOWN, None)),),
+    )
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    object.__setattr__(
+        processed, "warnings", (WarningCode.PAGE_INCOMPLETE, WarningCode.LOW_CONFIDENCE)
+    )
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+
+def test_hostile_unhashable_nested_values_fail_before_unsafe_operations() -> None:
+    processed = result()
+    object.__setattr__(processed.pages[0].tables[0].cells[0], "row", [])
+    with pytest.raises(CandidateContractError):
+        verify(candidate(), processed)
+
+    processed = result()
+    object.__setattr__(processed, "warnings", (["privacy-canary"],))
+    with pytest.raises(CandidateContractError) as raised:
+        verify(candidate(), processed)
+    assert "privacy-canary" not in str(raised.value)
+
+    processed = result()
+    object.__setattr__(processed, "request_contract_version", [])
     with pytest.raises(CandidateContractError):
         verify(candidate(), processed)
 
