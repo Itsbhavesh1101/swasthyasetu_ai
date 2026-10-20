@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-C closed synthetic document types and inert processor-registry safe engineering subset implemented pending independent review; P11 is partial while P8, P9 and P10 remain partial
-**Current recommended next action:** Independently review the P11-C synthetic-only implementation and its exact-SHA evidence. Do not begin P11-A/D/E or live document processing while the 0/9 readiness approvals and all P8-C/P9-C/P10 gates remain open.
+**Current macro stage:** P11-A synthetic document lifecycle and ingestion-guard safe engineering subset implemented pending independent review; P11 is partial while P8, P9 and P10 remain partial
+**Current recommended next action:** Independently review the P11-A synthetic-only implementation and its exact-SHA evidence. Do not begin P11-D/E or live document processing while the 0/9 readiness approvals and all P8-C/P9-C/P10 gates remain open.
 
 ---
 
@@ -47,7 +47,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
-| P11 | Document AI / OCR | PARTIAL | P11-B safe engineering subset merged in PR #32. P11-C closed synthetic labels and inert version-pinned metadata registry are implemented pending independent review. No live document workflow, medical classifier, executable processor or OCR provider is approved. |
+| P11 | Document AI / OCR | PARTIAL | P11-B safe engineering subset merged in PR #32 and P11-C in PR #33. P11-A pure synthetic metadata/lifecycle guards are implemented pending independent review. No upload, storage, live document workflow, medical classifier, executable processor or OCR provider is approved. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
@@ -1406,7 +1406,7 @@ P11-A/D/E are not started by this work. P7 deterministic manual intake remains a
 
 ```text
 Work unit: P11-C — safe engineering subset only
-Status: IMPLEMENTED — INDEPENDENT REVIEW REQUIRED; live P11 remains PARTIAL/BLOCKED
+Status: COMPLETE SAFE ENGINEERING SUBSET — MERGED IN PR #33; live P11 remains PARTIAL/BLOCKED
 Baseline: main @ a8dea0b374017793f119a85daa971b8256881ab4
 Classification: an exact closed eight-type vocabulary and immutable versioned decision contracts
 normalize only caller-declared synthetic labels. Empty/UNKNOWN abstain, OTHER is unsupported, and
@@ -1427,6 +1427,40 @@ Acceptance honesty: partial synthetic engineering evidence only toward FR-DOC-01
 AC-P11-006. It is not a medical classifier or working live processor registry. AC-P11-001..011 remain
 NOT VERIFIED for live document use. The P11 live matrix remains 0 APPROVED / 5 OPEN / 4 BLOCKED.
 Governance: every P8-C/P9-C Stage 3 restriction remains in force; P10 live matrix remains 0/9.
-P11-A/D/E, real OCR providers and live patient/clinician workflows remain blocked. Await independent
-review and merge before accepting this safe subset.
+P11-A/D/E, real OCR providers and live patient/clinician workflows remain blocked by this historical
+P11-C work unit. P11-C was independently reviewed and merged in PR #33 at
+`d3c2125ebdb2c927f254b913a890b411ccc971e5`.
+```
+
+---
+
+# 51. P11-A Synthetic Document Lifecycle and Ingestion Guards
+
+```text
+Work unit: P11-A — safe engineering subset only
+Status: IMPLEMENTED — INDEPENDENT REVIEW REQUIRED; live P11 remains PARTIAL/BLOCKED
+Baseline: main @ d3c2125ebdb2c927f254b913a890b411ccc971e5
+Domain: frozen versioned ENGINEERING_ONLY metadata uses strict OpaqueId, the P11-C DocumentType
+vocabulary, non-dereferenceable synthetic source/owner/idempotency handles, declared synthetic
+representation and bounded byte/page/checksum claims. The stated 50 MiB/100-page engineering caps
+are test-contract bounds only and are not patient upload policy.
+Lifecycle: exact Spec 15 states and edges are pure and immutable. State/metadata/generation guards,
+UTC chronology, explicit synthetic validation decisions, terminal rejection and distinct new
+attempt identities for reprocessing fail closed with content-free errors. Document, P11-B attempt,
+OCR-result and generic-job states remain distinct.
+Assessment: pure descriptor comparison accepts no bytes, stream, path, URL, filename, MIME or
+storage reference. UNKNOWN requires review; OTHER and owner/source/representation mismatches reject.
+Owner-scoped idempotency compares only two explicitly supplied descriptors and never performs a
+lookup, existence probe, digest-only cross-owner match or authorization decision.
+Architecture: no API/BFF/UI, application/public registration, file scanner/parser, object-store
+access, job/outbox binding, ORM/table/migration, feature flag, external provider/model, egress,
+dependency, lockfile, Docker or CI change. P11-B/C production files remain unchanged and the OCR
+mock remains test-only. Alembic remains p7a_0007.
+Deferred: real stream/signature/MIME/active-content/malware/quarantine validation; upload Pattern
+A/B; checksums over bytes; patient/clinician authority; private storage, encryption, region,
+retention/deletion and schema decisions all still require their recorded human approvals.
+Acceptance honesty: partial synthetic reasoning evidence only toward FR-DOC-001/003/022 and
+AC-P11-001/003/010 boundaries. AC-P11-001..011 remain NOT VERIFIED for live document workflows.
+The P11 gate matrix remains 0 APPROVED / 5 OPEN / 4 BLOCKED; P10 live clinician gates remain 0/9;
+P8-C/P9-C Stage 3 restrictions remain in force. Await independent review; do not start P11-D/E.
 ```

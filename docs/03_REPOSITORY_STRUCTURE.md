@@ -216,11 +216,13 @@ It has no public runtime capability, router, application service, ORM model, per
 provider, network/file I/O, or registration in `app/main.py`. P10-A consumes only explicitly
 supplied synthetic projections in tests; live P5/P7 reads and clinician workflows remain blocked.
 
-P11-B and P11-C add an inert, provider-neutral document-processing engineering package:
+P11-A, P11-B and P11-C add an inert, provider-neutral document engineering package:
 
 ```text
 documents/
   __init__.py   # inert package; no registration side effect
+  domain.py     # frozen synthetic descriptor and pure document-lifecycle guards
+  ingestion.py  # descriptor-only synthetic assessment and owner-scoped comparison
   contracts.py  # frozen bounded synthetic parser/OCR request and result values
   ports.py      # separate DocumentParserPort and OCRPort protocols
   processing.py # pure attempt guards and content-free generic job-intent composition
@@ -228,7 +230,9 @@ documents/
   registry.py   # immutable version-pinned processor metadata; no executable handlers
 ```
 
-The deterministic OCR mock and benchmark harness live only under `backend/tests/ocr_support/`.
+P11-A's byte/page values are caller-declared engineering claims, not real file measurements or
+approved upload limits; its assessment reads no bytes and grants no authority. The deterministic
+OCR mock and benchmark harness live only under `backend/tests/ocr_support/`.
 P11-C's six future processor names are inactive engineering metadata with `NOOP_ABSTAIN`
 disposition. There is no runtime adapter, route, capability registration, worker binding,
 persistence, file access, provider/model dependency, medical-content classifier, or live document
