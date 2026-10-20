@@ -11,7 +11,9 @@ from test_document_classification import candidate, request
 from app.modules.documents.classification import (
     ClassificationDecision,
     ClassificationDisposition,
+    ClassificationReason,
     DocumentType,
+    SyntheticClassificationCandidate,
     classify_synthetic,
 )
 from app.modules.documents.contracts import (
@@ -280,6 +282,120 @@ def test_registry_snapshots_and_revalidates_caller_owned_descriptor() -> None:
         registry.descriptors[0].processor_version = "v9"  # type: ignore[misc]
 
 
+@pytest.mark.parametrize("reverse_candidates", [False, True])
+@pytest.mark.parametrize(
+    ("target", "attribute", "forged_value"),
+    [
+        ("decision", "selected_type", DocumentType.PRESCRIPTION),
+        ("decision", "disposition", ClassificationDisposition.ABSTAINED),
+        ("decision", "reason", ClassificationReason.ABSENT_EVIDENCE),
+        ("candidate", "document_type", DocumentType.PRESCRIPTION),
+        ("candidate", "source", ["private-canary"]),
+        ("candidate", "candidate_ref", {"private-canary": "reference"}),
+        ("candidate_source", "value", ["private-canary"]),
+        ("candidate_ref", "value", ["private-canary"]),
+    ],
+)
+def test_resolve_revalidates_hostile_decision_graph_before_routing(
+    reverse_candidates: bool,
+    target: str,
+    attribute: str,
+    forged_value: object,
+) -> None:
+    candidates: tuple[SyntheticClassificationCandidate, ...] = (
+        candidate(DocumentType.LAB_REPORT),
+        candidate(DocumentType.LAB_REPORT, number=2),
+    )
+    if reverse_candidates:
+        candidates = tuple(reversed(candidates))
+    decision = classify_synthetic(request(candidates))
+    selected_candidate = decision.candidates[0]
+    mutation_target: object = {
+        "decision": decision,
+        "candidate": selected_candidate,
+        "candidate_source": selected_candidate.source,
+        "candidate_ref": selected_candidate.candidate_ref,
+    }[target]
+    object.__setattr__(mutation_target, attribute, forged_value)
+
+    with pytest.raises(ProcessorRegistryError) as raised:
+        build_synthetic_processor_registry().resolve(decision)
+
+    assert raised.value.code is ProcessorRegistryCode.INCOMPATIBLE_DECLARATION
+    assert "private-canary" not in "".join(traceback.format_exception(raised.value))
+
+
+def test_resolve_preserves_all_fresh_decision_outcomes_after_snapshot() -> None:
+    registry = build_synthetic_processor_registry()
+    outcomes = (
+        (selected(), RegistryResolutionStatus.PINNED_METADATA),
+        (
+            classify_synthetic(request((candidate(DocumentType.UNKNOWN),))),
+            RegistryResolutionStatus.ABSTAINED,
+        ),
+        (
+            classify_synthetic(request((candidate(DocumentType.OTHER),))),
+            RegistryResolutionStatus.ABSTAINED,
+        ),
+        (classify_synthetic(request(())), RegistryResolutionStatus.ABSTAINED),
+        (
+            classify_synthetic(
+                request(
+                    (
+                        candidate(DocumentType.LAB_REPORT),
+                        candidate(DocumentType.PRESCRIPTION, number=2),
+                    )
+                )
+            ),
+            RegistryResolutionStatus.ABSTAINED,
+        ),
+    )
+    assert tuple(registry.resolve(value).status for value, _ in outcomes) == tuple(
+        expected for _, expected in outcomes
+    )
+
+
+@pytest.mark.parametrize(
+    ("attribute", "forged_value"),
+    [
+        ("processor_version", ["private-canary"]),
+        ("processor_id", {"private-canary": "v1"}),
+        ("document_type", "LAB_REPORT"),
+        ("document_type", DocumentType.OTHER),
+        ("processor_version", "latest"),
+    ],
+)
+def test_registry_revalidates_hostile_pins_before_hashing_in_both_orders(
+    attribute: str, forged_value: object
+) -> None:
+    forged = pin(
+        document_type=DocumentType.PRESCRIPTION,
+        processor_id="PrescriptionProcessor",
+    )
+    object.__setattr__(forged, attribute, forged_value)
+    valid = pin()
+    descriptors = (
+        descriptor(),
+        descriptor("PrescriptionProcessor", document_type=DocumentType.PRESCRIPTION),
+    )
+
+    for pins in ((valid, forged), (forged, valid)):
+        with pytest.raises(ProcessorRegistryError) as raised:
+            ProcessorRegistry(descriptors=descriptors, pins=pins)
+        assert raised.value.code in {
+            ProcessorRegistryCode.INVALID_TYPE,
+            ProcessorRegistryCode.INVALID_VALUE,
+            ProcessorRegistryCode.INVALID_VERSION,
+            ProcessorRegistryCode.INCOMPATIBLE_DECLARATION,
+        }
+        assert "private-canary" not in "".join(traceback.format_exception(raised.value))
+
+    assert (
+        ProcessorRegistry(descriptors=descriptors, pins=(valid,)).resolve(selected()).processor_id
+        == "LabReportProcessor"
+    )
+
+
 def test_registry_rejects_hostile_containers_and_size_before_hashing() -> None:
     with pytest.raises(ProcessorRegistryError) as wrong_container:
         ProcessorRegistry(descriptors=cast(Any, [descriptor()]))
@@ -330,6 +446,39 @@ def test_receipt_direct_constructor_cannot_claim_execution_or_fake_selection() -
     ):
         with pytest.raises(ProcessorRegistryError):
             replace(receipt, **changes)
+
+
+def test_nonselected_receipts_require_exact_immutable_empty_tuples() -> None:
+    registry = ProcessorRegistry(descriptors=(descriptor(),))
+    receipts = (
+        build_synthetic_processor_registry().resolve(classify_synthetic(request(()))),
+        registry.resolve(selected()),
+        ProcessorRegistry(descriptors=(descriptor(), descriptor(version="v2"))).resolve(selected()),
+    )
+    assert tuple(receipt.status for receipt in receipts) == (
+        RegistryResolutionStatus.ABSTAINED,
+        RegistryResolutionStatus.UNAVAILABLE,
+        RegistryResolutionStatus.AMBIGUOUS,
+    )
+
+    class FalsyList(list[object]):
+        def __bool__(self) -> bool:
+            return False
+
+    corruptions = (
+        {"parser_modes": cast(Any, [])},
+        {"ocr_modes": cast(Any, {})},
+        {"input_schema_versions": cast(Any, set())},
+        {"parser_modes": cast(Any, FalsyList())},
+    )
+    for receipt in receipts:
+        for changes in corruptions:
+            with pytest.raises(ProcessorRegistryError) as raised:
+                replace(receipt, **changes)
+            assert raised.value.code is ProcessorRegistryCode.INVALID_TYPE
+            assert "private-canary" not in "".join(traceback.format_exception(raised.value))
+        with pytest.raises(FrozenInstanceError):
+            receipt.parser_modes = ()  # type: ignore[misc]
 
 
 def test_registry_has_no_runtime_execution_api_or_callable_metadata() -> None:

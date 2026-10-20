@@ -15,6 +15,7 @@ from typing import Final
 
 from app.modules.documents.classification import (
     PROCESSABLE_DOCUMENT_TYPES,
+    ClassificationContractError,
     ClassificationDecision,
     ClassificationDisposition,
     DocumentType,
@@ -23,6 +24,7 @@ from app.modules.documents.contracts import (
     OCR_REQUEST_CONTRACT_VERSION,
     PARSER_REQUEST_CONTRACT_VERSION,
     RESULT_CONTRACT_VERSION,
+    DocumentContractError,
     OCRMode,
     ParserMode,
 )
@@ -256,6 +258,42 @@ def _restore(snapshot: _DescriptorSnapshot) -> ProcessorDescriptor:
     )
 
 
+def _snapshot_pin(pin: ProcessorPin) -> ProcessorPin:
+    """Detach and revalidate caller-owned pin fields before any hashing."""
+
+    try:
+        return ProcessorPin(
+            document_type=pin.document_type,
+            processor_id=pin.processor_id,
+            processor_version=pin.processor_version,
+        )
+    except ProcessorRegistryError:
+        raise
+    except (AttributeError, TypeError):
+        raise _fail(ProcessorRegistryCode.INVALID_TYPE) from None
+
+
+def _snapshot_decision(decision: ClassificationDecision) -> ClassificationDecision:
+    """Detach and revalidate a complete classification at the registry boundary."""
+
+    try:
+        return ClassificationDecision(
+            request_id=decision.request_id,
+            document_id=decision.document_id,
+            processing_attempt_id=decision.processing_attempt_id,
+            source=decision.source,
+            candidates=decision.candidates,
+            schema_version=decision.schema_version,
+            config_version=decision.config_version,
+            authority=decision.authority,
+            disposition=decision.disposition,
+            reason=decision.reason,
+            selected_type=decision.selected_type,
+        )
+    except (ClassificationContractError, DocumentContractError, AttributeError, TypeError):
+        raise _fail(ProcessorRegistryCode.INCOMPATIBLE_DECLARATION) from None
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class ProcessorResolutionReceipt:
     registry_schema_version: str
@@ -289,6 +327,18 @@ class ProcessorResolutionReceipt:
             or type(self.reason) is not RegistryReason
         ):
             raise _fail(ProcessorRegistryCode.INVALID_TYPE)
+        if type(self.parser_modes) is not tuple or any(
+            type(item) is not ParserMode for item in self.parser_modes
+        ):
+            raise _fail(ProcessorRegistryCode.INVALID_TYPE)
+        if type(self.ocr_modes) is not tuple or any(
+            type(item) is not OCRMode for item in self.ocr_modes
+        ):
+            raise _fail(ProcessorRegistryCode.INVALID_TYPE)
+        if type(self.input_schema_versions) is not tuple or any(
+            type(item) is not str for item in self.input_schema_versions
+        ):
+            raise _fail(ProcessorRegistryCode.INVALID_TYPE)
         selected = self.status is RegistryResolutionStatus.PINNED_METADATA
         values_present = (
             type(self.document_type) is DocumentType
@@ -312,14 +362,6 @@ class ProcessorResolutionReceipt:
                 processor_id=self.processor_id,
                 processor_version=self.processor_version,
             )
-            if type(self.parser_modes) is not tuple or any(
-                type(item) is not ParserMode for item in self.parser_modes
-            ):
-                raise _fail(ProcessorRegistryCode.INVALID_RECEIPT)
-            if type(self.ocr_modes) is not tuple or any(
-                type(item) is not OCRMode for item in self.ocr_modes
-            ):
-                raise _fail(ProcessorRegistryCode.INVALID_RECEIPT)
             if self.parser_modes != tuple(
                 sorted(set(self.parser_modes), key=lambda item: item.value)
             ) or self.ocr_modes != tuple(sorted(set(self.ocr_modes), key=lambda item: item.value)):
@@ -333,8 +375,7 @@ class ProcessorResolutionReceipt:
                 )
             )
             if (
-                type(self.input_schema_versions) is not tuple
-                or self.input_schema_versions != expected_inputs
+                self.input_schema_versions != expected_inputs
                 or self.output_schema_version != RESULT_CONTRACT_VERSION
                 or self.reason is not RegistryReason.EXACT_PIN
             ):
@@ -406,16 +447,17 @@ class ProcessorRegistry:
             registrations[identity] = snapshot
 
         configured: dict[DocumentType, tuple[str, str]] = {}
-        for pin in pins:
-            if pin.document_type in configured:
+        for supplied_pin in pins:
+            validated_pin = _snapshot_pin(supplied_pin)
+            if validated_pin.document_type in configured:
                 raise _fail(ProcessorRegistryCode.AMBIGUOUS_OWNERSHIP)
-            identity = (pin.processor_id, pin.processor_version)
+            identity = (validated_pin.processor_id, validated_pin.processor_version)
             selected_snapshot = registrations.get(identity)
             if selected_snapshot is None:
                 raise _fail(ProcessorRegistryCode.UNKNOWN_PROCESSOR)
-            if pin.document_type not in selected_snapshot[2]:
+            if validated_pin.document_type not in selected_snapshot[2]:
                 raise _fail(ProcessorRegistryCode.INCOMPATIBLE_DECLARATION)
-            configured[pin.document_type] = identity
+            configured[validated_pin.document_type] = identity
 
         object.__setattr__(self, "_descriptors", MappingProxyType(registrations.copy()))
         object.__setattr__(self, "_pins", MappingProxyType(configured.copy()))
@@ -439,13 +481,14 @@ class ProcessorRegistry:
     def resolve(self, decision: ClassificationDecision) -> ProcessorResolutionReceipt:
         if type(decision) is not ClassificationDecision:
             raise _fail(ProcessorRegistryCode.INVALID_TYPE)
-        if decision.disposition is not ClassificationDisposition.SELECTED:
+        validated_decision = _snapshot_decision(decision)
+        if validated_decision.disposition is not ClassificationDisposition.SELECTED:
             return _empty_receipt(
-                decision=decision,
+                decision=validated_decision,
                 status=RegistryResolutionStatus.ABSTAINED,
                 reason=RegistryReason.CLASSIFICATION_NOT_SELECTED,
             )
-        document_type = decision.selected_type
+        document_type = validated_decision.selected_type
         if document_type is None:
             raise _fail(ProcessorRegistryCode.INVALID_RECEIPT)
         selected_identity = self._pins.get(document_type)
@@ -454,7 +497,7 @@ class ProcessorRegistry:
                 key for key, snapshot in self._descriptors.items() if document_type in snapshot[2]
             )
             return _empty_receipt(
-                decision=decision,
+                decision=validated_decision,
                 status=(
                     RegistryResolutionStatus.AMBIGUOUS
                     if len(versions) > 1
@@ -474,7 +517,7 @@ class ProcessorRegistry:
         return ProcessorResolutionReceipt(
             registry_schema_version=PROCESSOR_REGISTRY_SCHEMA_VERSION,
             receipt_schema_version=PROCESSOR_RECEIPT_SCHEMA_VERSION,
-            classification_schema_version=decision.schema_version,
+            classification_schema_version=validated_decision.schema_version,
             document_type=document_type,
             processor_id=descriptor.processor_id,
             processor_version=descriptor.processor_version,
