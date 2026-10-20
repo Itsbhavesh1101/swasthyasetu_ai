@@ -159,8 +159,16 @@ def compare_owner_scoped_idempotency(
     second = _snapshot_descriptor(right)
     if first.owner_scope != second.owner_scope:
         return SyntheticIdempotencyDisposition.OWNER_SCOPE_MISMATCH
-    if first.idempotency_key != second.idempotency_key:
-        return SyntheticIdempotencyDisposition.DISTINCT
+    same_document = first.document_id == second.document_id
+    same_key = first.idempotency_key == second.idempotency_key
+    if same_document and not same_key:
+        return SyntheticIdempotencyDisposition.CONFLICT
+    if not same_document:
+        return (
+            SyntheticIdempotencyDisposition.CONFLICT
+            if same_key
+            else SyntheticIdempotencyDisposition.DISTINCT
+        )
     comparable = (
         first.document_id,
         first.source,

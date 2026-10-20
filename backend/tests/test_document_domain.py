@@ -12,6 +12,7 @@ from app.modules.documents.classification import DocumentType
 from app.modules.documents.contracts import ResultStatus, SyntheticSourceRef
 from app.modules.documents.domain import (
     DOCUMENT_METADATA_SCHEMA_VERSION,
+    MAX_DOCUMENT_GENERATION,
     MAX_SYNTHETIC_BYTE_COUNT_CLAIM,
     MAX_SYNTHETIC_PAGE_COUNT_CLAIM,
     DocumentDomainCode,
@@ -312,12 +313,161 @@ def test_stale_cross_identity_chronology_and_attempt_replay_fail_closed() -> Non
 
 def test_direct_state_constructor_rejects_incoherent_or_mutable_nested_state() -> None:
     uploaded = create_synthetic_document_state(descriptor())
-    with pytest.raises(DocumentDomainError):
-        replace(uploaded, status=DocumentStatus.PROCESSING)
+    with pytest.raises(DocumentDomainError) as replaced:
+        replace(uploaded, status=DocumentStatus.ACCEPTED)
+    assert replaced.value.code is DocumentDomainCode.INVALID_LINEAGE
     with pytest.raises(DocumentDomainError):
         replace(uploaded, attempt_ids=[oid(2)])  # type: ignore[arg-type]
     with pytest.raises(DocumentDomainError):
         replace(uploaded, occurred_at=NOW - timedelta(seconds=1))
+
+
+@pytest.mark.parametrize(
+    "status,state_version,attempt_ids,current_attempt_id",
+    [
+        (DocumentStatus.ACCEPTED, 3, (), None),
+        (DocumentStatus.PROCESSING, 5, (oid(2),), oid(2)),
+        (DocumentStatus.SUCCEEDED, 6, (oid(2),), oid(2)),
+        (DocumentStatus.FAILED, 6, (oid(2),), oid(2)),
+    ],
+)
+def test_public_constructor_cannot_manufacture_advanced_lifecycle_state(
+    status: DocumentStatus,
+    state_version: int,
+    attempt_ids: tuple[OpaqueId, ...],
+    current_attempt_id: OpaqueId | None,
+) -> None:
+    with pytest.raises(DocumentDomainError) as raised:
+        SyntheticDocumentState(
+            descriptor=descriptor(),
+            status=status,
+            state_version=state_version,
+            generation=1,
+            occurred_at=NOW,
+            attempt_ids=attempt_ids,
+            current_attempt_id=current_attempt_id,
+        )
+    assert raised.value.code is DocumentDomainCode.INVALID_LINEAGE
+
+
+def test_complete_guarded_simulation_can_retry_and_rejected_is_terminal() -> None:
+    uploaded = create_synthetic_document_state(descriptor())
+    validating = transition(uploaded, DocumentStatus.VALIDATING)
+    accepted = transition(
+        validating,
+        DocumentStatus.ACCEPTED,
+        decision=decision(SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE),
+    )
+    queued = transition(accepted, DocumentStatus.QUEUED, new_attempt_id=oid(2))
+    processing = transition(queued, DocumentStatus.PROCESSING)
+    succeeded = transition(processing, DocumentStatus.SUCCEEDED)
+    retried = transition(succeeded, DocumentStatus.QUEUED, new_attempt_id=oid(3))
+    assert retried.status is DocumentStatus.QUEUED
+    assert retried.generation == 2
+    assert retried.attempt_ids == (oid(2), oid(3))
+
+    rejected = transition(
+        validating,
+        DocumentStatus.REJECTED,
+        decision=decision(SyntheticValidationDisposition.REJECTED),
+    )
+    for target in DocumentStatus:
+        with pytest.raises(DocumentDomainError) as raised:
+            transition(rejected, target)
+        assert raised.value.code is DocumentDomainCode.INVALID_TRANSITION
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "status",
+        "state_version",
+        "current_attempt_id",
+        "descriptor_id",
+        "descriptor_source",
+        "lineage",
+    ],
+)
+def test_transition_revalidates_complete_caller_held_state(mutation: str) -> None:
+    state = create_synthetic_document_state(descriptor())
+    canary = "PRIVATE_STATE_CANARY"
+    if mutation == "status":
+        object.__setattr__(state, "status", DocumentStatus.ACCEPTED)
+    elif mutation == "state_version":
+        object.__setattr__(state, "state_version", 3)
+    elif mutation == "current_attempt_id":
+        object.__setattr__(state, "current_attempt_id", oid(2))
+    elif mutation == "descriptor_id":
+        object.__setattr__(state.descriptor, "document_id", [canary])
+    elif mutation == "descriptor_source":
+        object.__setattr__(state.descriptor.source, "value", canary)
+    else:
+        object.__setattr__(state, "_lineage", [canary])
+
+    with pytest.raises(DocumentDomainError) as raised:
+        transition(state, DocumentStatus.VALIDATING)
+    formatted = "".join(traceback.format_exception(raised.value))
+    assert canary not in str(raised.value)
+    assert canary not in formatted
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ["timestamp_list", "timestamp_naive", "scope", "source", "version", "disposition"],
+)
+def test_transition_revalidates_and_detaches_validation_decision(mutation: str) -> None:
+    validating = transition(
+        create_synthetic_document_state(descriptor()), DocumentStatus.VALIDATING
+    )
+    supplied = decision(SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE)
+    canary = "PRIVATE_DECISION_CANARY"
+    if mutation == "timestamp_list":
+        object.__setattr__(supplied, "decided_at", [canary])
+    elif mutation == "timestamp_naive":
+        object.__setattr__(supplied, "decided_at", NOW.replace(tzinfo=None))
+    elif mutation == "scope":
+        object.__setattr__(supplied.owner_scope, "value", canary)
+    elif mutation == "source":
+        object.__setattr__(supplied.source, "value", canary)
+    elif mutation == "version":
+        object.__setattr__(supplied, "metadata_version", 0)
+    else:
+        object.__setattr__(supplied, "disposition", canary)
+
+    with pytest.raises(DocumentDomainError) as raised:
+        transition(validating, DocumentStatus.ACCEPTED, decision=supplied)
+    formatted = "".join(traceback.format_exception(raised.value))
+    assert canary not in str(raised.value)
+    assert canary not in formatted
+
+
+def test_valid_state_and_decision_controls_work_in_both_caller_creation_orders() -> None:
+    first_state = transition(
+        create_synthetic_document_state(descriptor()), DocumentStatus.VALIDATING
+    )
+    first_decision = decision(SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE)
+    assert (
+        transition(first_state, DocumentStatus.ACCEPTED, decision=first_decision).status
+        is DocumentStatus.ACCEPTED
+    )
+
+    second_decision = decision(SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE)
+    second_state = transition(
+        create_synthetic_document_state(descriptor()), DocumentStatus.VALIDATING
+    )
+    assert (
+        transition(second_state, DocumentStatus.ACCEPTED, decision=second_decision).status
+        is DocumentStatus.ACCEPTED
+    )
+
+
+def test_oversized_mutated_attempt_array_is_rejected_before_item_validation() -> None:
+    state = create_synthetic_document_state(descriptor())
+    oversized = tuple(["PRIVATE_ATTEMPT_CANARY"] for _ in range(MAX_DOCUMENT_GENERATION + 1))
+    object.__setattr__(state, "attempt_ids", oversized)
+    with pytest.raises(DocumentDomainError) as raised:
+        transition(state, DocumentStatus.VALIDATING)
+    assert raised.value.code is DocumentDomainCode.LIMIT_EXCEEDED
 
 
 def test_document_attempt_ocr_and_job_statuses_are_distinct() -> None:

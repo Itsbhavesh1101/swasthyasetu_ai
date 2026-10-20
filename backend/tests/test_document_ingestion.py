@@ -141,7 +141,25 @@ def test_idempotency_match_requires_same_owner_key_identity_and_metadata() -> No
         compare_owner_scoped_idempotency(
             first, descriptor(idempotency_key=SyntheticIdempotencyKey("SYNTHETIC_IDEMPOTENCY_BETA"))
         )
-        is SyntheticIdempotencyDisposition.DISTINCT
+        is SyntheticIdempotencyDisposition.CONFLICT
+    )
+
+
+def test_same_document_with_different_keys_conflicts_in_both_orders() -> None:
+    first = descriptor()
+    second = descriptor(idempotency_key=SyntheticIdempotencyKey("SYNTHETIC_IDEMPOTENCY_BETA"))
+    assert (
+        compare_owner_scoped_idempotency(first, second) is SyntheticIdempotencyDisposition.CONFLICT
+    )
+    assert (
+        compare_owner_scoped_idempotency(second, first) is SyntheticIdempotencyDisposition.CONFLICT
+    )
+
+
+def test_same_key_with_different_document_id_conflicts() -> None:
+    assert (
+        compare_owner_scoped_idempotency(descriptor(), descriptor(document_id=oid(2)))
+        is SyntheticIdempotencyDisposition.CONFLICT
     )
 
 

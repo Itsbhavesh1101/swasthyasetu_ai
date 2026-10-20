@@ -43,6 +43,7 @@ class DocumentDomainCode(StrEnum):
     INVALID_TRANSITION = "INVALID_TRANSITION"
     INVALID_DECISION = "INVALID_DECISION"
     INVALID_CHRONOLOGY = "INVALID_CHRONOLOGY"
+    INVALID_LINEAGE = "INVALID_LINEAGE"
 
 
 class DocumentDomainError(ValueError):
@@ -209,7 +210,7 @@ def _snapshot_descriptor(value: object) -> SyntheticDocumentDescriptor:
         )
     except DocumentDomainError:
         raise
-    except (AttributeError, TypeError):
+    except (AttributeError, TypeError, ValueError):
         raise _fail(DocumentDomainCode.INVALID_TYPE) from None
 
 
@@ -246,6 +247,26 @@ class SyntheticValidationDecision:
         object.__setattr__(self, "decided_at", _utc(self.decided_at))
 
 
+def _snapshot_decision(value: object) -> SyntheticValidationDecision:
+    if type(value) is not SyntheticValidationDecision:
+        raise _fail(DocumentDomainCode.INVALID_DECISION)
+    try:
+        return SyntheticValidationDecision(
+            document_id=value.document_id,
+            source=value.source,
+            owner_scope=value.owner_scope,
+            metadata_version=value.metadata_version,
+            disposition=value.disposition,
+            decided_at=value.decided_at,
+            schema_version=value.schema_version,
+            authority=value.authority,
+        )
+    except DocumentDomainError:
+        raise
+    except (AttributeError, TypeError, ValueError):
+        raise _fail(DocumentDomainCode.INVALID_DECISION) from None
+
+
 _ALLOWED: Final = {
     DocumentStatus.UPLOADED: frozenset({DocumentStatus.VALIDATING}),
     DocumentStatus.VALIDATING: frozenset({DocumentStatus.ACCEPTED, DocumentStatus.REJECTED}),
@@ -275,10 +296,154 @@ _ATTEMPT_STATES: Final = frozenset(
         DocumentStatus.FAILED,
     }
 )
+MAX_LIFECYCLE_PROOFS: Final = MAX_DOCUMENT_GENERATION * 4 + 8
+_STATE_CONSTRUCTION_KEY: Final = object()
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
+class _TransitionProof:
+    """Internal in-memory proof of one guarded synthetic transition."""
+
+    target: DocumentStatus
+    occurred_at: datetime
+    decision: SyntheticValidationDecision | None = field(default=None, repr=False)
+    new_attempt_id: OpaqueId | None = field(default=None, repr=False)
+
+
+def _validated_decision_for_edge(
+    *,
+    decision: SyntheticValidationDecision | None,
+    descriptor: SyntheticDocumentDescriptor,
+    origin: DocumentStatus,
+    target: DocumentStatus,
+    previous_at: datetime,
+    occurred_at: datetime,
+) -> SyntheticValidationDecision | None:
+    needs_decision = origin is DocumentStatus.VALIDATING or target is DocumentStatus.REJECTED
+    if not needs_decision:
+        if decision is not None:
+            raise _fail(DocumentDomainCode.INVALID_DECISION)
+        return None
+    validated = _snapshot_decision(decision)
+    expected_disposition = (
+        SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE
+        if target is DocumentStatus.ACCEPTED
+        else SyntheticValidationDisposition.REJECTED
+    )
+    if (
+        validated.document_id != descriptor.document_id
+        or validated.source != descriptor.source
+        or validated.owner_scope != descriptor.owner_scope
+        or validated.metadata_version != descriptor.metadata_version
+        or validated.disposition is not expected_disposition
+        or validated.decided_at > occurred_at
+        or validated.decided_at < previous_at
+    ):
+        raise _fail(DocumentDomainCode.INVALID_DECISION)
+    return validated
+
+
+type _ReplayedState = tuple[
+    DocumentStatus,
+    int,
+    int,
+    datetime,
+    tuple[OpaqueId, ...],
+    OpaqueId | None,
+    tuple[_TransitionProof, ...],
+]
+
+
+def _replay_lineage(descriptor: SyntheticDocumentDescriptor, lineage: object) -> _ReplayedState:
+    if type(lineage) is not tuple:
+        raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+    if len(lineage) > MAX_LIFECYCLE_PROOFS:
+        raise _fail(DocumentDomainCode.LIMIT_EXCEEDED)
+    status = DocumentStatus.UPLOADED
+    state_version = 1
+    generation = descriptor.generation
+    occurred_at = descriptor.declared_at
+    attempt_ids: tuple[OpaqueId, ...] = ()
+    current_attempt_id: OpaqueId | None = None
+    proofs: list[_TransitionProof] = []
+    for supplied in lineage:
+        if type(supplied) is not _TransitionProof:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+        try:
+            target = supplied.target
+            proof_at = _utc(supplied.occurred_at)
+            supplied_decision = supplied.decision
+            supplied_attempt = supplied.new_attempt_id
+        except (AttributeError, TypeError):
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE) from None
+        if type(target) is not DocumentStatus:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+        if proof_at < occurred_at:
+            raise _fail(DocumentDomainCode.INVALID_CHRONOLOGY)
+        if target not in _ALLOWED[status]:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+        validated_decision = _validated_decision_for_edge(
+            decision=supplied_decision,
+            descriptor=descriptor,
+            origin=status,
+            target=target,
+            previous_at=occurred_at,
+            occurred_at=proof_at,
+        )
+        attempt: OpaqueId | None = None
+        if target is DocumentStatus.QUEUED:
+            if supplied_attempt is None:
+                raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+            attempt = _opaque(supplied_attempt)
+            if attempt == descriptor.document_id or attempt in attempt_ids:
+                raise _fail(DocumentDomainCode.DUPLICATE_IDENTITY)
+            if len(attempt_ids) >= MAX_DOCUMENT_GENERATION:
+                raise _fail(DocumentDomainCode.LIMIT_EXCEEDED)
+            if status in {
+                DocumentStatus.FAILED,
+                DocumentStatus.NEEDS_REVIEW,
+                DocumentStatus.SUCCEEDED,
+            }:
+                generation += 1
+                _positive(generation, MAX_DOCUMENT_GENERATION)
+            attempt_ids = (*attempt_ids, attempt)
+            current_attempt_id = attempt
+        elif supplied_attempt is not None:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+        if target is DocumentStatus.REJECTED:
+            current_attempt_id = None
+        status = target
+        state_version += 1
+        _positive(state_version, MAX_DOCUMENT_VERSION)
+        occurred_at = proof_at
+        proofs.append(
+            _TransitionProof(
+                target=target,
+                occurred_at=proof_at,
+                decision=validated_decision,
+                new_attempt_id=attempt,
+            )
+        )
+    return (
+        status,
+        state_version,
+        generation,
+        occurred_at,
+        attempt_ids,
+        current_attempt_id,
+        tuple(proofs),
+    )
+
+
+@dataclass(frozen=True, slots=True, kw_only=True, init=False)
 class SyntheticDocumentState:
+    """Factory-only in-memory state with replay-verified synthetic lineage.
+
+    Public deserialization or database hydration is intentionally unsupported. A future
+    approved persistence phase must define an explicit restoration boundary rather than
+    calling this constructor with stored fields.
+    """
+
     descriptor: SyntheticDocumentDescriptor = field(repr=False)
     status: DocumentStatus
     state_version: int
@@ -287,6 +452,34 @@ class SyntheticDocumentState:
     attempt_ids: tuple[OpaqueId, ...] = field(repr=False)
     current_attempt_id: OpaqueId | None = field(default=None, repr=False)
     schema_version: str = DOCUMENT_LIFECYCLE_SCHEMA_VERSION
+    _lineage: tuple[_TransitionProof, ...] = field(default=(), repr=False, init=False)
+
+    def __init__(
+        self,
+        *,
+        descriptor: SyntheticDocumentDescriptor,
+        status: DocumentStatus,
+        state_version: int,
+        generation: int,
+        occurred_at: datetime,
+        attempt_ids: tuple[OpaqueId, ...],
+        current_attempt_id: OpaqueId | None = None,
+        schema_version: str = DOCUMENT_LIFECYCLE_SCHEMA_VERSION,
+        _lineage: tuple[_TransitionProof, ...] = (),
+        _construction_key: object | None = None,
+    ) -> None:
+        if _construction_key is not _STATE_CONSTRUCTION_KEY:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
+        object.__setattr__(self, "descriptor", descriptor)
+        object.__setattr__(self, "status", status)
+        object.__setattr__(self, "state_version", state_version)
+        object.__setattr__(self, "generation", generation)
+        object.__setattr__(self, "occurred_at", occurred_at)
+        object.__setattr__(self, "attempt_ids", attempt_ids)
+        object.__setattr__(self, "current_attempt_id", current_attempt_id)
+        object.__setattr__(self, "schema_version", schema_version)
+        object.__setattr__(self, "_lineage", _lineage)
+        self.__post_init__()
 
     def __post_init__(self) -> None:
         descriptor = _snapshot_descriptor(self.descriptor)
@@ -298,6 +491,8 @@ class SyntheticDocumentState:
         generation = _positive(self.generation, MAX_DOCUMENT_GENERATION)
         if type(self.attempt_ids) is not tuple:
             raise _fail(DocumentDomainCode.INVALID_TYPE)
+        if len(self.attempt_ids) > MAX_DOCUMENT_GENERATION:
+            raise _fail(DocumentDomainCode.LIMIT_EXCEEDED)
         attempt_ids = tuple(_opaque(item) for item in self.attempt_ids)
         if len(attempt_ids) != len(set(attempt_ids)) or descriptor.document_id in attempt_ids:
             raise _fail(DocumentDomainCode.DUPLICATE_IDENTITY)
@@ -313,12 +508,23 @@ class SyntheticDocumentState:
         occurred = _utc(self.occurred_at)
         if occurred < descriptor.declared_at:
             raise _fail(DocumentDomainCode.INVALID_CHRONOLOGY)
+        replayed = _replay_lineage(descriptor, self._lineage)
+        if (
+            self.status,
+            state_version,
+            generation,
+            occurred,
+            attempt_ids,
+            current,
+        ) != replayed[:6]:
+            raise _fail(DocumentDomainCode.INVALID_LINEAGE)
         object.__setattr__(self, "descriptor", descriptor)
         object.__setattr__(self, "state_version", state_version)
         object.__setattr__(self, "generation", generation)
         object.__setattr__(self, "occurred_at", occurred)
         object.__setattr__(self, "attempt_ids", attempt_ids)
         object.__setattr__(self, "current_attempt_id", current)
+        object.__setattr__(self, "_lineage", replayed[6])
 
     def transition(
         self,
@@ -334,44 +540,48 @@ class SyntheticDocumentState:
     ) -> SyntheticDocumentState:
         """Apply one canonical, deterministic transition without side effects."""
 
+        current = _snapshot_state(self)
         if type(target) is not DocumentStatus:
             raise _fail(DocumentDomainCode.INVALID_TYPE)
+        validated_decision = None if decision is None else _snapshot_decision(decision)
         expected_id = _opaque(expected_document_id)
         _positive(expected_state_version, MAX_DOCUMENT_VERSION)
         _positive(expected_metadata_version, MAX_DOCUMENT_VERSION)
         _positive(expected_generation, MAX_DOCUMENT_GENERATION)
-        if expected_id != self.descriptor.document_id:
+        if expected_id != current.descriptor.document_id:
             raise _fail(DocumentDomainCode.IDENTITY_MISMATCH)
         if (
-            expected_state_version != self.state_version
-            or expected_metadata_version != self.descriptor.metadata_version
-            or expected_generation != self.generation
+            expected_state_version != current.state_version
+            or expected_metadata_version != current.descriptor.metadata_version
+            or expected_generation != current.generation
         ):
             raise _fail(DocumentDomainCode.STALE_STATE)
         occurred = _utc(at)
-        if occurred < self.occurred_at:
+        if occurred < current.occurred_at:
             raise _fail(DocumentDomainCode.INVALID_CHRONOLOGY)
-        if target not in _ALLOWED[self.status]:
+        if target not in _ALLOWED[current.status]:
             raise _fail(DocumentDomainCode.INVALID_TRANSITION)
-
-        needs_decision = (
-            self.status is DocumentStatus.VALIDATING or target is DocumentStatus.REJECTED
+        validated_decision = _validated_decision_for_edge(
+            decision=validated_decision,
+            descriptor=current.descriptor,
+            origin=current.status,
+            target=target,
+            previous_at=current.occurred_at,
+            occurred_at=occurred,
         )
-        if needs_decision:
-            self._validate_decision(decision, target, occurred)
-        elif decision is not None:
-            raise _fail(DocumentDomainCode.INVALID_DECISION)
 
-        attempt_ids = self.attempt_ids
-        current_attempt_id = self.current_attempt_id
-        generation = self.generation
+        attempt_ids = current.attempt_ids
+        current_attempt_id = current.current_attempt_id
+        generation = current.generation
         if target is DocumentStatus.QUEUED:
             if new_attempt_id is None:
                 raise _fail(DocumentDomainCode.INVALID_TRANSITION)
             attempt = _opaque(new_attempt_id)
-            if attempt == self.descriptor.document_id or attempt in attempt_ids:
+            if attempt == current.descriptor.document_id or attempt in attempt_ids:
                 raise _fail(DocumentDomainCode.DUPLICATE_IDENTITY)
-            if self.status in {
+            if len(attempt_ids) >= MAX_DOCUMENT_GENERATION:
+                raise _fail(DocumentDomainCode.LIMIT_EXCEEDED)
+            if current.status in {
                 DocumentStatus.FAILED,
                 DocumentStatus.NEEDS_REVIEW,
                 DocumentStatus.SUCCEEDED,
@@ -384,39 +594,66 @@ class SyntheticDocumentState:
         if target is DocumentStatus.REJECTED:
             current_attempt_id = None
 
-        return SyntheticDocumentState(
-            descriptor=self.descriptor,
+        proof = _TransitionProof(
+            target=target,
+            occurred_at=occurred,
+            decision=validated_decision,
+            new_attempt_id=current_attempt_id if target is DocumentStatus.QUEUED else None,
+        )
+        return _build_state(
+            descriptor=current.descriptor,
             status=target,
-            state_version=self.state_version + 1,
+            state_version=current.state_version + 1,
             generation=generation,
             occurred_at=occurred,
             attempt_ids=attempt_ids,
             current_attempt_id=current_attempt_id,
+            lineage=(*current._lineage, proof),
         )
 
-    def _validate_decision(
-        self,
-        decision: SyntheticValidationDecision | None,
-        target: DocumentStatus,
-        occurred: datetime,
-    ) -> None:
-        if type(decision) is not SyntheticValidationDecision:
-            raise _fail(DocumentDomainCode.INVALID_DECISION)
-        expected_disposition = (
-            SyntheticValidationDisposition.SYNTHETIC_COMPATIBLE
-            if target is DocumentStatus.ACCEPTED
-            else SyntheticValidationDisposition.REJECTED
+
+def _build_state(
+    *,
+    descriptor: SyntheticDocumentDescriptor,
+    status: DocumentStatus,
+    state_version: int,
+    generation: int,
+    occurred_at: datetime,
+    attempt_ids: tuple[OpaqueId, ...],
+    current_attempt_id: OpaqueId | None = None,
+    lineage: tuple[_TransitionProof, ...],
+) -> SyntheticDocumentState:
+    return SyntheticDocumentState(
+        descriptor=descriptor,
+        status=status,
+        state_version=state_version,
+        generation=generation,
+        occurred_at=occurred_at,
+        attempt_ids=attempt_ids,
+        current_attempt_id=current_attempt_id,
+        _lineage=lineage,
+        _construction_key=_STATE_CONSTRUCTION_KEY,
+    )
+
+
+def _snapshot_state(value: object) -> SyntheticDocumentState:
+    if type(value) is not SyntheticDocumentState:
+        raise _fail(DocumentDomainCode.INVALID_TYPE)
+    try:
+        return _build_state(
+            descriptor=value.descriptor,
+            status=value.status,
+            state_version=value.state_version,
+            generation=value.generation,
+            occurred_at=value.occurred_at,
+            attempt_ids=value.attempt_ids,
+            current_attempt_id=value.current_attempt_id,
+            lineage=value._lineage,
         )
-        if (
-            decision.document_id != self.descriptor.document_id
-            or decision.source != self.descriptor.source
-            or decision.owner_scope != self.descriptor.owner_scope
-            or decision.metadata_version != self.descriptor.metadata_version
-            or decision.disposition is not expected_disposition
-            or decision.decided_at > occurred
-            or decision.decided_at < self.occurred_at
-        ):
-            raise _fail(DocumentDomainCode.INVALID_DECISION)
+    except DocumentDomainError:
+        raise
+    except (AttributeError, TypeError):
+        raise _fail(DocumentDomainCode.INVALID_LINEAGE) from None
 
 
 def create_synthetic_document_state(
@@ -425,11 +662,12 @@ def create_synthetic_document_state(
     """Create the initial inert UPLOADED state from revalidated metadata."""
 
     snapshot = _snapshot_descriptor(descriptor)
-    return SyntheticDocumentState(
+    return _build_state(
         descriptor=snapshot,
         status=DocumentStatus.UPLOADED,
         state_version=1,
         generation=snapshot.generation,
         occurred_at=snapshot.declared_at,
         attempt_ids=(),
+        lineage=(),
     )
