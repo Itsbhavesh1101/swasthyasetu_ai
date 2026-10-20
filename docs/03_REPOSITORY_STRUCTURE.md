@@ -216,7 +216,7 @@ It has no public runtime capability, router, application service, ORM model, per
 provider, network/file I/O, or registration in `app/main.py`. P10-A consumes only explicitly
 supplied synthetic projections in tests; live P5/P7 reads and clinician workflows remain blocked.
 
-P11-A, P11-B and P11-C add an inert, provider-neutral document engineering package:
+P11-A, P11-B, P11-C and P11-D add an inert, provider-neutral document engineering package:
 
 ```text
 documents/
@@ -228,13 +228,17 @@ documents/
   processing.py # pure attempt guards and content-free generic job-intent composition
   classification.py # closed synthetic labels and deterministic abstention decisions
   registry.py   # immutable version-pinned processor metadata; no executable handlers
+  candidates.py # detached synthetic UNCONFIRMED/ABSTAINED candidate/evidence contracts
+  evidence.py   # pure text-blind structural matching; source access remains unverified
 ```
 
 P11-A's byte/page values are caller-declared engineering claims, not real file measurements or
 approved upload limits; its assessment reads no bytes and grants no authority. The deterministic
 OCR mock and benchmark harness live only under `backend/tests/ocr_support/`.
 P11-C's six future processor names are inactive engineering metadata with `NOOP_ABSTAIN`
-disposition. There is no runtime adapter, route, capability registration, worker binding,
+disposition. P11-D contains no extracted value and its only positive structural outcome remains
+`STRUCTURALLY_MATCHED_UNCONFIRMED`; it does not establish source access or clinical correctness.
+There is no runtime adapter, route, capability registration, worker binding,
 persistence, file access, provider/model dependency, medical-content classifier, or live document
 processing.
 

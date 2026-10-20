@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A synthetic document lifecycle and ingestion-guard safe engineering subset implemented pending independent review; P11 is partial while P8, P9 and P10 remain partial
-**Current recommended next action:** Independently review the P11-A synthetic-only implementation and its exact-SHA evidence. Do not begin P11-D/E or live document processing while the 0/9 readiness approvals and all P8-C/P9-C/P10 gates remain open.
+**Current macro stage:** P11-D detached synthetic evidence and unconfirmed-candidate safe engineering subset implemented pending independent review; P11 is partial while P8, P9 and P10 remain partial
+**Current recommended next action:** Independently review the P11-D synthetic-only implementation and its exact-SHA evidence. Do not begin P11-E or live document processing while the 0/9 readiness approvals and all P8-C/P9-C/P10 gates remain open.
 
 ---
 
@@ -47,7 +47,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P8 | AI Gateway + Structured Extraction | PARTIAL | P8-A/P8-B are merged. P8-C Stage 2 synthetic integration evidence is implemented; patient-facing Stage 3 remains blocked by explicit governance gates. |
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
-| P11 | Document AI / OCR | PARTIAL | P11-B safe engineering subset merged in PR #32 and P11-C in PR #33. P11-A pure synthetic metadata/lifecycle guards are implemented pending independent review. No upload, storage, live document workflow, medical classifier, executable processor or OCR provider is approved. |
+| P11 | Document AI / OCR | PARTIAL | P11-B safe engineering subset merged in PR #32, P11-C in PR #33 and P11-A in PR #34. P11-D detached synthetic evidence/candidate contracts are implemented pending independent review. No upload, storage, live document workflow, medical extraction, executable processor or OCR provider is approved. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
@@ -1438,7 +1438,7 @@ P11-C work unit. P11-C was independently reviewed and merged in PR #33 at
 
 ```text
 Work unit: P11-A — safe engineering subset only
-Status: IMPLEMENTED — INDEPENDENT REVIEW REQUIRED; live P11 remains PARTIAL/BLOCKED
+Status: MERGED after independent review in PR #34; live P11 remains PARTIAL/BLOCKED
 Baseline: main @ d3c2125ebdb2c927f254b913a890b411ccc971e5
 Domain: frozen versioned ENGINEERING_ONLY metadata uses strict OpaqueId, the P11-C DocumentType
 vocabulary, non-dereferenceable synthetic source/owner/idempotency handles, declared synthetic
@@ -1462,5 +1462,38 @@ retention/deletion and schema decisions all still require their recorded human a
 Acceptance honesty: partial synthetic reasoning evidence only toward FR-DOC-001/003/022 and
 AC-P11-001/003/010 boundaries. AC-P11-001..011 remain NOT VERIFIED for live document workflows.
 The P11 gate matrix remains 0 APPROVED / 5 OPEN / 4 BLOCKED; P10 live clinician gates remain 0/9;
-P8-C/P9-C Stage 3 restrictions remain in force. Await independent review; do not start P11-D/E.
+P8-C/P9-C Stage 3 restrictions remain in force. The independently reviewed P11-A head
+`89f304b9ff98e08fb4a45c72177b9fbedbfd5cf8` was merged at main
+`87f87e0a454db86bcdf67569fa1e6ab2061ee46c` with no tree differences. Do not infer live approval.
+```
+
+---
+
+# 52. P11-D Detached Synthetic Evidence and Unconfirmed Candidate Contracts
+
+```text
+Work unit: P11-D — safe engineering subset only
+Status: IMPLEMENTED — INDEPENDENT REVIEW REQUIRED; live P11 remains PARTIAL/BLOCKED
+Baseline: main @ 87f87e0a454db86bcdf67569fa1e6ab2061ee46c
+Contracts: frozen, versioned ENGINEERING_ONLY candidate envelopes permit only UNCONFIRMED or
+ABSTAINED states. They carry nonmedical synthetic identity tokens, UNKNOWN confidence, bounded
+canonical structural evidence references, and content-free typed errors. No source text, normalized
+medical value, unit, code, patient narrative, embedding, prompt, or provider payload is represented.
+Evidence: the pure verifier revalidates detached candidate, P11-B structural result, P11-C synthetic
+classification and NOOP_ABSTAIN processor receipt metadata. It matches exact request/document/attempt/
+source/schema/routing/page/block/table/cell/geometry identities without reading TextBlock.text.
+Positive output is only STRUCTURALLY_MATCHED_UNCONFIRMED with source access NOT_VERIFIED. Abstained
+or incomplete processing never becomes a positive structural outcome.
+Architecture: no API/BFF/UI, application/public registration, filesystem/network/source-open,
+provider/model, P5 fact write, job/object-storage binding, ORM/table/migration, feature flag,
+dependency, lockfile, Docker or CI change. P11-A/B/C production modules remain unchanged and the
+patient document UI remains unavailable. Alembic remains p7a_0007.
+Deferred: real medical schemas/extraction and values; source existence/access/consent and retention;
+patient identity and clinical correctness/verification; clinician review; live OCR/LLM providers;
+persistence, runtime activation and every human clinical/privacy/security approval.
+Acceptance honesty: partial synthetic design evidence only toward future Spec 15 §7/§8,
+FR-DOC-011..018, FR-DOC-020..021 and FR-PROV boundaries. It is not a passing live P11-D acceptance
+criterion. AC-P11-001..011 remain NOT VERIFIED for live use.
+The P11 gate matrix remains 0 APPROVED / 5 OPEN / 4 BLOCKED; P10 live clinician gates remain 0/9;
+P8-C/P9-C Stage 3 restrictions remain in force. Await independent review; do not start P11-E.
 ```
