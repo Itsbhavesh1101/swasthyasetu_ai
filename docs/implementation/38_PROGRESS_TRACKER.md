@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; the P11-A architecture/privacy/security approval-readiness package is prepared for accountable human review; P11 is partial while P8, P9 and P10 remain partial
-**Current recommended next action:** Accountable human owners must decide P11 gates 1–4 and 9 using the approval-readiness package, including population/purpose/consent, upload security, storage/retention, schema/processing, and threat/privacy controls. Do not begin live P11-A, P11-E or document processing while the 0/9 P11 approvals, 0/9 P10 live gates and all P8-C/P9-C Stage 3 gates remain open.
+**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; the P11-A approval-readiness package and P11-focused draft security architecture, threat model, and privacy/data-flow assessment are prepared for accountable human review; P11 is partial while P8, P9 and P10 remain partial
+**Current recommended next action:** Accountable human owners must review the new P11-focused drafts and decide P11 gates 1–4 and 9, including population/purpose/consent, upload security, storage/retention, schema/processing, and threat/privacy controls. Do not begin live P11-A, P11-E or document processing while the 0/9 P11 approvals, 0/9 P10 live gates and all P8-C/P9-C Stage 3 gates remain open.
 
 ---
 
@@ -179,8 +179,8 @@ These documents should be created before their dependent coding phases.
 | Document | Status |
 |---|---|
 | `26_PRIVACY_CONSENT_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
-| `27_SECURITY_ARCHITECTURE.md` | NOT STARTED |
-| `28_THREAT_MODEL.md` | NOT STARTED |
+| `27_SECURITY_ARCHITECTURE.md` | P11-FOCUSED DRAFT — PLATFORM-WIDE COVERAGE AND HUMAN REVIEW PENDING |
+| `28_THREAT_MODEL.md` | P11-FOCUSED DRAFT — PLATFORM-WIDE COVERAGE AND HUMAN REVIEW PENDING |
 | `30_TESTING_STRATEGY.md` | COMPLETE — SUBJECT TO USER REVIEW |
 | `31_OBSERVABILITY_SPEC.md` | NOT STARTED |
 | `32_DEVOPS_DEPLOYMENT.md` | NOT STARTED |
@@ -1555,4 +1555,36 @@ made.
 Next action: accountable human owners must review and record gate 1-4 and gate 9 decisions, including
 population/purpose/consent, upload pattern and limits, quarantine/scanner, storage/encryption/region,
 retention/deletion, schema/idempotency/transactions, durable processing, incident and rollback.
+```
+
+---
+
+# 55. Pre-P11-A Security, Threat and Privacy Drafts
+
+```text
+Work unit: PRE-P11-A-SECURITY-PRIVACY-DRAFTS — documentation/review preparation only
+Status: P11-FOCUSED DRAFTS PREPARED — HUMAN REVIEW REQUIRED; NO LIVE P11 APPROVAL
+Baseline: main @ 2b2d9036c7fe9941bc90bb55d4130dabb6571263
+Deliverables: 27_SECURITY_ARCHITECTURE.md, 28_THREAT_MODEL.md and
+P11_PRIVACY_DATA_FLOW_ASSESSMENT_DRAFT.md distinguish as-built technical primitives from future,
+unapproved controls; map trust/data flows, actor and authority boundaries, threat/control registers,
+adversarial tests, privacy lifecycle, accountable reviewers and unsigned human decisions.
+Scope boundary: the platform-numbered security and threat files cover P11 only. Platform-wide
+security/threat coverage remains pending. The privacy document is a draft assessment, not legal
+advice, a completed DPIA, a DPDP compliance assertion, privacy approval or release authorization.
+Repository truth: P11-A/B/C/D remain synthetic engineering-only and unregistered. No document ORM,
+migration, route, upload, scanner, production object-store binding, durable document worker, real
+OCR/provider, medical extraction, source viewer, clinician workflow or P11-E UI was added. Alembic
+remains p7a_0007 and the patient /documents route remains unavailable.
+Gate truth: P11 remains 0/9 approved (5 OPEN, 4 BLOCKED); P10 live remains 0/9 approved; P8-C and
+P9-C Stage 3 remain blocked. AC-P11-001..011 remain NOT VERIFIED for live use. P7 deterministic
+manual intake remains the supported fallback.
+Decisions still pending: allowed population/purpose/uploader; document consent/notice/lawful basis;
+upload pattern, formats and measured limits; scanner/quarantine/sandbox; storage provider, region,
+IAM, encryption and key custody; retention, deletion, legal hold and backup; metadata/idempotency/
+transaction/outbox and durable-processing design; provider/egress/benchmark; source preview and
+clinician assignment; clinical reviewer authority; incident, pilot, monitoring, rollback and release.
+No approval, vendor, region, quota, retention value, lawful basis, population or signature was
+invented. Next action is accountable human review and governed decision records for gates 1–4 and 9;
+do not begin live P11-A/P11-E or another implementation phase from these drafts.
 ```
