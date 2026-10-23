@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language and Pre-P13 provider-routing/readiness packs are draft documentation pending independent/human review; P12 runtime and P13 remain not started. P11 is partial while P8, P9 and P10 remain partial.
-**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12 and P13 readiness gates. Do not begin live P11-A/P11-E/document processing, P12 implementation, or P13-A/B/C/D/E while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. Create and review the separately scoped `25_ADMIN_PORTAL_SPEC.md` before relevant P13-E work.
+**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language, Pre-P13 provider-routing/readiness, and Pre-P13/P21 admin-governance packs are draft documentation pending independent/human review; P12 runtime, P13, and P21 remain not started. P11 is partial while P8, P9 and P10 remain partial.
+**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12, P13, and admin-governance readiness inventories. Do not begin live P11-A/P11-E/document processing, P12 implementation, P13-A/B/C/D/E, or P21-A/B/C/D while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
 
 ---
 
@@ -144,7 +144,7 @@ These documents should be created before their dependent coding phases.
 | Document | Status |
 |---|---|
 | `11_PROVIDER_ROUTING_POLICY.md` | DRAFT — HUMAN REVIEW REQUIRED, NO LIVE P13 APPROVAL |
-| `25_ADMIN_PORTAL_SPEC.md` | NOT STARTED — MISSING SEPARATE PRE-P13 PREREQUISITE FOR RELEVANT P13-E WORK |
+| `25_ADMIN_PORTAL_SPEC.md` | DRAFT — PRE-P13/P21 GOVERNANCE REVIEW PENDING; NO LIVE ADMIN IMPLEMENTATION/APPROVAL |
 
 ## Before P14
 
@@ -1652,4 +1652,40 @@ before relevant P13-E governance/admin work. This work does not authorize P13-A/
 Next action: independent review by accountable clinical, source-governance, privacy/legal, security,
 identity, architecture, accessibility/content, operations and institutional owners; record explicit
 decisions before issuing any separately scoped P13 implementation prompt.
+```
+
+---
+
+# 58. Pre-P13 Admin Portal Specification and Readiness Pack
+
+```text
+Work unit: PRE-P13-ADMIN-GOVERNANCE-DESIGN — documentation/review preparation only
+Status: UNAPPROVED DRAFTS PREPARED — ACCOUNTABLE HUMAN REVIEW REQUIRED; NO LIVE ADMIN AUTHORIZATION
+Baseline: main @ af32d98061b4605d405e954de5cde3d380974d8e
+Repository lineage: Pre-P13 provider-routing PR #40 merged at the baseline; reviewed head
+212a6765e2e6b6450591a70498b0924ef6281d0b is tree-equivalent (files=[]).
+Deliverables: 25_ADMIN_PORTAL_SPEC.md and PRE_P13_ADMIN_PORTAL_READINESS_REVIEW.md distinguish
+as-built P4 identity/authorization primitives and the empty admin-web shell from future P13-E and
+P21-A/B/C/D ownership. They propose unapproved source governance, scoped authorization,
+maker-checker, referral/notification visibility, audit/privacy, accessibility, operations, negative
+tests, accountable roles, unsigned decisions and STOP conditions.
+Repository truth: production authentication remains unconfigured. No admin API, provider/resource/
+referral/notification/audit module or record, moderation workflow, clinical review queue, audit
+viewer, source verifier, real provider data, external side effect, or P13-E/P21 runtime was added.
+Alembic remains p7a_0007; accepted ADRs and dependencies are unchanged.
+Requirement truth: FR-ADMIN-001..010, FR-AUDIT-001..007, AC-P21-001..008 and applicable
+AC-P13-001..011 remain LIVE NOT VERIFIED. Drafting Spec 25 addresses only the missing-document
+artifact in proposed P13 Gate 7; roles, identity, copy, source warnings, accessibility, privacy,
+implementation and accountable review remain blocked. P13's original eight proposed gates remain
+4 OPEN and 4 BLOCKED, and P21 has no human-approved gate count.
+Governance: P13 and P12 runtime remain NOT STARTED; P21 remains NOT STARTED; P11 remains 0/9
+approved (5 OPEN, 4 BLOCKED); P10 live remains 0/9 approved; P8-C/P9-C Stage 3 remain blocked.
+No clinical, privacy, security, source-verification, policy/model/content, pilot, production, consent,
+referral-sharing, export, retention, break-glass or release approval was granted or inferred.
+Scope: documentation only. No application/test code, API/OpenAPI, role/policy/consent behavior,
+schema/migration, dependency/lockfile, Docker/CI/infrastructure, feature flag, source ingestion,
+provider contact, clinical copy, notification, referral send, UI component or runtime changed.
+Next action: accountable identity/security, privacy/legal, source-governance, clinical, audit/data,
+accessibility/content, operations, application and institution owners must independently review and
+record decisions before any separately scoped P13-E or P21 implementation prompt.
 ```
