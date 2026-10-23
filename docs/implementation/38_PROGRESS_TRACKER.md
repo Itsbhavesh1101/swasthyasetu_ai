@@ -158,8 +158,8 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `10_SELF_CARE_AYURVEDA_POLICY.md` | NOT STARTED |
-| `17_RAG_KNOWLEDGE_SPEC.md` | NOT STARTED |
+| `10_SELF_CARE_AYURVEDA_POLICY.md` | DRAFT — ACCOUNTABLE CLINICAL/SOURCE/PRIVACY/ARCHITECTURE REVIEW PENDING; NO P15 RUNTIME APPROVAL |
+| `17_RAG_KNOWLEDGE_SPEC.md` | DRAFT — ACCOUNTABLE CLINICAL/SOURCE/PRIVACY/ARCHITECTURE REVIEW PENDING; NO P15 RUNTIME APPROVAL |
 
 ## Before P16/P17
 
@@ -1749,4 +1749,40 @@ approval. P7 manual intake remains the fallback; P8-C/P9-C Stage 3 remain blocke
 remain 0/9 approved; P12/P13/P14/P21 runtime remain NOT STARTED. Alembic and accepted ADRs are
 unchanged. Next action is independent review of the narrowly scoped security patch; do not activate
 blocked functionality or begin clinical implementation from this branch.
+```
+
+---
+
+# 61. Pre-P15 Self-Care / Ayurveda Policy and RAG Knowledge Readiness Pack
+
+```text
+Work unit: PRE-P15-SELFCARE-RAG-SPEC — documentation and accountable-review preparation only
+Status: DRAFT — ACCOUNTABLE CLINICAL/SOURCE/PRIVACY/ARCHITECTURE REVIEW PENDING; NO P15 RUNTIME APPROVAL
+Baseline: main @ bfba7f5a5993c1572c5ad18b942013a0badc3495
+Repository lineage: October 2026 Next.js security-remediation PR #43 merged at the baseline; its
+merge tree is identical to reviewed head 18e1480c9699cd0fbecb9162eedc045fe7ef9037.
+Deliverables: 10_SELF_CARE_AYURVEDA_POLICY.md defines an unapproved process/architecture framework;
+17_RAG_KNOWLEDGE_SPEC.md defines an unapproved platform retrieval design with a bounded P15 scope;
+P15_SELF_CARE_RAG_READINESS_GATE_REVIEW.md records descriptive OPEN/BLOCKED review domains,
+accountable roles, unsigned decisions, negative evidence, dependencies and STOP conditions without
+creating an official gate count or granting approval.
+Repository truth: the self-care module and relevant knowledge/policy paths remain placeholders. No
+approved remedy, source, knowledge pack, eligibility/contraindication rule, patient-facing copy,
+retrieval corpus, embedding model/provider, pgvector schema, RAG service, API, UI, runtime
+registration, feature flag or production workflow exists. P15 remains NOT STARTED and all
+FR-SELF-001..017 / AC-P15-001..010 live outcomes remain NOT VERIFIED. Any separately authorized
+future engineering fixture must remain synthetic, unmistakably non-production and isolated.
+Governance: P7 manual text/touch intake remains supported; P8-C/P9-C Stage 3 remain BLOCKED; P10 and
+P11 live remain 0/9 APPROVED, with P11 five OPEN/four BLOCKED; P12/P13/P14/P15/P21 runtime remain
+NOT STARTED; P13's eight proposed/unapproved gates remain four OPEN/four BLOCKED; P14 and P15 have
+no official gate count; P22 is not complete. Accepted ADRs and Alembic p7a_0007 remain unchanged.
+Existing general-product/clinical-intake consent does not authorize P15 or retrieval using patient
+data. No clinical, source/content-rights, safety, privacy/legal/consent, security, language,
+accessibility, provider, model/index, pilot, production or release approval was granted or inferred.
+Scope: documentation only. Next.js 16.4.2 and root eslint-config-next 16.4.2 remain pinned. No app,
+backend, test, schema/migration, dependency/lockfile, CI, Docker/infrastructure or accepted ADR changed.
+STOP/next action: accountable clinical/safety, source/rights, privacy/legal, security, architecture/
+data, language/accessibility, operations, P13 navigation, P21 governance and institutional owners
+must independently review and sign bounded decisions before any separately prompted P15-A/B/C/D/E
+work. Missing or disputed evidence fails closed; do not activate patient-facing guidance or RAG.
 ```
