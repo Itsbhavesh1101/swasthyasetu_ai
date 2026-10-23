@@ -166,7 +166,7 @@ These documents should be created before their dependent coding phases.
 | Document | Status |
 |---|---|
 | `20_FHIR_MAPPING_SPEC.md` | DRAFT — ACCOUNTABLE ARCHITECTURE, CLINICAL, PRIVACY, SECURITY AND INTEROPERABILITY REVIEW PENDING; NO LIVE P16 APPROVAL |
-| `21_ABDM_INTEGRATION_SPEC.md` | NOT STARTED |
+| `21_ABDM_INTEGRATION_SPEC.md` | DRAFT — OFFICIAL ABDM/ABHA, ARCHITECTURE, IDENTITY, CLINICAL, PRIVACY, SECURITY, PARTNER AND LEGAL REVIEW PENDING; NO LIVE P17 APPROVAL |
 
 ## Before P18/P19
 
@@ -1824,4 +1824,47 @@ security, identity/authorization, institutional/partner, data-governance, operat
 roles must independently review and record bounded decisions. Only a new explicit prompt from a
 current baseline may authorize a permitted synthetic/offline P16 subset. Do not begin P16-A/B/C,
 P17, real patient exchange, HAPI deployment, profile acquisition or production integration.
+```
+
+---
+
+# 63. Pre-P17 ABDM / ABHA Integration Specification and Readiness Pack
+
+```text
+Work unit: PRE-P17-ABDM-ABHA-GOVERNANCE-READINESS — documentation and accountable-human-review preparation only
+Status: DRAFT — OFFICIAL ABDM/ABHA, ARCHITECTURE, IDENTITY, CLINICAL, PRIVACY, SECURITY, PARTNER AND LEGAL REVIEW PENDING; NO LIVE P17 APPROVAL
+Baseline: main @ 3c727c6015d7e5c4dd8b3a96b0b64796da00eeed
+Repository lineage: PR #46 merged at the baseline; its merge tree is identical to reviewed head
+110811c77d94ba7cd5dd49ba400c490eace403c6.
+Deliverables: 21_ABDM_INTEGRATION_SPEC.md is an unapproved adapter, identity, consent, FHIR,
+environment, transport, provenance, security, accessibility and incident-boundary proposal.
+P17_READINESS_GATE_REVIEW.md records eight descriptive OPEN/BLOCKED review areas, accountable roles,
+missing official evidence, negative tests, STOP conditions, an owner/risk register and unsigned
+decision template without inventing an official P17 gate count or approval.
+Repository truth: FHIR Spec 20 remains an unapproved Pre-P16 draft; FHIR and ABDM module/adapter
+paths remain placeholders. No current official ABDM/ABHA protocol version, operating role, endpoint,
+identity flow, consent-manager contract, profile/package, sandbox, partner, credential, callback,
+mapper, validator, HAPI sidecar, API, persistence, feature flag or data exchange is implemented,
+verified or approved. Historical R2-C material is not adopted as current official authority.
+Traceability: exact FR-ABDM-001..007 and AC-P17-001..007 wording is mapped to draft sections,
+baseline evidence and future official/human/technical artifacts. Every live P17 outcome remains NOT
+VERIFIED; creating an unapproved Spec 21 does not satisfy AC-P17-001. FR-FHIR-001..011 and
+AC-P16-001..010 remain unmet prerequisites. P17-A/B/C/D and P16-A/B/C remain NOT STARTED.
+Governance: P4 pseudonymous identity, internal patient identity and external ABHA identity are not
+interchangeable. GENERAL_PRODUCT_USE/clinical_intake consent is not ABDM authority; a typed
+ABDM_EXCHANGE purpose is vocabulary, not approval; REFERRAL_SHARING remains independently mandatory
+for actual referral disclosure and is not universal ABDM consent. No identifier, patient data,
+clinical mapping, government role, legal basis, protocol detail, partner commitment or approval was
+invented. P7 manual intake and generic urgent help remain independent and unchanged.
+Upstream status: P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain 0/9 approved; P12/P13/P14/
+P15/P16/P17/P21 runtime remain NOT STARTED; P15 STOP conditions remain. P11 draft security/privacy
+materials are not general platform or production approval.
+Scope: documentation only. Alembic remains p7a_0007; Next.js and root eslint-config-next remain
+16.4.2. No runtime/test code, API, payload/fixture, schema/ORM/migration, dependency/lockfile, CI,
+Docker/infrastructure, network, configuration, accepted ADR, consent/policy or unrelated file changed.
+STOP/next action: qualified ABDM, architecture/interoperability, identity, clinical/terminology,
+privacy/legal/consent, security, institutional/partner, accessibility/language, operations/incident
+and release roles must independently verify current official sources and record bounded decisions.
+Do not begin P16/P17 implementation, acquire a profile, provision a sandbox/credential, expose a
+callback, create patient flows or send data without an approved Spec 21 and separate phase prompt.
 ```
