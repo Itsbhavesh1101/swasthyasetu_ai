@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language specification and readiness inventory are draft documentation pending independent/human review; P12 runtime remains not started. P11 is partial while P8, P9 and P10 remain partial.
-**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12 readiness gates. Do not begin live P11-A/P11-E/document processing or any P12 implementation while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
+**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language and Pre-P13 provider-routing/readiness packs are draft documentation pending independent/human review; P12 runtime and P13 remain not started. P11 is partial while P8, P9 and P10 remain partial.
+**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12 and P13 readiness gates. Do not begin live P11-A/P11-E/document processing, P12 implementation, or P13-A/B/C/D/E while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. Create and review the separately scoped `25_ADMIN_PORTAL_SPEC.md` before relevant P13-E work.
 
 ---
 
@@ -143,7 +143,8 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `11_PROVIDER_ROUTING_POLICY.md` | NOT STARTED |
+| `11_PROVIDER_ROUTING_POLICY.md` | DRAFT — HUMAN REVIEW REQUIRED, NO LIVE P13 APPROVAL |
+| `25_ADMIN_PORTAL_SPEC.md` | NOT STARTED — MISSING SEPARATE PRE-P13 PREREQUISITE FOR RELEVANT P13-E WORK |
 
 ## Before P14
 
@@ -1617,4 +1618,38 @@ supported fallback.
 Next action: independent review by accountable privacy/legal, security, architecture, clinical,
 language, accessibility/content, operations and product/institution owners. This pack does not
 authorize P12-A or any live speech/language work.
+```
+
+---
+
+# 57. Pre-P13 Provider Routing Policy and Readiness Pack
+
+```text
+Work unit: Pre-P13 — documentation/review preparation only
+Status: DRAFT DOCUMENTATION PREPARED — ACCOUNTABLE HUMAN REVIEW REQUIRED; P13 NOT STARTED
+Baseline: main @ 568ad42047d6671971a9de3834c47b9de0687641
+Repository lineage: Pre-P12 PR #39 merged at the baseline; reviewed head
+36baaf4ef3687083b2e389579cfacaab17d10413 is tree-equivalent (files=[]).
+Deliverables: 11_PROVIDER_ROUTING_POLICY.md and P13_READINESS_GATE_REVIEW.md distinguish provider,
+resource, specialty, facility, contact, referral, notification, clinical-safety and source authority;
+propose unapproved source/freshness, specialty-first, consent/minimization, state/idempotency,
+failure, security/privacy/accessibility boundaries; and map all P13 requirements and acceptance.
+Repository truth: providers, resources and referrals remain placeholder-only and unregistered. No
+verified source, provider/resource record, routing policy, table/migration, API/BFF/UI, adapter,
+referral/notification side effect, admin workflow, or runtime activation exists. Patient referrals
+remain honestly unavailable; generic urgent-help navigation and P7 manual intake remain available.
+Alembic remains p7a_0007. The ai_orchestration providers.py file is LLM adapter infrastructure, not
+a clinician/provider directory.
+Readiness truth: eight proposed P13 gates are an unapproved review inventory, not an official gate
+count or approval model. Every FR-DIR-001..017, FR-REF-001..013, applicable FR-NOTIF-001..006,
+FR-AUDIT-002..004, PRIV-001..009 and AC-P13-001..011 remains LIVE NOT VERIFIED for P13.
+Governance: no clinical taxonomy/rule, real provider/resource truth, consent/sharing basis, source,
+contact, external send, notification, pilot or production approval is granted. P12 runtime remains
+NOT STARTED; P11 remains 0/9 approved (5 OPEN, 4 BLOCKED); P10 remains 0/9 approved; P8-C/P9-C
+Stage 3 remain blocked. P13 remains NOT STARTED.
+Missing prerequisite: 25_ADMIN_PORTAL_SPEC.md remains absent and must be created/reviewed separately
+before relevant P13-E governance/admin work. This work does not authorize P13-A/B/C/D/E.
+Next action: independent review by accountable clinical, source-governance, privacy/legal, security,
+identity, architecture, accessibility/content, operations and institutional owners; record explicit
+decisions before issuing any separately scoped P13 implementation prompt.
 ```
