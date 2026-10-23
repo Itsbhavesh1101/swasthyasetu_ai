@@ -24,6 +24,7 @@ Canonical anchors are the [self-care framework](../10_SELF_CARE_AYURVEDA_POLICY.
 - Existing P4 general-product/clinical-intake consent does not authorize P15 or RAG processing.
 - PostgreSQL is authoritative, while any future index/cache is derived. No pgvector schema, embedding model, corpus, or provider is selected.
 - Alembic head remains `p7a_0007`; accepted ADRs remain unchanged.
+- Initial PR secret scanning classified a slash-delimited lifecycle-label phrase in the mandatory byte-identical recorded phase prompt as a generic-key candidate. Human inspection confirmed that the cited line is governance prose and contains no credential. The prompt remains byte-identical, and no scanner suppression or workflow change is introduced; final CI still must pass on the final head.
 
 Green documentation checks or CI prove only repository integrity. They do not change any status below.
 
