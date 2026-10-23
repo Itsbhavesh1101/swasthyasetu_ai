@@ -79,9 +79,11 @@ Documentation, synthetic tests, a feature flag, and CI cannot grant human approv
 
 - **As-built evidence:** P4 provides sessions, ActorContext, centralized consent, and a
   `REFERRAL_SHARING` purpose; current patient onboarding grants only `GENERAL_PRODUCT_USE` /
-  `clinical_intake`. Real IdP and clinician/admin workflows remain unconfigured.
+  `clinical_intake`, which cannot authorize external referral sharing. Real IdP and clinician/admin
+  workflows remain unconfigured.
 - **Undecided:** patient/guardian/caregiver authority, institution/recipient identity, destination
-  proof, referral purpose/scope/notice, lawful/governance basis, exact fields, grant expiry,
+  proof, referral purpose/scope/notice, mandatory explicit `REFERRAL_SHARING` consent, any
+  additionally applicable lawful or governance requirements, exact fields, grant expiry,
   withdrawal, cross-institution access, subject rights, and contact handling.
 - **Accountable reviewers:** privacy/legal and consent owner; identity/security; institutional owner;
   patient/guardian governance; referrals owner; data protection/governance.
@@ -96,7 +98,9 @@ Documentation, synthetic tests, a feature flag, and CI cannot grant human approv
 - **Possible separately authorized synthetic scope:** pure authorization/consent decision contracts
   using opaque synthetic subjects, without API, patient data, persistence, or external sharing.
 - **STOP condition:** a live operation lacks exact subject, actor, institution, recipient, purpose,
-  minimum fields, active consent/lawful basis, or nonenumerating authorization.
+  minimum fields, explicit active purpose-specific `REFERRAL_SHARING` consent, or nonenumerating
+  authorization; additionally applicable lawful or governance requirements must also be met and
+  cannot replace the mandatory referral consent.
 
 ## Gate 4 — Registry models, APIs, persistence, and query architecture
 
@@ -277,8 +281,10 @@ Roles are accountable categories only. No person, signature, approval ID, or dec
   exclusions, P9 separation, validation cases, approved copy, and release population.
 - [ ] **Identity/security/institution owner:** actors, providers/facilities/institutions, recipient
   binding, permissions, object authorization, moderator/admin controls, MFA, and audit.
-- [ ] **Privacy/legal and consent owner:** purpose/lawful basis, notice, sharing scope, minimum fields,
-  patient/guardian/caregiver authority, withdrawal, retention/deletion, rights, and processor terms.
+- [ ] **Privacy/legal and consent owner:** purpose, notice, sharing scope, minimum fields, mandatory
+  explicit active purpose-specific `REFERRAL_SHARING` consent, any additionally applicable lawful or
+  governance requirements, patient/guardian/caregiver authority, withdrawal, retention/deletion,
+  rights, and processor terms. Additional requirements cannot replace referral consent.
 - [ ] **Application/data/API architecture:** module capabilities, models, schema/migration, API/error,
   consistency, concurrency, outbox/jobs, idempotency, webhook, correction, and data ownership.
 - [ ] **Notification/integration owner:** destination/provider contracts, channel, template, preference,

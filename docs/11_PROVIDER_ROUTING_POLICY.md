@@ -273,9 +273,10 @@ Invalid transitions, stale versions, duplicate events, and cross-referral update
 
 ## 5.3 Consent and minimization
 
-External referral sharing requires active `REFERRAL_SHARING`-purpose consent or another explicitly
-documented and governed lawful basis. Existing `GENERAL_PRODUCT_USE` / `clinical_intake` consent,
-authentication, an offered referral, or provider selection does not authorize disclosure.
+External referral sharing requires explicit, active, purpose-specific `REFERRAL_SHARING` consent.
+Any additionally applicable lawful or governance requirements must also be satisfied; they cannot
+replace that mandatory consent. Existing `GENERAL_PRODUCT_USE` / `clinical_intake` consent,
+authentication, an offered referral, or provider selection cannot authorize external sharing.
 
 The approved design must bind subject, authorized patient/guardian/institution actor, recipient and
 destination identity, purpose, exact field allowlist, notice/version, scope, grant, expiry, and
@@ -340,10 +341,12 @@ delivery receipt cannot establish referral acknowledgement or clinical completio
 | Log/analytics/notification leakage | No raw history/transcript/contact/bearer in telemetry, reports, URLs, previews, or lock screens; seeded-canary scans. | Privacy; security; observability owner |
 | Accessibility/localized-copy failure | Keyboard, screen reader, focus, 320/390px reflow, non-color warnings, safe text rendering; only approved source warnings/locales. | Accessibility; content/localization |
 
-Privacy decisions remain open for purpose, lawful/governance basis, consent/notice, patient/guardian/
-caregiver authority, source/contact rights and licensing, collection, access, institution isolation,
-retention/deletion, corrections, external processors, notifications, incident handling, and subject
-rights. This document makes no legal or compliance claim.
+Privacy decisions remain open for purpose, mandatory explicit `REFERRAL_SHARING` consent and notice,
+any additionally applicable lawful or governance requirements, patient/guardian/caregiver authority,
+source/contact rights and licensing, collection, access, institution isolation, retention/deletion,
+corrections, external processors, notifications, incident handling, and subject rights. Additional
+requirements cannot replace explicit referral consent. This document makes no legal or compliance
+claim.
 
 ---
 
@@ -406,7 +409,7 @@ primitives are not P13 acceptance evidence.
 | `FR-AUDIT-003` — Consent changes SHALL be auditable. | §5 depends on centralized consent; P4 events exist, referral-specific evidence absent. | Consent/audit owner | NOT VERIFIED FOR P13 |
 | `FR-AUDIT-004` — Sensitive administrative actions SHALL be auditable. | §7; Admin Portal spec/workflow absent. | Admin governance/audit | NOT VERIFIED |
 | `PRIV-001` — Only data required for the active purpose SHOULD be collected. | §§5–7; referral field allowlist undecided. | Privacy/data governance | NOT VERIFIED FOR P13 |
-| `PRIV-002` — Data SHALL be used according to documented purposes and consent/governance. | §5; exact purpose/notice/lawful basis pending. | Privacy/legal | NOT VERIFIED FOR P13 |
+| `PRIV-002` — Data SHALL be used according to documented purposes and consent/governance. | §5; mandatory explicit referral consent, purpose/notice, and any additional applicable lawful/governance requirements remain pending. | Privacy/legal | NOT VERIFIED FOR P13 |
 | `PRIV-003` — Sensitive transient data SHALL have explicit retention rules. | §§5–7; attempt/payload/log retention pending. | Privacy/operations | NOT VERIFIED FOR P13 |
 | `PRIV-004` — Applicable deletion/withdrawal workflows SHALL be supported. | §5; post-send withdrawal/correction pending. | Privacy/referrals owner | NOT VERIFIED FOR P13 |
 | `PRIV-005` — Referral sharing SHALL use a minimized payload. | §5; allowlist and evidence absent. | Privacy/referrals owner | NOT VERIFIED |
@@ -458,8 +461,9 @@ Accountable roles must decide and record:
    appeals, dual control, and revocation propagation;
 3. care-category/specialty taxonomy, mapping authority, clinical validation, reason codes, abstention,
    geography, eligibility, transparent filters/ranking, and release scope;
-4. patient/guardian/caregiver/institution authority, referral purpose, notice, exact consent/lawful
-   basis, recipient, field minimization, withdrawal, subject access, retention, and deletion;
+4. patient/guardian/caregiver/institution authority, referral purpose, notice, mandatory explicit
+   `REFERRAL_SHARING` consent, any additionally applicable lawful or governance requirements,
+   recipient, field minimization, withdrawal, subject access, retention, and deletion;
 5. registry/referral/notification schema, API, transactions, outbox, jobs, idempotency, retries,
    webhooks, ambiguous effects, corrections, and incident/rollback behavior;
 6. patient/admin copy, source/freshness warnings, accessibility/localization, notification channels,
