@@ -172,7 +172,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `18_CLASSICAL_ML_SPEC.md` | NOT STARTED |
+| `18_CLASSICAL_ML_SPEC.md` | DRAFT — RESEARCH DATASET/TASK, PRIVACY, BENCHMARK AND MODEL-GOVERNANCE REVIEW PENDING; NO P18 RUNTIME OR CLINICAL APPROVAL |
 | `19_QUANTUM_ML_SPEC.md` | NOT STARTED |
 
 ## Before hardening
@@ -1867,4 +1867,47 @@ privacy/legal/consent, security, institutional/partner, accessibility/language, 
 and release roles must independently verify current official sources and record bounded decisions.
 Do not begin P16/P17 implementation, acquire a profile, provision a sandbox/credential, expose a
 callback, create patient flows or send data without an approved Spec 21 and separate phase prompt.
+```
+
+---
+
+# 64. Pre-P18 Classical ML Research Specification and Readiness Pack
+
+```text
+Work unit: PRE-P18-CLASSICAL-ML-RESEARCH-READINESS — documentation and accountable-human-review preparation only
+Status: DRAFT — RESEARCH DATASET/TASK, PRIVACY, BENCHMARK AND MODEL-GOVERNANCE REVIEW PENDING; NO P18 RUNTIME OR CLINICAL APPROVAL
+Baseline: main @ 0b1eeaf470e129a29f18426ab9a0c4c115fbb4ac
+Repository lineage: PR #47 merged at the baseline; its merge tree is identical to reviewed head
+c5d241c10843af776860d06437fc1ecb09cabc11.
+Deliverables: 18_CLASSICAL_ML_SPEC.md defines a research-only architecture, dataset-admission,
+split/leakage, evaluation, reproducibility, artifact-security, model-governance and P19 parity draft.
+P18_READINESS_GATE_REVIEW.md records eight descriptive OPEN/BLOCKED review domains, accountable
+roles, evidence and decisions, negative tests, STOP conditions, an owner/risk register and unsigned
+decision template without inventing an official gate count or approval.
+Repository truth: ml/classical, ml/datasets, ml/evaluation, ml/registry, ml/quantum,
+backend/app/modules/ml and backend/app/adapters/quantum remain placeholders. No approved dataset,
+task, target, label, population, real benchmark, split, experiment, training pipeline, tracking or
+registry service, model card, artifact, inference path or P19 comparator was created. P18-A/B/C/D/E,
+P18 runtime and P19 runtime remain NOT STARTED. All FR-ML-001..017 and AC-P18-001..010 live outcomes
+remain NOT VERIFIED; a future synthetic exercise cannot satisfy AC-P18-001 for a real benchmark.
+Human decisions: qualified research, clinical/epidemiology, data-custody, privacy/legal/ethics,
+security, architecture/data, biostatistics/ML-validation, model-governance, operations/release and
+institutional owners must decide the task, dataset/license/custody, legal authority, split,
+preprocessing, metrics, calibration, artifact policy, lifecycle mapping, P19 parity and release.
+Governance: P7 deterministic/manual intake and urgent help remain independent. P8-C/P9-C Stage 3
+remain BLOCKED; P10/P11 live remain 0/9 approved, with P11 five OPEN/four BLOCKED; P12/P13/P14/P15/
+P16/P17/P18/P19/P21 runtime remain NOT STARTED; P15 clinical/source STOP conditions remain; P16
+FHIR and P17 ABDM are not authorized; P22 is NOT COMPLETE. Research and model output cannot become
+diagnosis, confirmed clinical/FHIR truth, hard-safety override, pilot approval or production authority.
+Provenance and safe-off: future inputs, runs, transformations, metrics, artifacts, calibration and
+approvals require immutable lineage. Missing/invalid/expired evidence fails closed; P7/P9 remain
+available when research, MLflow, model inference or QML is absent or fails. No quantum advantage is
+claimed, and a P19 comparison requires the same future approved P18 target, splits and metrics.
+Scope: documentation only. Alembic remains p7a_0007; Next.js and root eslint-config-next remain
+16.4.2. No runtime/test code, dataset/download, experiment/training, dependency/lockfile, model,
+artifact, schema/ORM/migration, API/UI, service, Docker/CI/infrastructure, accepted ADR, clinical
+threshold, consent/policy or unrelated file changed.
+Future work and STOP: safe synthetic-only mechanics require a new narrow prompt. Do not begin P18-A/
+B/C/D/E, select or access data, activate research infrastructure, train/register/load a model, start
+P19, pilot or release until all applicable accountable decisions and independent evidence are current.
 ```
