@@ -173,7 +173,7 @@ These documents should be created before their dependent coding phases.
 | Document | Status |
 |---|---|
 | `18_CLASSICAL_ML_SPEC.md` | DRAFT — RESEARCH DATASET/TASK, PRIVACY, BENCHMARK AND MODEL-GOVERNANCE REVIEW PENDING; NO P18 RUNTIME OR CLINICAL APPROVAL |
-| `19_QUANTUM_ML_SPEC.md` | NOT STARTED |
+| `19_QUANTUM_ML_SPEC.md` | DRAFT — P18 CLASSICAL BASELINE, QML BENCHMARK, PRIVACY, SECURITY AND MODEL-GOVERNANCE REVIEW PENDING; NO P19 RUNTIME OR CLINICAL APPROVAL |
 
 ## Before hardening
 
@@ -1910,4 +1910,49 @@ threshold, consent/policy or unrelated file changed.
 Future work and STOP: safe synthetic-only mechanics require a new narrow prompt. Do not begin P18-A/
 B/C/D/E, select or access data, activate research infrastructure, train/register/load a model, start
 P19, pilot or release until all applicable accountable decisions and independent evidence are current.
+```
+
+---
+
+# 65. Pre-P19 Hybrid Quantum ML Specification and Readiness Pack
+
+```text
+Work unit: PRE-P19-HYBRID-QML-GOVERNANCE-READINESS — documentation and accountable-review preparation only
+Status: DRAFT — P18 CLASSICAL BASELINE, QML BENCHMARK, PRIVACY, SECURITY AND MODEL-GOVERNANCE REVIEW PENDING; NO P19 RUNTIME OR CLINICAL APPROVAL
+Baseline: main @ 9ed502ceb4973d6cb95e3a85828699be1cd31ee3
+Repository lineage: PR #48 merged at the baseline; its merge tree is identical to reviewed head
+32b57631bd37ce6f53db1b8098589c45e6304ee6.
+Deliverables: 19_QUANTUM_ML_SPEC.md records the prospective parity, quantum-port, simulator/hardware,
+hybrid-design, reproducibility, evaluation, artifact, privacy, safety and governance boundaries.
+P19_READINESS_GATE_REVIEW.md records eight descriptive OPEN/BLOCKED domains, accountable roles,
+negative tests, STOP conditions, an owner/risk register and unsigned decision template without
+creating an official gate count or human signoff.
+Repository truth: P18 Spec 18 and readiness inventory remain unapproved drafts. P18 has zero actual
+baselines: no approved task, dataset, frozen split, classical result, tracker, artifact or model.
+ML/QML and quantum-adapter paths remain placeholders. No port, dependency, circuit, simulator, QPU,
+experiment, training, inference, model, chart, performance result or quantum-advantage claim was
+created. P18-A/B/C/D/E and P19-A/B/C/D/E remain NOT STARTED.
+Traceability: exact FR-QML-001..018 and AC-P19-001..009 wording maps to draft sections, as-built
+evidence and missing human/technical decisions. Every live P18 and P19 criterion remains NOT
+VERIFIED; AC-P19-001 cannot pass without an approved reproducible P18 target and split. SHOULD and
+MAY requirements remain conditional and are not upgraded to SHALL.
+Human decisions: P18/P19 research, clinical/epidemiology, biostatistics/ML validation, data custody,
+privacy/legal/ethics, security, architecture, dependency/license, model governance, operations/
+incident/release, institutional and independent-review roles must separately decide task, data,
+parity, research design, metrics, uncertainty, resource budget, artifacts, egress and release.
+Governance: research is isolated and safe-off. P7 deterministic/manual intake and generic urgent
+help remain available; P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain 0/9 approved, with P11
+five OPEN/four BLOCKED; P12/P13/P14/P15/P16/P17/P18/P19/P21 runtime remain NOT STARTED; P15
+clinical/source STOP conditions remain; P16/P17 runtime is unauthorized; P22 is NOT COMPLETE.
+Quantum output cannot become diagnosis, confirmed clinical/FHIR truth, safety override, registry
+promotion, pilot approval or production authority. PennyLane/Qiskit remain inactive research
+candidates; simulator and hardware evidence are not interchangeable.
+Scope: exactly four documentation paths. Alembic remains p7a_0007; Next.js and root
+eslint-config-next remain 16.4.2. No application/test code, fixture, dataset/download, notebook,
+dependency/lockfile, experiment, model/artifact, schema/ORM/migration, API/UI, feature flag,
+Docker/CI/infrastructure, accepted ADR, credential, clinical threshold or unrelated file changed.
+STOP/next action: accountable owners must first approve and reproduce a P18 baseline, then record
+P19 purpose/parity, isolated research architecture, privacy/security/artifact, claim, incident and
+release decisions. Only a new narrow prompt may begin P19-A. Do not start P18 engineering, P19-A/B/
+C/D/E, P20, simulator/hardware work, dataset use, training, inference, claims, pilot or production.
 ```
