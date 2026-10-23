@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; the P11-A approval-readiness package and P11-focused draft security architecture, threat model, and privacy/data-flow assessment are prepared for accountable human review; P11 is partial while P8, P9 and P10 remain partial
-**Current recommended next action:** Accountable human owners must review the new P11-focused drafts and decide P11 gates 1–4 and 9, including population/purpose/consent, upload security, storage/retention, schema/processing, and threat/privacy controls. Do not begin live P11-A, P11-E or document processing while the 0/9 P11 approvals, 0/9 P10 live gates and all P8-C/P9-C Stage 3 gates remain open.
+**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language specification and readiness inventory are draft documentation pending independent/human review; P12 runtime remains not started. P11 is partial while P8, P9 and P10 remain partial.
+**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12 readiness gates. Do not begin live P11-A/P11-E/document processing or any P12 implementation while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
 
@@ -48,7 +48,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
-| P12 | Multilingual Speech / Translation | NOT STARTED | Requires speech spec. |
+| P12 | Multilingual Speech / Translation | NOT STARTED | Pre-P12 specification/readiness drafts are pending independent and accountable human review; no runtime work or approval. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
@@ -137,7 +137,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `16_MULTILINGUAL_SPEECH_SPEC.md` | NOT STARTED |
+| `16_MULTILINGUAL_SPEECH_SPEC.md` | DRAFT PRE-P12 SPECIFICATION — SUBJECT TO INDEPENDENT/HUMAN REVIEW; NOT IMPLEMENTED OR APPROVED |
 
 ## Before P13
 
@@ -1587,4 +1587,34 @@ clinician assignment; clinical reviewer authority; incident, pilot, monitoring, 
 No approval, vendor, region, quota, retention value, lawful basis, population or signature was
 invented. Next action is accountable human review and governed decision records for gates 1–4 and 9;
 do not begin live P11-A/P11-E or another implementation phase from these drafts.
+```
+
+---
+
+# 56. Pre-P12 Multilingual Speech Specification and Readiness Pack
+
+```text
+Work unit: Pre-P12 — documentation/governance readiness only
+Status: DOCUMENTATION DRAFT COMPLETE — INDEPENDENT/HUMAN REVIEW PENDING; P12 NOT STARTED
+Baseline: main @ 3492481a45e7aae068b521eed555ba829559da77
+Repository lineage: P11 security/threat/privacy documentation PR #38 merged at baseline main;
+reviewed head f2b771761d724c65bcc5140a090e85dff531d9ed is tree-equivalent (files=[]).
+Deliverables: 16_MULTILINGUAL_SPEECH_SPEC.md and P12_READINESS_GATE_REVIEW.md record the as-built
+P6/P7 evidence, provider-neutral future design, English/Hindi/Hinglish semantics, source lineage,
+privacy/egress and accessible fallback requirements, benchmark evidence needs, FR-LANG-001..012 and
+AC-P12-001..009 traceability, proposed unapproved human gates, negative tests and STOP conditions.
+Repository truth: only English/Hindi session preference, P7 manual text/touch original-text metadata,
+disabled speech configuration and empty speech/translation adapter placeholders exist. No language
+module, microphone/audio capture, STT/TTS/translation/transliteration/LID adapter, provider/model,
+voice API/BFF/UI, locale pack, persistence or migration was added. Alembic remains p7a_0007.
+Scope: documentation only. No code/tests, dependency/lockfile, provider/network/benchmark, model,
+audio/data, schema/migration, API/OpenAPI/BFF/UI, locale asset, consent policy, Docker/CI/infra,
+feature flag, clinical copy, accepted ADR or runtime activation changed.
+Governance: all P12 live acceptance remains NOT VERIFIED. P11 security/threat documents remain
+P11-FOCUSED DRAFTS; P11 remains 0/9 approved (5 OPEN, 4 BLOCKED), P10 remains 0/9 approved,
+P8-C/P9-C Stage 3 remain blocked, P11-E remains unimplemented, and P7 manual intake remains the
+supported fallback.
+Next action: independent review by accountable privacy/legal, security, architecture, clinical,
+language, accessibility/content, operations and product/institution owners. This pack does not
+authorize P12-A or any live speech/language work.
 ```
