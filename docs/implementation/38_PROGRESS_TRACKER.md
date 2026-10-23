@@ -165,7 +165,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `20_FHIR_MAPPING_SPEC.md` | NOT STARTED |
+| `20_FHIR_MAPPING_SPEC.md` | DRAFT — ACCOUNTABLE ARCHITECTURE, CLINICAL, PRIVACY, SECURITY AND INTEROPERABILITY REVIEW PENDING; NO LIVE P16 APPROVAL |
 | `21_ABDM_INTEGRATION_SPEC.md` | NOT STARTED |
 
 ## Before P18/P19
@@ -1785,4 +1785,43 @@ STOP/next action: accountable clinical/safety, source/rights, privacy/legal, sec
 data, language/accessibility, operations, P13 navigation, P21 governance and institutional owners
 must independently review and sign bounded decisions before any separately prompted P15-A/B/C/D/E
 work. Missing or disputed evidence fails closed; do not activate patient-facing guidance or RAG.
+```
+
+---
+
+# 62. Pre-P16 FHIR Mapping Specification and Readiness Pack
+
+```text
+Work unit: PRE-P16-FHIR-MAPPING-DESIGN — documentation and accountable-review preparation only
+Status: DRAFT — ACCOUNTABLE ARCHITECTURE, CLINICAL, PRIVACY, SECURITY AND INTEROPERABILITY REVIEW PENDING; NO LIVE P16 APPROVAL
+Baseline: main @ 34b3e17df672c68e9677ca3ae88bf07c7711ea0c
+Repository lineage: PR #45 merged at the baseline; its merge tree is identical to reviewed head
+a0a1fb9b6eaf34ac31de5c0f70f2d59ee47cb27c. Superseded PR #44 was closed and not merged.
+Deliverables: 20_FHIR_MAPPING_SPEC.md records the unapproved FHIR R4 4.0.1 mapping, provenance,
+validation, privacy, security and adapter-boundary design. P16_READINESS_GATE_REVIEW.md records eight
+proposed review areas, accountable roles, unresolved decisions, negative tests, STOP conditions and
+an unsigned decision template without creating an official P16 gate count.
+Repository truth: internal PostgreSQL/domain records remain canonical. FHIR is a replaceable
+interoperability projection. Empty FHIR module/adapter placeholders remain unchanged; no mapper,
+validator, HAPI sidecar, remote client, profile/terminology package, endpoint, credential, API,
+import/export route, feature flag, persistence or migration exists. Alembic remains p7a_0007 and
+Next.js remains pinned at 16.4.2.
+Traceability: FR-FHIR-001..011 and AC-P16-001..010 are mapped to the draft sections, current evidence
+and future human/technical artifacts. Every live outcome remains NOT VERIFIED. P16-A DTO/mapping,
+P16-B validation/gateway and P16-C export/import APIs/tests are separately scoped, gated and NOT
+STARTED. FR-ABDM-001..007 and AC-P17-001..007 remain P17 dependencies, not P16 evidence;
+21_ABDM_INTEGRATION_SPEC.md remains absent and P17 remains NOT STARTED.
+Governance: FHIR validity does not establish clinical truth, patient authorization or recipient
+eligibility. General-product/clinical-intake consent does not authorize FHIR or ABDM exchange;
+REFERRAL_SHARING applies independently to actual external referrals. No patient data, clinical
+mapping, source identity, profile, vendor, destination, lawful authority or approval was invented.
+P7 manual text/touch intake remains unchanged; P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain
+0/9 approved; P12/P13/P14/P15/P16/P17/P21 runtime remain NOT STARTED; P15 STOP conditions remain.
+Scope: documentation only. No runtime, test fixture, schema/ORM, migration, dependency/lockfile, CI,
+Docker/infrastructure, network, accepted ADR, consent/policy or unrelated source file changed.
+STOP/next action: architecture/interoperability, clinical/terminology, privacy/legal/consent,
+security, identity/authorization, institutional/partner, data-governance, operations and release
+roles must independently review and record bounded decisions. Only a new explicit prompt from a
+current baseline may authorize a permitted synthetic/offline P16 subset. Do not begin P16-A/B/C,
+P17, real patient exchange, HAPI deployment, profile acquisition or production integration.
 ```
