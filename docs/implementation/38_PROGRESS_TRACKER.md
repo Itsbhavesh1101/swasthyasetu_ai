@@ -1723,3 +1723,30 @@ Next action: accountable clinical, safety, privacy/legal, security, language, ac
 operations, referral/resource, architecture/data and institutional owners must independently review
 the evidence and record explicit decisions before any separately scoped P14 implementation prompt.
 ```
+
+---
+
+# 60. October 2026 Next.js Security Remediation
+
+```text
+Work unit: SECURITY-NEXTJS-2026-10 — dependency security repair only
+Status: SECURITY PATCH PREPARED — INDEPENDENT REVIEW REQUIRED; NO PLATFORM/PRODUCTION APPROVAL
+Baseline: main @ 747110bcbecaeb3484fddf68b2eec9038fd43ce1
+Change: patient-web, clinician-web and admin-web pin Next.js 16.4.2 instead of 16.4.0; root
+eslint-config-next is aligned at 16.4.2. The pnpm 9.15.4 lockfile resolves the matching Next.js,
+@next/env, ESLint-plugin and platform SWC family; sharp remains 0.35.5 and React/React DOM remain
+19.3.0. No unrelated direct dependency, application behavior, API, schema, migration or CI changed.
+Security evidence: GHSA-673q-mjm6-r5xr, GHSA-2464-fhr4-w9xw / CVE-2026-96889 and
+GHSA-p3m5-59mp-jv5r no longer appear after the exact stable patch. The unrelated unpatched
+braces@3.0.3 development-tooling advisory remains explicitly recorded for separate review.
+Verification: frozen install, frontend format/lint/typecheck, 145 frontend tests, all three production
+builds, backend quality with 1,238 non-PostgreSQL tests, 97 real-PostgreSQL tests, Alembic checks at
+p7a_0007, 13 Playwright journeys, and a cached local Trivy production-dependency scan passed. Two
+Playwright journeys required their configured retry after local parallel startup/navigation timeouts;
+no test was changed. Exact final commit and six-job CI results are authoritative in the PR/report.
+Governance: engineering-only remediation, not P22 completion or privacy/security/clinical/release
+approval. P7 manual intake remains the fallback; P8-C/P9-C Stage 3 remain blocked; P10/P11 live
+remain 0/9 approved; P12/P13/P14/P21 runtime remain NOT STARTED. Alembic and accepted ADRs are
+unchanged. Next action is independent review of the narrowly scoped security patch; do not activate
+blocked functionality or begin clinical implementation from this branch.
+```
