@@ -150,7 +150,7 @@ These documents should be created before their dependent coding phases.
 
 | Document | Status |
 |---|---|
-| `09_MENTAL_HEALTH_POLICY.md` | NOT STARTED |
+| `09_MENTAL_HEALTH_POLICY.md` | PRE-P14 DRAFT — CLINICAL POLICY/SAFETY/PRIVACY REVIEW PENDING; NO ACTUAL CLINICAL RULES OR RUNTIME APPROVAL |
 | `13_AI_ORCHESTRATION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
 | `14_LLM_EXTRACTION_SPEC.md` | COMPLETE — SUBJECT TO USER REVIEW |
 
@@ -1688,4 +1688,38 @@ provider contact, clinical copy, notification, referral send, UI component or ru
 Next action: accountable identity/security, privacy/legal, source-governance, clinical, audit/data,
 accessibility/content, operations, application and institution owners must independently review and
 record decisions before any separately scoped P13-E or P21 implementation prompt.
+```
+
+---
+
+# 59. Pre-P14 MannSetu Mental-Health Policy Framework and Readiness Pack
+
+```text
+Work unit: Pre-P14 — documentation and accountable-review preparation only
+Status: PRE-P14 DRAFT — CLINICAL POLICY/SAFETY/PRIVACY REVIEW PENDING; NO ACTUAL CLINICAL RULES OR RUNTIME APPROVAL
+Baseline: main @ 8a313aabab31bffbbddfa3d94b79aa045cc7a19c
+Repository lineage: Pre-P13 admin-portal PR #41 merged at the baseline; reviewed head
+5f81e9440ab0c6b1d965ecf952e194ac56001035 is tree-equivalent (files=[]).
+Deliverables: 09_MENTAL_HEALTH_POLICY.md and P14_READINESS_GATE_REVIEW.md separate as-built evidence
+from future design, audit the historical MannSetu source PDFs without adopting their clinical
+proposals, map FR-MH-001..020 and AC-P14-001..013, preserve global safety/privacy/accessibility and
+P8/P9/P10/P11/P12/P13/P21 restrictions, identify accountable reviewers and unsigned decisions, and
+define conditional STOP criteria and adversarial evidence requirements.
+Repository truth: P14 module, clinical-policy, safety-corpus, provider/resource/referral and
+notification directories remain placeholders; no clinically approved route policy, instrument,
+signal extractor, independent backstop, crisis protocol/copy/resource registry, referral workflow,
+P14 API/BFF/UI, persistence or migration exists. Generic urgent-help navigation and P4 pseudonymous
+session/consent primitives are not P14 approval or implementation. Alembic remains p7a_0007.
+Governance: P14 remains NOT STARTED. No threshold, lexicon, clinical rule, crisis contact, patient
+copy, retention period, instrument use, route eligibility, pilot, production or human approval is
+created or inferred. P13 referral sharing still requires explicit active purpose-specific
+REFERRAL_SHARING consent plus all additionally applicable lawful/governance requirements. P12/P13/P21
+runtime remain NOT STARTED; P11 remains 0/9 approved; P10 live remains 0/9 approved; P8-C/P9-C Stage 3
+remain blocked.
+Scope: documentation only. No runtime/test code, API/OpenAPI, database/schema/migration, dependency,
+lockfile, Docker/CI/infrastructure, feature flag, provider/model, content, clinical data, external
+side effect or accepted ADR changed.
+Next action: accountable clinical, safety, privacy/legal, security, language, accessibility/content,
+operations, referral/resource, architecture/data and institutional owners must independently review
+the evidence and record explicit decisions before any separately scoped P14 implementation prompt.
 ```
