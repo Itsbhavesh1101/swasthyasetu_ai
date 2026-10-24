@@ -57,7 +57,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P18 | Classical ML | NOT STARTED | Dataset/task selection pending. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
-| P21 | Admin + Governance + Review | NOT STARTED | Depends on governed modules. |
+| P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
 | P22 | Security + Privacy + Resilience | NOT STARTED | Continuous work culminates here. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Depends on integrated system. |
 | P24 | Pilot Readiness | NOT STARTED | Requires governance and validation. |
@@ -1991,4 +1991,44 @@ changed.
 STOP/next action: accountable reviewers must resolve the applicable upstream policies, purposes,
 source authority, independent safety behavior, privacy/security and bounded-release decisions. Only
 a new narrow prompt may authorize a minimal P20-A preflight. Do not begin P20-A/B/C/D or P21.
+```
+
+---
+
+# 67. Pre-P21 Admin Governance Gate Reconciliation and Owner Decision Docket
+
+```text
+Status: COMPLETE — PRE-P21 DECISION RECONCILIATION DOCUMENTATION ONLY; P21 runtime remains NOT STARTED.
+Baseline: main @ 06d51e5f29a486c9bc13b6d1d65d5ec82239f2ac, the verified merge commit for PR #50;
+reviewed head 8755fcdc48232e9571978aa3b3560bb685c89be3 and the baseline share tree
+4f16d8efe306cdc000721e014e4271e30c4a5039.
+Existing source of truth: docs/25_ADMIN_PORTAL_SPEC.md and
+docs/implementation/PRE_P13_ADMIN_PORTAL_READINESS_REVIEW.md remain the unapproved design/readiness
+artifacts. They were reused, not duplicated or overwritten. The new Pre-P21 reconciliation supplies
+an accountable decision docket and current repository evidence; it is not a new admin specification.
+Review structure: eight descriptive decision domains are recorded for identity/MFA/authorization;
+provider/resource source governance; maker-checker/domain authority; P10/P11 clinical/document
+source review; referral/notification consent; audit/privacy/retention/export/threat controls; admin
+API/BFF/UI/accessibility; and environment/credentials/incidents/P22/P24. Eight is descriptive only,
+not an official gate count, approval state, acceptance result or authorization.
+Traceability: FR-ADMIN-001..010, FR-AUDIT-001..007 and AC-P21-001..008 are reproduced verbatim and
+remain LIVE NOT VERIFIED. AC-P13-001..011 are separately traced. Historical P13 Gate 7's missing-
+document artifact is addressed by the existing unapproved Spec 25 draft, but the gate remains
+BLOCKED and not human-approved. AC-P20-001..010 and AC-PROD-001..014 are upstream unverified
+dependencies only and do not become P21 acceptance evidence.
+Governance: P21-A/B/C/D runtime remains NOT STARTED; P13-E remains unimplemented; P7 remains the
+functioning deterministic/manual patient path; P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain
+0/9 approved, with P11 five OPEN/four BLOCKED; P12–P21 runtime remains NOT STARTED where applicable;
+P15 remains blocked; P16/P17 are unauthorized; P18 has no approved baseline; P19 has no approved
+comparator; P20 is NOT STARTED; and P22 is NOT COMPLETE. No human, clinical, privacy, security,
+consent, source, audit, pilot, production or release approval is invented or granted.
+Scope: exactly three documentation paths changed: the new Pre-P21 reconciliation, this minimal
+tracker update and the byte-equivalent recorded Codex prompt. No runtime source, test, schema/ORM,
+migration, dependency/lockfile, CI, Docker/infrastructure, environment, accepted ADR or existing
+Admin Portal Specification changed. Alembic remains p7a_0007 and dependencies remain unchanged.
+Human next steps: named accountable identity/security, privacy/legal, source-governance, clinical,
+audit/data, accessibility/content, operations, application and institutional owners must review
+current evidence and sign narrowly bounded decisions. Missing, stale, disputed or unsigned evidence
+fails closed. Only a new narrow prompt may authorize a synthetic nonclinical P21-A preflight; do not
+begin P21-A/B/C/D, live admin/clinical review, pilot or production work from this documentation.
 ```
