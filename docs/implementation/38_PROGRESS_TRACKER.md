@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
 | P22 | Security + Privacy + Resilience | NOT STARTED | Pre-P22 platform-wide gap assessment and unsigned readiness dossier drafted; P22-A/B/C/D/E NOT STARTED, AC-P22-001..011 LIVE NOT VERIFIED, accountable decisions pending. |
-| P23 | E2E + Accessibility + Performance | NOT STARTED | Depends on integrated system. |
+| P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Requires governance and validation. |
 
 ---
@@ -2070,4 +2070,50 @@ clinical/safety, accessibility/product, platform/SRE/incident, research/interop/
 owners must review current evidence and sign exact bounded decisions. Only a new separately
 authorized P22-A prompt may perform a safe non-invasive threat/authorization audit. Do not begin
 P22-B/C/D/E, P23/P24, real patient integration, privileged action, retention execution or release.
+```
+
+---
+
+# 69. Pre-P23 E2E Accessibility Reliability Performance Readiness Pack
+
+```text
+Status: COMPLETE — PRE-P23 DOCUMENTATION ONLY; P23 AND P23-A/B/C/D REMAIN NOT STARTED.
+Baseline: main @ 4f422146962141c7f427ed083fa2b013e6cddf7f, the verified PR #52 merge commit;
+reviewed feature head ec9c633f9e330cdd8439d84ec718e54e087752c7 and baseline share tree
+1c2d852502797f28fc00402f1a491a36756acf29.
+Deliverables: P23_VALIDATION_COVERAGE_AND_EVIDENCE_GAP_ASSESSMENT.md records the current evidence
+topology, all 13 browser checks, the canonical 18-journey matrix, accessibility gaps, an unexecuted
+performance/recovery design, privacy-safe observability gaps and exact requirement traceability.
+P23_READINESS_GATE_REVIEW.md records eight descriptive unsigned OPEN/BLOCKED review domains,
+accountable roles, missing decisions, adversarial evidence, safer fallbacks, decision template,
+owner/risk register and STOP conditions. Eight is descriptive only, not official approval arithmetic.
+Evidence boundary: the 13 Playwright checks are 11 patient checks, one clinician-foundation check
+and one admin-foundation check. The real synthetic-data FastAPI/PostgreSQL P7 intake journey is
+bounded technical evidence, not 13 medical journeys, full clinical validation or live P23 acceptance.
+Human-reviewed accessibility remains incomplete; there is no WCAG certification, approved
+multilingual clinical/speech matrix or kiosk deployment review. tests/performance contains only
+.gitkeep, so there is no load run, approved workload, threshold or baseline. OTel/request logging,
+transactional outbox and process-local jobs are bounded primitives, not production dashboards,
+durable worker recovery, exactly-once effects or P23 reliability acceptance.
+Traceability: AC-P23-001..012, NFR-TEST-001..014, NFR-ACCESS-001..007, NFR-PERF-001..006 and
+NFR-OBS-001..011 are reproduced verbatim and mapped to evidence, missing proof and owners. All
+AC-P23 outcomes remain LIVE NOT VERIFIED. AC-PROD-001..014 are separately reproduced and remain
+PRODUCT-LEVEL NOT VERIFIED; existing P7 completion is not rewritten. NFR-RES-001..007 are a
+separate related-resilience crosswalk.
+Governance: Specs 31/32 remain absent/NOT STARTED; Specs 27/28 remain P11-focused drafts. P7 manual
+text/touch and generic urgent help remain the bounded patient path; P8-C/P9-C Stage 3 remain BLOCKED;
+P10/P11 live remain 0/9 approved, with P11 five OPEN/four BLOCKED; P12–P22 runtime or subphases
+remain NOT STARTED where applicable; P13 has no verified registry/referral, P14/P15 policies/content
+remain unapproved, P16/P17 exchange is unauthorized, P18 has no approved baseline, P19 has no
+comparator, P20/P21 are not started and P22-A/B/C/D/E are not started. P24 remains NOT STARTED.
+Scope: exactly four documentation paths changed: the two new P23 review documents, this P23-only
+tracker note/section 69 and the byte-identical recorded prompt. No runtime, tests, fixtures, patient
+data, load run, telemetry export, API/UI, schema/ORM/migration, dependency/lockfile, accepted ADR,
+CI/scanner, Docker/infrastructure, clinical/security/privacy policy, approval, pilot or release changed.
+Alembic remains p7a_0007; Next.js and root eslint-config-next remain 16.4.2.
+STOP/next action: qualified clinical/safety, accessibility/language, privacy/legal, identity/security,
+SRE/incident/performance/observability, product/institution, domain, research/interop, independent QA
+and release owners must review exact evidence and sign narrowly bounded decisions. Do not transition
+directly to P23 engineering. Only a new separate prompt after applicable gates may authorize a
+future P23-A, P23-B, P23-C or P23-D unit; no P24 pilot/release follows from this documentation.
 ```
