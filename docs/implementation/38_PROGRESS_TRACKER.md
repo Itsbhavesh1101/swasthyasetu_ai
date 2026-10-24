@@ -56,7 +56,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P17 | ABDM / ABHA | NOT STARTED | Requires current ABDM integration spec. |
 | P18 | Classical ML | NOT STARTED | Dataset/task selection pending. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
-| P20 | Unified Care Orchestration | NOT STARTED | Depends on implemented modules. |
+| P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Depends on governed modules. |
 | P22 | Security + Privacy + Resilience | NOT STARTED | Continuous work culminates here. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Depends on integrated system. |
@@ -1955,4 +1955,40 @@ STOP/next action: accountable owners must first approve and reproduce a P18 base
 P19 purpose/parity, isolated research architecture, privacy/security/artifact, claim, incident and
 release decisions. Only a new narrow prompt may begin P19-A. Do not start P18 engineering, P19-A/B/
 C/D/E, P20, simulator/hardware work, dataset use, training, inference, claims, pilot or production.
+```
+
+---
+
+# 66. Pre-P20 Unified Care Orchestration Specification and Readiness Pack
+
+```text
+Work unit: PRE-P20-UNIFIED-CARE-ORCHESTRATION-READINESS — documentation and accountable-review preparation only
+Status: DRAFT — REVIEW ONLY; NO ACTIVATED CARE ORCHESTRATOR, PATIENT JOURNEY, CLINICAL POLICY OR P20 AUTHORIZATION
+Baseline: main @ ec141d4e6c4d843a6d1868e77751bdd30aa01ce0
+Repository lineage: PR #49 merged at the baseline; its merge tree is identical to reviewed head
+77a88a433ec4620e86aa8e3242fdfee8c5c7db2c.
+Deliverables: P20_UNIFIED_CARE_ORCHESTRATION_SPEC.md records current P7 truth, blocked upstream
+modules, non-executable typed composition vocabulary, independent safety channels, provenance/time/
+consent constraints, source authority, safe degradation, a future journey inventory and test matrix.
+P20_READINESS_GATE_REVIEW.md records eight descriptive, unsigned OPEN/BLOCKED review areas,
+accountable roles, missing decisions, evidence, negative tests and human STOP conditions. These are
+not an official gate count and do not record approval.
+Traceability: AC-P20-001..010 are live P20 acceptance criteria and remain LIVE NOT VERIFIED.
+AC-PROD-001..014 are distinct eventual product-level outcomes and remain PRODUCT-LEVEL NOT VERIFIED.
+FR-CORE-001..010 and SAFE-001..010 are mapped verbatim; impacted domain families and accepted ADRs
+remain controlling. Existing P7 evidence does not prove P20 or any blocked product outcome.
+Repository truth: there is no care composer, P20 module, new route, API, BFF, patient/clinician UI,
+policy, registry, source approval or runtime activation. P20-A/B/C/D and P20 runtime remain NOT
+STARTED. P7 deterministic/manual text/touch intake remains the functioning patient path.
+Governance: P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain 0/9 approved, with P11 five OPEN/
+four BLOCKED; P12–P19 and P20/P21 runtime remain NOT STARTED; P15 clinical/source STOP conditions
+remain; P16/P17 exchange is unauthorized; P18 has no approved benchmark and P19 no comparator; P22
+is NOT COMPLETE. No clinical/safety/privacy/product/architecture/release approval was invented.
+Scope: exactly four documentation paths. Alembic remains p7a_0007; Next.js and root
+eslint-config-next remain 16.4.2. No runtime, test, fixture, schema/ORM/migration, API/UI, dependency/
+lockfile, accepted ADR, Docker/CI/infrastructure, feature flag, clinical content or unrelated file
+changed.
+STOP/next action: accountable reviewers must resolve the applicable upstream policies, purposes,
+source authority, independent safety behavior, privacy/security and bounded-release decisions. Only
+a new narrow prompt may authorize a minimal P20-A preflight. Do not begin P20-A/B/C/D or P21.
 ```
