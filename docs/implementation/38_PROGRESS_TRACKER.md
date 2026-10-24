@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | NOT STARTED | Continuous work culminates here. |
+| P22 | Security + Privacy + Resilience | NOT STARTED | Pre-P22 platform-wide gap assessment and unsigned readiness dossier drafted; P22-A/B/C/D/E NOT STARTED, AC-P22-001..011 LIVE NOT VERIFIED, accountable decisions pending. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Depends on integrated system. |
 | P24 | Pilot Readiness | NOT STARTED | Requires governance and validation. |
 
@@ -2031,4 +2031,43 @@ audit/data, accessibility/content, operations, application and institutional own
 current evidence and sign narrowly bounded decisions. Missing, stale, disputed or unsigned evidence
 fails closed. Only a new narrow prompt may authorize a synthetic nonclinical P21-A preflight; do not
 begin P21-A/B/C/D, live admin/clinical review, pilot or production work from this documentation.
+```
+
+---
+
+# 68. Pre-P22 Platform Security, Privacy, Retention and Resilience Readiness Pack
+
+```text
+Status: COMPLETE — PRE-P22 DOCUMENTATION ONLY; P22 AND P22-A/B/C/D/E REMAIN NOT STARTED.
+Baseline: main @ 09200acdf5f824a335781249f6a8e56e47b68fcb, the verified PR #51 merge commit;
+reviewed feature head aeaef276de5fa6c8e4b5dc2b0d8fc528b220a473 and baseline share tree
+dbfc48e7aa61225823ce8a455a77fc132772e72e.
+Existing source hierarchy: Spec 26 remains the P4–P7 privacy baseline; Specs 27/28 remain
+P11-FOCUSED DRAFTS and are not a completed platform architecture/threat model; Specs 30/33 retain
+their recorded scope; Specs 31/32 remain absent/NOT STARTED. None was overwritten or reclassified.
+Deliverables: P22_PLATFORM_SECURITY_PRIVACY_GAP_ASSESSMENT.md records platform trust zones, data
+classes, as-built versus proposed evidence, a threat/control delta matrix and a NOT STARTED P22-A–E
+backlog. P22_READINESS_GATE_REVIEW.md records eight descriptive OPEN/BLOCKED review domains,
+accountable role classes, adversarial evidence, safe-off behavior, an unsigned decision template
+and STOP conditions. Eight is descriptive only, not an official gate count or approval arithmetic.
+Traceability: AC-P22-001..011, NFR-SEC-001..014, PRIV-001..009, NFR-RES-001..007 and
+FR-AUDIT-001..007 are reproduced verbatim and mapped to current evidence and missing decisions.
+All AC-P22 criteria remain LIVE NOT VERIFIED. Bounded controls, synthetic tests, CI and scanners do
+not establish platform/pilot acceptance. The prior Trivy CVE-2026-107891 metadata warning is
+recorded for accountable evidence/DB-freshness review without declaring vulnerability or resolution.
+Governance: P7 deterministic manual text/touch intake and generic urgent help remain available;
+P8-C/P9-C Stage 3 remain BLOCKED; P10/P11 live remain 0/9 approved, with P11 five OPEN/four BLOCKED;
+P12–P21 runtime remains NOT STARTED where applicable; P13 real registry/referral and P14 clinical
+routing remain unapproved; P15 STOP remains; P16/P17 live exchange is unauthorized; P18 has no
+approved baseline and P19 no comparator; P20/P21 runtime and P23/P24 pilot/release remain NOT STARTED.
+Scope: exactly four documentation paths changed: two new P22 review documents, this minimal P22
+tracker note/section 68 and the byte-identical recorded prompt. No runtime, tests, API/UI, policy,
+schema/ORM/migration, dependency/lockfile, accepted ADR, CI/scanner, Docker/infrastructure,
+credential, retention job, kill switch or approval changed. Alembic remains p7a_0007; Next.js and
+root eslint-config-next remain 16.4.2.
+STOP/next action: qualified identity/institution, security/AppSec, privacy/legal/records, data,
+clinical/safety, accessibility/product, platform/SRE/incident, research/interop/vendor and release
+owners must review current evidence and sign exact bounded decisions. Only a new separately
+authorized P22-A prompt may perform a safe non-invasive threat/authorization audit. Do not begin
+P22-B/C/D/E, P23/P24, real patient integration, privileged action, retention execution or release.
 ```
