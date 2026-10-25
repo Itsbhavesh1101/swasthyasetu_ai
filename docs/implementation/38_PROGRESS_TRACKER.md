@@ -60,7 +60,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
 | P22 | Security + Privacy + Resilience | NOT STARTED | Pre-P22 platform-wide gap assessment and unsigned readiness dossier drafted; P22-A/B/C/D/E NOT STARTED, AC-P22-001..011 LIVE NOT VERIFIED, accountable decisions pending. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
-| P24 | Pilot Readiness | NOT STARTED | Requires governance and validation. |
+| P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
 
@@ -2116,4 +2116,52 @@ SRE/incident/performance/observability, product/institution, domain, research/in
 and release owners must review exact evidence and sign narrowly bounded decisions. Do not transition
 directly to P23 engineering. Only a new separate prompt after applicable gates may authorize a
 future P23-A, P23-B, P23-C or P23-D unit; no P24 pilot/release follows from this documentation.
+```
+
+---
+
+# 70. Pre-P24 Pilot Release and Operational Readiness Evidence Pack
+
+```text
+Status: COMPLETE — PRE-P24 DOCUMENTATION ONLY; P24 AND ALL PILOT, RELEASE AND DEPLOYMENT ACTIVITY
+REMAIN NOT STARTED.
+Baseline: main @ 4f4a128566635231dd498ae84c79664cbb53a95a, the verified PR #53 merge commit;
+reviewed feature head 20a538502701f7aa95255022e89269e42430feae and baseline share tree
+eb9f9d11546e91871da41a031076b161a2db76c3.
+Deliverables: P24_PILOT_EVIDENCE_AND_RELEASE_SCOPE_ASSESSMENT.md records conditional candidate
+scope labels, exact acceptance/research/product traceability, the 13-item pre-pilot document
+register, an empty evaluation pre-registration template and unexecuted operational rehearsal
+matrix. P24_READINESS_GATE_REVIEW.md records eight descriptive unsigned BLOCKED review domains,
+accountable role classes, adversarial evidence, safer fallbacks, an unsigned owner docket,
+decision template and STOP conditions. Eight is descriptive only, not an official gate count,
+approval arithmetic, risk acceptance, release board decision or pilot authorization.
+Evidence boundary: capability inclusion, exclusion and not-applicable labels are undecided until
+accountable humans sign an exact environment and population scope. AC-P24-001..013,
+NFR-RESRCH-001..005 and AC-PROD-001..014 are reproduced verbatim and remain LIVE NOT VERIFIED or
+PRODUCT-LEVEL NOT VERIFIED. P22 and P23 acceptance remains unverified. Existing bounded engineering,
+synthetic tests, CI, scanners, 13 browser checks and local infrastructure checks are not clinical,
+accessibility, performance, security, privacy, resilience, operational or release acceptance.
+Missing evidence: no approved physical/mental clinical policy, multilingual safety oracle, verified
+resource registry, self-care source package, pilot notice/consent, ethics/institution decision,
+platform threat acceptance, retention/purge proof, incident exercise, production observability,
+accessibility certification, approved workload/performance baseline, backup/restore proof, provider
+outage drill, rollback drill, signed owner docket or independent release decision exists. Safety,
+language and resource evaluation has only an empty pre-registration template; it has no results.
+Governance: P7 manual text/touch intake remains the bounded functioning path; P8-C/P9-C Stage 3
+remain BLOCKED; P10/P11 live remain 0/9 approved, with P11 five OPEN/four BLOCKED; P12–P23 runtime
+or subphases remain NOT STARTED where applicable. P13 real provider/referral, P14 clinical routing,
+P15 knowledge/RAG, P16/P17 exchange, P18/P19 research, P20 orchestration, P21 admin governance,
+P22 platform readiness and P23 validation do not acquire approval through this pack.
+Scope: exactly four documentation paths changed: two new P24 review documents, this P24-only tracker
+note/section 70 and the byte-identical recorded prompt. No runtime, tests, fixture, API/UI,
+schema/ORM/migration, dependency/lockfile, accepted ADR, CI/scanner, Docker/infrastructure,
+credential, policy, approval, participant activity, pilot or release changed. Alembic remains
+p7a_0007; Next.js and root eslint-config-next remain 16.4.2.
+STOP/next action: named accountable institution/product, clinical/safety, mental-health, language,
+resource, content/source, ethics/legal/privacy/records, security/identity/vendor, accessibility,
+research/statistical, SRE/incident/recovery, independent QA and release-board roles must review
+actual exact-SHA evidence and sign narrowly bounded decisions. Missing, stale, disputed, expired,
+scope-incompatible or unsigned evidence fails closed. No human participant may be recruited or
+enrolled; no real patient or clinician workflow, data collection, production deployment or pilot is
+authorized; and no formal GO, CONDITIONAL GO or NO-GO decision is recorded.
 ```
