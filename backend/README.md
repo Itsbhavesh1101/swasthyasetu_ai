@@ -313,6 +313,27 @@ sealed composition metadata as `application.state.module_registry` and
 Registrations are explicit imports assembled at startup. Runtime plugin discovery, package
 scanning, global registries, and request-time provider mutation are intentionally unsupported.
 
+## Synthetic language and speech contracts
+
+P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
+contracts and five independent provider-neutral ports for batch speech-to-text, language detection,
+transliteration, translation, and text-to-speech. Original and derived artifacts remain distinct;
+results retain opaque source generation/hash metadata, explicit uncertainty/finality, optional
+provider-defined quality semantics, and engineering-only provenance. Naive timestamps, URLs as
+source authority, unknown contract fields, malformed lineage, fabricated confidence, stale result
+binding, and content-bearing failure/abstention states fail closed.
+
+`LanguageProviderRegistry` is explicit version-pinned metadata only. It accepts only
+`ENGINEERING_ONLY` / `MOCK_ONLY` descriptors and stores no adapter object, endpoint, secret, model
+runtime, or application capability. Deterministic exact-mapping adapters live exclusively below
+`backend/tests/language_support`.
+
+The package is not imported by `app.main`, is not registered in the module/capability registry, and
+has no API, persistence, migration, job, event, audio bytes, network provider, browser capture,
+feature flag, or patient/clinical integration. `SpeechSettings.enabled` remains `False`; P7
+text/touch intake remains independent. A P12-A contract or mock is not evidence that a language,
+voice, provider, model, medical glossary, safety translation, pilot, or production use is approved.
+
 ## Feature flags and observability
 
 `application.state.feature_flags` exposes the provider-neutral `FeatureFlagService`. Valid but
