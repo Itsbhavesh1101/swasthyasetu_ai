@@ -48,7 +48,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
-| P12 | Multilingual Speech / Translation | NOT STARTED | Pre-P12 specification/readiness drafts are pending independent and accountable human review; no runtime work or approval. |
+| P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented on an isolated feature branch; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
 | P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
@@ -2275,4 +2275,39 @@ Acceptance: PRIV-003/004 and AC-P22-007/008 remain LIVE NOT VERIFIED. Production
 authoritative schedule/hold matrix, durable execution state, real store and backup/provider
 integration, alert/runbook ownership, restore drills and independent review. P22-D/P22-E, P23,
 P24, pilot and release remain outside this unit.
+```
+
+---
+
+# 74. P12-A Synthetic Language and Speech Contract Foundation
+
+```text
+Status: COMPLETE SAFE ENGINEERING SUBSET — LIVE P12 REMAINS PARTIAL/UNAPPROVED.
+Baseline: exact merged origin/main @ 7dc45bf11285e7c061211436f804d4e5f8f5c2dd. Work was performed
+on phase/p12-a-synthetic-language-contracts in an isolated linked worktree; the primary worktree and
+its pre-existing untracked files were not modified, reset or stashed.
+Implementation: strict immutable versioned contracts for batch speech-to-text, language detection,
+transliteration, translation and text-to-speech; distinct original/derived artifact references;
+explicit language/script uncertainty, partial/final states, protected spans, optional labeled
+provider quality, UTC provenance and exact request/result lineage checks. Five independent async
+ports prevent a LanguageAIProvider god interface. Explicit version-pinned provider metadata accepts
+only ENGINEERING_ONLY / MOCK_ONLY descriptors and stores no executable adapter.
+Testing: deterministic exact-mapping mocks live only under backend/tests/language_support. Focused
+tests cover direct construction, immutability, strict types/versions, naive/non-UTC timestamps,
+malformed/oversize data, fabricated confidence, status/finality contradictions, stale generations,
+wrong operation/language/script/voice identity, registry duplicates/ambiguity, mutated frozen shells,
+unknown/injected/malformed mock outcomes and zero file/network I/O.
+Scope: no dependency/lockfile, model/provider SDK, audio bytes or real fixture, model download,
+network call, endpoint/credential, runtime adapter, FastAPI/module/capability registration, feature
+flag, API/BFF/UI/microphone, locale pack, schema/ORM/migration, persistence, job/worker/event/outbox,
+Docker/CI/infrastructure, consent policy, medical glossary, clinical copy, safety route or fact
+promotion was added. Alembic remains p7a_0007 and SpeechSettings remains disabled.
+Governance: P7 manual text/touch remains the supported fallback. P8-C/P9-C Stage 3 stay BLOCKED;
+P10/P11 live gates remain unchanged; no P11-E source access is enabled. P12-A engineering evidence
+does not approve a language, provider, model, voice, format, threshold, region, retention value,
+population, patient-data operation, benchmark result, pilot or production use. AC-P12-001..009 remain
+LIVE NOT VERIFIED; P12-B/C/D require separately authorized evidence and decisions.
+Next action: review this bounded P12-A feature branch. Do not begin real adapters (P12-B), voice UI
+(P12-C), governed multilingual regression/clinical-language evaluation (P12-D), or live activation
+until every applicable canonical readiness STOP condition has authoritative evidence.
 ```
