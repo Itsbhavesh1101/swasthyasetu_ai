@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | NOT STARTED | Pre-P22 platform-wide gap assessment and unsigned readiness dossier drafted; P22-A/B/C/D/E NOT STARTED, AC-P22-001..011 LIVE NOT VERIFIED, accountable decisions pending. |
+| P22 | Security + Privacy + Resilience | PARTIAL | P22-A bounded non-invasive technical audit and synthetic PostgreSQL authorization regression evidence delivered; P22-B/C/D/E NOT STARTED, AC-P22-001..011 LIVE NOT VERIFIED, independent owner signoff pending. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
@@ -2164,4 +2164,46 @@ actual exact-SHA evidence and sign narrowly bounded decisions. Missing, stale, d
 scope-incompatible or unsigned evidence fails closed. No human participant may be recruited or
 enrolled; no real patient or clinician workflow, data collection, production deployment or pilot is
 authorized; and no formal GO, CONDITIONAL GO or NO-GO decision is recorded.
+```
+
+---
+
+# 71. P22-A Non-Invasive Platform Threat and Authorization Audit — Bounded Technical Evidence
+
+```text
+Status: COMPLETE — BOUNDED P22-A TECHNICAL AUDIT/TEST EVIDENCE ONLY; P22 remains PARTIAL and all
+live P22 acceptance and accountable approval remain unverified.
+Baseline: exact verified origin/main @ 55cbcc9c0ea4680366302919dbacd0240f6a5c5f. Work was performed
+on phase/p22-a-noninvasive-threat-authz-audit in a clean isolated worktree; the primary worktree and
+its pre-existing files were not modified, reset or stashed.
+Deliverables: P22_A_PLATFORM_THREAT_AND_AUTHORIZATION_AUDIT.md records the current P4–P7 asset,
+data-flow, trust-zone, route-authority, threat/control-gap, evidence, acceptance and unsigned owner
+decision inventory. It distinguishes as-built evidence, proposed/unapproved controls, absent
+features, unknown deployment facts and pending human decisions. It does not promote the Pre-P22
+prose or P11-focused Specs 27/28 into a signed platform threat model or acceptance decision.
+Authorization evidence: a new real-PostgreSQL HTTP regression creates two independent synthetic
+pseudonymous session/consent/encounter subjects. It proves session B cannot start, read or abandon
+session A's valid pre-intake encounter; missing/invalid bearer and inert forged actor/role/MFA
+headers do not authorize the operation; denial is non-cacheable and privacy-safe; the encounter
+state/version and intake/questionnaire/answer rows do not change; and session A remains usable.
+Existing cross-intake, revoked-consent, closed-session, identity/MFA, self-subject IDOR, BFF storage
+and logging tests are referenced rather than duplicated.
+Verification: the focused regression passed against a dedicated disposable local PostgreSQL
+database. Full backend, PostgreSQL, frontend, Playwright, Docker, security/Gitleaks and exact-feature-
+SHA six-job CI evidence is recorded in the associated pull request and execution report; those
+technical results do not constitute live AC-P22 acceptance.
+Scope: exactly four tracked paths changed: the existing P7 PostgreSQL integration test file, the new
+P22-A audit, this minimal tracker update and the byte-identical recorded Codex prompt. No runtime
+application/BFF/UI, route, contract, migration/schema, dependency/lockfile, Docker/CI, production
+configuration, feature flag, rate limit, retention/purge, kill switch, external integration,
+clinical content, finding disposition, accepted ADR, approval, pilot or release changed.
+Governance: AC-P22-001..011 LIVE NOT VERIFIED. No official severity, risk acceptance, signer or
+institutional/AppSec/privacy/legal/clinical/production approval is recorded. P22-B/C/D/E NOT STARTED;
+P23 and P24 remain NOT STARTED. P7 deterministic/manual behavior is unchanged; P8-C/P9-C Stage 3
+and P10/P11 live restrictions remain in force.
+STOP/next action: independent reviewers and the accountable identity/institution, AppSec, privacy/
+consent, data-governance, clinical, platform/SRE and release roles must review exact-SHA evidence and
+sign separately bounded decisions. Only a new prompt may authorize P22-B/C/D/E. Do not deploy,
+activate optional/clinical functionality, process real data, begin P23/P24 or issue a pilot/release
+decision from this bounded evidence.
 ```

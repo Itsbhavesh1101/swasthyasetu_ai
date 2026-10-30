@@ -7,6 +7,7 @@ from asyncio import gather
 from collections.abc import AsyncIterator
 from typing import cast
 from unittest.mock import AsyncMock
+from uuid import UUID
 
 import pytest
 from fastapi import FastAPI
@@ -22,6 +23,7 @@ from app.modules.clinical_intake.infrastructure import (
     QuestionnaireInstanceRecord,
 )
 from app.modules.clinical_intake.public import INTAKE_ANSWER
+from app.modules.encounters.infrastructure import EncounterRecord
 from app.shared.persistence import DatabaseRuntime
 
 pytestmark = pytest.mark.postgres
@@ -96,6 +98,106 @@ async def _start(client: AsyncClient, token: str, encounter_id: str) -> dict[str
     )
     assert response.status_code in {200, 201}, response.text
     return cast(dict[str, object], response.json())
+
+
+async def test_cross_session_cannot_start_read_or_transition_another_encounter(
+    intake_client: tuple[AsyncClient, DatabaseRuntime, FastAPI],
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Prove the pre-intake object boundary fails closed without mutation or leakage."""
+    client, database, _ = intake_client
+    _, token_a, encounter_a = await _onboard(client)
+    _, token_b, _ = await _onboard(client)
+    owner_headers = {"Authorization": f"Bearer {token_a}"}
+    synthetic_marker = "p22a-private-synthetic-canary"
+    forged_authority = {
+        "X-Actor-ID": "11111111-1111-4111-8111-111111111111",
+        "X-Roles": "SYSTEM_ADMIN",
+        "X-MFA-Verified": "true",
+        "X-Synthetic-Canary": synthetic_marker,
+    }
+
+    owner_before = await client.get(f"/api/v1/encounters/{encounter_a}", headers=owner_headers)
+    assert owner_before.status_code == 200
+    async with database.session_factory() as session:
+        persisted_before = await session.get(EncounterRecord, UUID(encounter_a))
+        assert persisted_before is not None
+        status_before = persisted_before.status
+        version_before = persisted_before.version
+
+    caplog.clear()
+    with caplog.at_level("INFO", logger="swasthyasetu.http"):
+        attempts = (
+            await client.post(
+                f"/api/v1/encounters/{encounter_a}/intake",
+                headers={"Authorization": f"Bearer {token_b}", **forged_authority},
+                json={"pack_ids": ["core.intake"]},
+            ),
+            await client.post(
+                f"/api/v1/encounters/{encounter_a}/intake",
+                headers=forged_authority,
+                json={"pack_ids": ["core.intake"]},
+            ),
+            await client.post(
+                f"/api/v1/encounters/{encounter_a}/intake",
+                headers={"Authorization": "Bearer invalid-synthetic-token", **forged_authority},
+                json={"pack_ids": ["core.intake"]},
+            ),
+            await client.get(
+                f"/api/v1/encounters/{encounter_a}",
+                headers={"Authorization": f"Bearer {token_b}", **forged_authority},
+            ),
+            await client.post(
+                f"/api/v1/encounters/{encounter_a}/abandon",
+                headers={"Authorization": f"Bearer {token_b}", **forged_authority},
+            ),
+        )
+
+    for denied in attempts:
+        assert denied.status_code == 401
+        assert denied.headers["cache-control"] == "no-store"
+        assert set(denied.json()) == {"error"}
+        assert denied.json()["error"]["code"] == "AUTHENTICATION_REQUIRED"
+        serialized = denied.text
+        assert token_a not in serialized
+        assert token_b not in serialized
+        assert synthetic_marker not in serialized
+        assert "SYSTEM_ADMIN" not in serialized
+
+    async with database.session_factory() as session:
+        persisted_after = await session.get(EncounterRecord, UUID(encounter_a))
+        assert persisted_after is not None
+        assert persisted_after.status == status_before
+        assert persisted_after.version == version_before
+        assert (
+            await session.scalar(
+                select(func.count())
+                .select_from(ClinicalIntakeRecord)
+                .where(ClinicalIntakeRecord.encounter_id == encounter_a)
+            )
+            == 0
+        )
+        assert (
+            await session.scalar(
+                select(func.count())
+                .select_from(QuestionnaireInstanceRecord)
+                .where(QuestionnaireInstanceRecord.encounter_id == encounter_a)
+            )
+            == 0
+        )
+        assert await session.scalar(select(func.count()).select_from(IntakeAnswerRecord)) == 0
+
+    assert token_a not in caplog.text
+    assert token_b not in caplog.text
+    assert synthetic_marker not in caplog.text
+    assert "SYSTEM_ADMIN" not in caplog.text
+
+    owner_start = await _start(client, token_a, encounter_a)
+    owner_read = await client.get(
+        f"/api/v1/intakes/{owner_start['intake_id']}", headers=owner_headers
+    )
+    assert owner_read.status_code == 200
+    assert owner_read.headers["cache-control"] == "no-store"
 
 
 def _answer_request(version: int, value: str = "Synthetic test concern") -> dict[str, object]:
