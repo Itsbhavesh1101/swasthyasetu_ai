@@ -7,7 +7,11 @@ from fastapi import APIRouter, FastAPI
 
 from app.api.errors import register_error_handlers
 from app.api.health import router as health_router
-from app.api.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
+from app.api.middleware import (
+    RateLimitMiddleware,
+    RequestContextMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
 from app.config.settings import Environment
@@ -33,6 +37,7 @@ from app.shared.observability import (
     create_observability_runtime,
 )
 from app.shared.persistence import DatabaseRuntime, create_database_runtime
+from app.shared.rate_limits import InMemorySlidingWindowRateLimiter, RateLimiter
 
 APP_VERSION = "0.1.0"
 
@@ -46,6 +51,7 @@ def create_app(
     feature_flags: FeatureFlagService | None = None,
     database: DatabaseRuntime | None = None,
     llm_provider: LLMProvider | None = None,
+    rate_limiter: RateLimiter | None = None,
 ) -> FastAPI:
     """Create an application from explicitly supplied, compile-time registrations."""
     resolved_settings = settings or Settings()
@@ -58,6 +64,13 @@ def create_app(
     )
     resolved_database = (
         database if database is not None else create_database_runtime(resolved_settings.database)
+    )
+    resolved_rate_limiter = (
+        rate_limiter
+        if rate_limiter is not None
+        else InMemorySlidingWindowRateLimiter(
+            max_tracked_keys=resolved_settings.rate_limits.max_tracked_keys
+        )
     )
 
     @asynccontextmanager
@@ -124,8 +137,15 @@ def create_app(
     application.state.feature_flags = resolved_feature_flags
     application.state.observability = resolved_observability
     application.state.database = resolved_database
+    application.state.rate_limiter = resolved_rate_limiter
 
     register_error_handlers(application)
+    application.add_middleware(
+        RateLimitMiddleware,
+        limiter=resolved_rate_limiter,
+        settings=resolved_settings.rate_limits,
+        api_v1_prefix=resolved_settings.api_v1_prefix,
+    )
     application.add_middleware(RequestContextMiddleware, observability=resolved_observability)
     application.add_middleware(
         SecurityHeadersMiddleware,

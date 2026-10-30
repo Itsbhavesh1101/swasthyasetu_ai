@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence and a bounded P22-B security-controls increment are delivered. API/browser headers and fail-closed patient BFF origin enforcement are implemented; rate-limit budgets/topology, upload controls, retention, resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
+| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence and bounded P22-B controls are delivered. API/browser headers, fail-closed patient BFF origin enforcement and layered process-local API abuse controls are implemented; edge/fleet enforcement, production budgets/topology, upload controls, retention, resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
@@ -2231,12 +2231,21 @@ Scope: no dependency, lockfile, schema, migration, API contract, clinical featur
 upload path, retention workflow, kill switch, production credential, CI definition or deployment
 infrastructure changed. P7 manual text/touch intake remains available and all P8-C/P9-C/P10/P11
 governance restrictions remain in force.
-Ruling: no process-local rate limiter was added. Endpoint budgets, trusted client-address topology,
-distributed coordination and operational ownership are not defined; inventing them would create a
-misleading or bypassable control. AC-P22-006 therefore remains LIVE NOT VERIFIED. Upload security is
-not applicable to the current runtime because no upload endpoint exists, but AC-P22-005 also remains
-LIVE NOT VERIFIED rather than passing by absence.
-Outstanding: approve and implement topology-aware rate limiting; complete the route/object access
+Continuation: from merged origin/main @ 8e6c9a24b84fc09ccbc57bb5eb19a785b854c3d5,
+phase/p22-b-abuse-controls adds a provider-neutral limiter contract and a bounded process-local
+sliding-window adapter. All `/api/v1` requests consume process and direct-transport-peer budgets;
+syntactically valid bearer values use only process-secret HMAC fingerprints. Mutations and anonymous session
+creation receive tighter layers. Multi-layer accounting is atomic, storage is bounded, forwarding
+headers are ignored, and the container entrypoint disables Uvicorn proxy-header rewriting before
+the application boundary. Raw bearer values are not retained, denials are canonical and limiter
+failure is fail-closed through the sanitized error boundary.
+Ruling: this is application defense in depth, not distributed or topology-aware enforcement. The
+bounded key store preserves the global bucket but may evict per-subject history during
+high-cardinality churn. Edge/fleet coordination, representative production budgets, proxy
+configuration, monitoring and operational ownership remain unverified. AC-P22-006 therefore remains
+LIVE NOT VERIFIED. Upload security is not applicable to the current runtime because no upload
+endpoint exists, but AC-P22-005 also remains LIVE NOT VERIFIED rather than passing by absence.
+Outstanding: approve and implement topology-aware edge/fleet enforcement; complete the route/object access
 matrix; review production proxy/header stripping, logging sinks and secrets; implement P22-C
 retention and P22-D resilience only in their separately bounded units; then execute P22-E independent
 regression and closure. No pilot, production release or human clinical workflow is authorized.

@@ -15,6 +15,7 @@ from app.config.sections import (
     ObjectStorageSettings,
     ObservabilitySettings,
     OcrSettings,
+    RateLimitSettings,
     SecuritySettings,
     SessionsSettings,
     SpeechSettings,
@@ -62,6 +63,7 @@ class Settings(BaseSettings):
 
     database: DatabaseSettings = Field(default_factory=DatabaseSettings)
     security: SecuritySettings = Field(default_factory=SecuritySettings)
+    rate_limits: RateLimitSettings = Field(default_factory=RateLimitSettings)
     sessions: SessionsSettings = Field(default_factory=SessionsSettings)
     object_storage: ObjectStorageSettings = Field(default_factory=ObjectStorageSettings)
     llm: LlmSettings = Field(default_factory=LlmSettings)
