@@ -181,6 +181,19 @@ synthetic only: it proves blocked plans make no calls, failures remain honest an
 identifiers, retries can report already-absent state, and restored tombstoned generations are
 reblocked. It does not establish a production deletion promise or satisfy `AC-P22-007/008`.
 
+## Optional dependency resilience foundation
+
+`app.resilience` contains provider-neutral safe-off contracts, a process-local one-way optional
+capability switchboard, bounded dependency execution, and identifier-free telemetry. Every
+capability is disabled by default. The package is not registered with FastAPI, the capability
+registry, jobs, or configuration, and its switchboard deliberately has no reset/re-enable path.
+
+The current evidence uses synthetic operations only. It proves disabled/tripped controls make no
+dependency call, in-flight results are discarded after a concurrent trip, only explicitly
+idempotent transient work retries within attempt/total deadlines, and failures remain honest and
+privacy-safe. It does not grant authorization or clinical approval, activate any optional feature,
+provide a distributed production control, or satisfy `AC-P22-009/010`.
+
 ## Sessions
 
 The default application explicitly registers the `sessions` module through the sealed module and
@@ -312,6 +325,27 @@ These records contain no contact, URL, facility, geography, language, hours, ava
 eligibility, specialty taxonomy, ranking, clinical suitability or crisis authority. They are not
 registered with FastAPI or the module/capability registry and add no source adapter, directory
 query, persistence, migration, API, referral, event, job, feature flag or runtime behavior.
+
+## Synthetic language and speech contracts
+
+P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
+contracts and five independent provider-neutral ports for batch speech-to-text, language detection,
+transliteration, translation, and text-to-speech. Original and derived artifacts remain distinct;
+results retain opaque source generation/hash metadata, explicit uncertainty/finality, optional
+provider-defined quality semantics, and engineering-only provenance. Naive timestamps, URLs as
+source authority, unknown contract fields, malformed lineage, fabricated confidence, stale result
+binding, and content-bearing failure/abstention states fail closed.
+
+`LanguageProviderRegistry` is explicit version-pinned metadata only. It accepts only
+`ENGINEERING_ONLY` / `MOCK_ONLY` descriptors and stores no adapter object, endpoint, secret, model
+runtime, or application capability. Deterministic exact-mapping adapters live exclusively below
+`backend/tests/language_support`.
+
+The package is not imported by `app.main`, is not registered in the module/capability registry, and
+has no API, persistence, migration, job, event, audio bytes, network provider, browser capture,
+feature flag, or patient/clinical integration. `SpeechSettings.enabled` remains `False`; P7
+text/touch intake remains independent. A P12-A contract or mock is not evidence that a language,
+voice, provider, model, medical glossary, safety translation, pilot, or production use is approved.
 
 ## Feature flags and observability
 
