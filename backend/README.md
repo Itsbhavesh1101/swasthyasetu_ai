@@ -49,7 +49,7 @@ Start PostgreSQL from the repository root, then from `backend/` set synthetic ho
 $env:SWASTHYASETU_DATABASE__ENABLED = "true"
 $env:SWASTHYASETU_DATABASE__URL = "postgresql+psycopg://swasthyasetu_dev:local-only-synthetic-password@127.0.0.1:5432/swasthyasetu"
 uv run alembic -c alembic.ini upgrade head
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload --no-proxy-headers
 ```
 
 Migrations are an explicit deployment step and never run during API startup. Useful checks are:
@@ -122,7 +122,7 @@ durability, or compliance claim. SeaweedFS and S3 adapters remain deferred; MinI
 ## Run the API
 
 ```powershell
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:app --reload --no-proxy-headers
 ```
 
 The foundation endpoints are:
@@ -135,6 +135,37 @@ reports `required.database=ok` or returns HTTP 503 with `database=unavailable`; 
 process-only and never exposes connection details.
 
 Normal product APIs will be registered below `/api/v1` in their owning phases.
+
+## API abuse controls
+
+All `/api/v1` requests pass through a bounded, process-local sliding-window limiter. The default
+layers protect the whole process, the direct transport peer, and an HMAC fingerprint of a
+syntactically valid bearer value. Mutations have tighter peer and credential layers, and anonymous session
+creation has an additional peer layer. Raw bearer values are never retained as limiter keys.
+
+The application deliberately uses only `request.client.host`. The committed container entrypoint
+and documented local command disable Uvicorn proxy-header rewriting, so `Forwarded` and
+`X-Forwarded-For` cannot replace the socket peer before application middleware runs. Any alternative
+server or deployment entrypoint must preserve that setting. A production ingress must also strip
+untrusted forwarding headers and provide its own edge/distributed abuse controls. The in-process
+limiter is defense in depth, not a fleet-wide quota or proof that `AC-P22-006` is satisfied in a
+deployed environment. Its bounded key store can evict per-peer or per-credential history under
+high-cardinality churn, while preserving the process-wide bucket.
+
+The window and budgets can be configured with:
+
+- `SWASTHYASETU_RATE_LIMITS__WINDOW_SECONDS`
+- `SWASTHYASETU_RATE_LIMITS__PROCESS_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__PEER_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__CREDENTIAL_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__MUTATION_PEER_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__MUTATION_CREDENTIAL_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__SESSION_CREATION_PEER_REQUESTS`
+- `SWASTHYASETU_RATE_LIMITS__MAX_TRACKED_KEYS`
+
+The typed configuration rejects invalid values and requires stricter layers to remain no larger
+than their parent budgets. Changing production budgets requires deployment evidence and security
+review; configuration alone does not create a distributed control.
 
 ## Sessions
 

@@ -52,6 +52,27 @@ fails closed. The request-controlled `Host` header is not a production authority
 
 Loopback HTTP and request-derived origin are retained only for local development and tests.
 
+### 2.4 Bounded application abuse controls
+
+The continuation from `origin/main @ 8e6c9a24b84fc09ccbc57bb5eb19a785b854c3d5` adds a
+provider-neutral rate-limiter contract and a bounded in-process sliding-window adapter. Every
+`/api/v1` request consumes an atomic process-wide and direct-transport-peer budget. A syntactically
+valid bearer also consumes a credential budget keyed by a process-secret HMAC fingerprint;
+mutations consume tighter peer and credential budgets, and anonymous session creation consumes an
+additional peer budget. Raw credentials are neither retained nor logged.
+
+The middleware ignores `Forwarded` and `X-Forwarded-For`. The committed container entrypoint
+disables Uvicorn proxy-header rewriting so those values cannot replace the socket peer before the
+request reaches application middleware; alternative deployment entrypoints must preserve this
+setting. Denials return the canonical `RATE_LIMITED` error with a bounded `Retry-After`, request
+correlation, `Cache-Control: no-store`, and the normal security headers. Limiter failure is
+fail-closed through the sanitized application error boundary.
+
+This is intentionally defense in depth for one application process. It does not coordinate across
+replicas or replace ingress controls. Its bounded key store preserves the global bucket but may
+evict per-subject history during high-cardinality churn. Production topology, edge enforcement,
+budgets under representative load, monitoring, and operations ownership remain unverified.
+
 ## 3. Evidence
 
 Automated evidence covers:
@@ -61,13 +82,17 @@ Automated evidence covers:
 - production versus development browser policy;
 - missing, exact, lookalike, internal-host, and unsafe configured origins;
 - existing onboarding and intake BFF behavior under the stricter boundary; and
-- actual response headers from all three Next.js applications through Playwright.
+- actual response headers from all three Next.js applications through Playwright;
+- atomic multi-layer limit accounting, exact-boundary concurrency, bounded-key churn and
+  fail-closed adapter behavior;
+- direct-peer trust, forwarding-header spoof resistance and credential-HMAC minimization; and
+- read, mutation, anonymous-session, canonical-denial and sanitized-failure middleware behavior.
 
 ## 4. Deliberately outstanding controls
 
 | Control | State | Reason |
 |---|---|---|
-| Rate limiting | Not implemented; AC-P22-006 live not verified | Endpoint budgets, trusted client-address topology, distributed coordination, and operations ownership are undefined. A process-local limiter would be bypassable across instances and would misstate production protection. |
+| Rate limiting | Bounded application control implemented; AC-P22-006 live not verified | The adapter is process-local and direct-peer only. Edge/fleet coordination, production topology, representative budgets, monitoring and operations ownership remain undefined. |
 | Upload security | No runtime path; AC-P22-005 live not verified | No upload endpoint or document ingestion runtime exists. Absence is not acceptance evidence. |
 | Production proxy/header stripping | Not verified | Exact ingress topology is not represented in this repository. |
 | Secrets and platform logging review | Not complete | Repository scanning and content-free application logging do not prove production sink/access/retention controls. |
