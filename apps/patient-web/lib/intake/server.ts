@@ -5,6 +5,7 @@ import {
   SESSION_TOKEN_COOKIE,
   sessionCookieOptions,
 } from "../onboarding/server";
+import { validateMutationOrigin } from "../security/request-origin";
 import type { IntakeView } from "./contracts";
 
 const REQUEST_TIMEOUT_MS = 5_000;
@@ -195,12 +196,8 @@ function error(code: string, message: string, status: number): NextResponse {
 }
 
 function rejectOrigin(request: NextRequest): NextResponse | undefined {
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  const expected = host ? `${request.nextUrl.protocol}//${host}` : request.nextUrl.origin;
-  return origin && origin !== expected
-    ? error("ORIGIN_REJECTED", "This request origin is not allowed.", 403)
-    : undefined;
+  const originError = validateMutationOrigin(request);
+  return originError ? error(originError.code, originError.message, originError.status) : undefined;
 }
 
 async function body(request: NextRequest): Promise<unknown> {

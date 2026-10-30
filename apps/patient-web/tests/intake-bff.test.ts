@@ -195,4 +195,24 @@ describe("clinical intake BFF", () => {
     expect(response.status).toBe(403);
     expect(backendFetch).not.toHaveBeenCalled();
   });
+
+  it("rejects answers with no Origin before parsing or backend access", async () => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    const backendFetch = vi.fn();
+    vi.stubGlobal("fetch", backendFetch);
+    const response = await answer(
+      request(`/api/intake/${intakeId}/answers`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ expected_version: 1 }),
+      }),
+      { params: Promise.resolve({ intakeId }) },
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({
+      error: { code: "ORIGIN_REJECTED", message: "This request origin is not allowed." },
+    });
+    expect(backendFetch).not.toHaveBeenCalled();
+  });
 });

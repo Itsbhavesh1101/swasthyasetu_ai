@@ -206,12 +206,31 @@ describe("session onboarding BFF", () => {
     expect(backendFetch).not.toHaveBeenCalled();
   });
 
+  it("rejects a mutation with no Origin before calling the backend", async () => {
+    const backendFetch = vi.fn();
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await POST(
+      request("/api/onboarding/session", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ language_preference: "en" }),
+      }),
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({
+      error: { code: "ORIGIN_REJECTED", message: "This request origin is not allowed." },
+    });
+    expect(backendFetch).not.toHaveBeenCalled();
+  });
+
   it("returns a safe 503 when backend configuration is missing", async () => {
     vi.stubEnv("SWASTHYASETU_BACKEND_URL", "");
     const response = await POST(
       request("/api/onboarding/session", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", origin: "http://localhost:3000" },
         body: JSON.stringify({ language_preference: "hi" }),
       }),
     );
@@ -239,7 +258,7 @@ describe("session onboarding BFF", () => {
       const response = await POST(
         request("/api/onboarding/session", {
           method: "POST",
-          headers: { "content-type": "application/json" },
+          headers: { "content-type": "application/json", origin: "http://localhost:3000" },
           body: JSON.stringify({ language_preference: "en" }),
         }),
       );
@@ -285,7 +304,7 @@ describe("session onboarding BFF", () => {
     const response = await POST(
       request("/api/onboarding/session", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: { "content-type": "application/json", origin: "http://localhost:3000" },
         body: JSON.stringify({ language_preference: "en" }),
       }),
     );
