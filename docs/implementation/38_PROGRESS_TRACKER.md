@@ -2327,3 +2327,30 @@ Next action: independent review of the stacked bounded branch. Real directory qu
 mapping, provider selection/ranking, referrals, notifications, and P13 UI remain blocked on their
 recorded source, clinical, privacy, identity, security, accessibility, and operational decisions.
 ```
+
+---
+
+# 76. P13-C Synthetic Referral Lifecycle and Idempotency Foundation
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-C SUBSET ONLY; P13 remains PARTIAL and all live
+AC-P13 acceptance remains unverified.
+Baseline: stacked on P13-B exact SHA 56c921c2896bb90f91ea928bea0f0452dff27979. Work was performed
+on phase/p13-c-synthetic-referral-lifecycle in an isolated worktree.
+Implementation: immutable referral status/aggregate, transition-pair, versioned policy, command,
+receipt and result contracts plus a pure optimistic transition function. Production code bundles
+no transition graph. Exact receipt-backed replay is a no-op; key conflict, stale version,
+cross-referral history, invalid chronology and forced mutation fail closed without rolling back a
+later state or claiming exactly-once delivery.
+Scope: no real transition/terminal/correction/expiry policy; patient/session/encounter, actor,
+institution, destination, provider/resource, consent, payload, reason, priority, contact,
+transcript, external reference, delivery evidence, adapter, webhook, notification, persistence,
+migration, API, outbox/event, job/worker, dependency, feature flag or runtime registration.
+Acceptance truth: status names and synthetic mechanics do not prove or authorize offer, consent,
+sharing, dispatch, acknowledgement, scheduling, completion or failure. FR-REF-001..013 and
+AC-P13-006..010 remain LIVE NOT VERIFIED, as do all other live P13 criteria. P7 and generic
+urgent-help navigation remain independent; all P8-C/P9-C/P10/P11/P12 restrictions remain active.
+Next action: independent review of the stacked bounded branch. Live referral work remains blocked
+on consent/identity, recipient/destination, payload minimization, approved transitions and races,
+durable transaction/outbox/idempotency, adapter/reconciliation, privacy/security and operations.
+```

@@ -325,6 +325,18 @@ P9 result, thresholds, urgency, geography, eligibility, availability, provider r
 It is not registered with FastAPI or module composition and adds no real taxonomy/policy, registry
 query, ranking, persistence, migration, API, UI, dependency, feature flag, or runtime behavior.
 
+## P13-C synthetic referral lifecycle
+
+`app.modules.referrals.domain` defines detached, frozen engineering-only referral status,
+aggregate, policy, command, receipt, and result contracts. A pure function applies an exact pair
+from a caller-supplied synthetic policy using optimistic version and UTC chronology guards. Exact
+idempotent replay is a no-op; conflicting key reuse and stale or cross-referral history fail closed.
+
+The module deliberately bundles no transition policy and contains no patient/session/encounter,
+destination, consent, payload, contact, transcript, external reference, adapter, delivery, retry,
+or correction semantics. It adds no persistence, migration, API, event, job, dependency, feature
+flag, or runtime registration and cannot authorize external sharing.
+
 ## Feature flags and observability
 
 `application.state.feature_flags` exposes the provider-neutral `FeatureFlagService`. Valid but
