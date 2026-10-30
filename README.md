@@ -62,6 +62,11 @@ Matching grants are rechecked inside a process-local, per-session serialized sec
 the fixed backend contract does not provide cross-instance consent idempotency.
 Jurisdiction-specific final notice approval remains deferred.
 
+Production patient-web deployments must also set `SWASTHYASETU_PUBLIC_ORIGIN` to the exact HTTPS
+browser origin (for example, `https://patient.example`). Cookie-authenticated mutations require an
+exact `Origin` match and fail closed when the production public origin is missing or unsafe. Local
+development derives the loopback origin from the browser-facing Next.js request metadata.
+
 P6-C adds the WCAG 2.2 AA-oriented engineering baseline and a privacy-safe installable shell. The
 root-scope service worker pre-caches only `/offline`, the manifest, and project-owned icons. Normal
 navigation remains network-only, `/api/**` is bypassed, and no session, consent, clinical, bearer,

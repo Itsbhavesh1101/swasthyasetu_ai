@@ -7,7 +7,7 @@ from fastapi import APIRouter, FastAPI
 
 from app.api.errors import register_error_handlers
 from app.api.health import router as health_router
-from app.api.middleware import RequestContextMiddleware
+from app.api.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 from app.api.v1 import build_api_v1_router
 from app.config import Settings
 from app.config.settings import Environment
@@ -127,6 +127,10 @@ def create_app(
 
     register_error_handlers(application)
     application.add_middleware(RequestContextMiddleware, observability=resolved_observability)
+    application.add_middleware(
+        SecurityHeadersMiddleware,
+        production=resolved_settings.environment is Environment.PRODUCTION,
+    )
     application.include_router(health_router)
     application.include_router(
         build_api_v1_router(

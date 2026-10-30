@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { validateMutationOrigin } from "../security/request-origin";
+
 export const SESSION_ID_COOKIE = "swasthyasetu_session_id";
 export const SESSION_TOKEN_COOKIE = "swasthyasetu_session_token";
 
@@ -100,13 +102,8 @@ function clearSessionCookies(request: NextRequest, response: NextResponse): Next
 }
 
 function rejectCrossOrigin(request: NextRequest): NextResponse | undefined {
-  const origin = request.headers.get("origin");
-  const host = request.headers.get("host");
-  const requestOrigin = host ? `${request.nextUrl.protocol}//${host}` : request.nextUrl.origin;
-  if (origin && origin !== requestOrigin) {
-    return safeError("ORIGIN_REJECTED", "This request origin is not allowed.", 403);
-  }
-  return undefined;
+  const error = validateMutationOrigin(request);
+  return error ? safeError(error.code, error.message, error.status) : undefined;
 }
 
 function configuredBackendUrl(): string | undefined {

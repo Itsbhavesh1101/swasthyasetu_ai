@@ -45,6 +45,17 @@ the opaque bearer in a transient `HttpOnly`, `SameSite=Strict` browser-session c
 receives only minimized session/consent states. No health information, consent body, or language
 text is placed in browser-readable storage.
 
+Set `SWASTHYASETU_PUBLIC_ORIGIN` to the patient application's exact public HTTPS origin in
+production, for example `https://patient.example`. Every cookie-authenticated mutation requires a
+matching `Origin` header. Production fails closed when this setting is missing, malformed, includes
+URL components beyond the origin, or uses plaintext HTTP. Loopback HTTP remains available only for
+local development and tests.
+
+All three web applications apply a shared browser security-header baseline. It denies framing and
+object embedding, restricts resource origins, disables unnecessary browser capabilities, and emits
+HSTS in production. Development permits only the additional script and websocket behavior required
+by the local Next.js toolchain; it does not weaken the production policy.
+
 The consent bridge controls `GENERAL_PRODUCT_USE`, `clinical_intake`, and `privacy-v1`; client input
 cannot replace them. The bounded project notice is not a final jurisdiction-specific privacy
 notice, which remains governance-deferred.
