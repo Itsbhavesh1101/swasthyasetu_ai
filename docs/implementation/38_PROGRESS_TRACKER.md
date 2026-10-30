@@ -49,7 +49,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
-| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B provide strict engineering-synthetic directory records and exact symbolic match/abstention mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, persistence, API, referral or runtime activation exists; all live AC-P13 criteria remain unverified. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C provide strict engineering-synthetic directory, symbolic match/abstention, and detached referral lifecycle/idempotency mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, persistence, API, adapter or runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -2388,4 +2388,31 @@ generic urgent-help navigation remain independent; all P8-C/P9-C/P10/P11/P12 res
 Next action: independent review of the stacked bounded branch. Real directory query, specialty
 mapping, provider selection/ranking, referrals, notifications, and P13 UI remain blocked on their
 recorded source, clinical, privacy, identity, security, accessibility, and operational decisions.
+```
+
+---
+
+# 78. P13-C Synthetic Referral Lifecycle and Idempotency Foundation
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-C SUBSET ONLY; P13 remains PARTIAL and all live
+AC-P13 acceptance remains unverified.
+Baseline: stacked on P13-B exact SHA 56c921c2896bb90f91ea928bea0f0452dff27979. Work was performed
+on phase/p13-c-synthetic-referral-lifecycle in an isolated worktree.
+Implementation: immutable referral status/aggregate, transition-pair, versioned policy, command,
+receipt and result contracts plus a pure optimistic transition function. Production code bundles
+no transition graph. Exact receipt-backed replay is a no-op; key conflict, stale version,
+cross-referral history, invalid chronology and forced mutation fail closed without rolling back a
+later state or claiming exactly-once delivery.
+Scope: no real transition/terminal/correction/expiry policy; patient/session/encounter, actor,
+institution, destination, provider/resource, consent, payload, reason, priority, contact,
+transcript, external reference, delivery evidence, adapter, webhook, notification, persistence,
+migration, API, outbox/event, job/worker, dependency, feature flag or runtime registration.
+Acceptance truth: status names and synthetic mechanics do not prove or authorize offer, consent,
+sharing, dispatch, acknowledgement, scheduling, completion or failure. FR-REF-001..013 and
+AC-P13-006..010 remain LIVE NOT VERIFIED, as do all other live P13 criteria. P7 and generic
+urgent-help navigation remain independent; all P8-C/P9-C/P10/P11/P12 restrictions remain active.
+Next action: independent review of the stacked bounded branch. Live referral work remains blocked
+on consent/identity, recipient/destination, payload minimization, approved transitions and races,
+durable transaction/outbox/idempotency, adapter/reconciliation, privacy/security and operations.
 ```
