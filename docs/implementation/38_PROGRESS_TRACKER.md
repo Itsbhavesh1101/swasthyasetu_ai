@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language, Pre-P13 provider-routing/readiness, and Pre-P13/P21 admin-governance packs are draft documentation pending independent/human review; P12 runtime, P13, and P21 remain not started. P11 is partial while P8, P9 and P10 remain partial.
-**Current recommended next action:** Accountable owners must review the P11-focused drafts and the proposed P12, P13, and admin-governance readiness inventories. Do not begin live P11-A/P11-E/document processing, P12 implementation, P13-A/B/C/D/E, or P21-A/B/C/D while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
+**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language, Pre-P13 provider-routing/readiness, and Pre-P13/P21 admin-governance packs are draft documentation pending independent/human review. P13-A now has a bounded engineering-synthetic domain foundation only; P13 live directory/referral work and P21 remain not started. P11 is partial while P8, P9, P10 and P13 remain partial.
+**Current recommended next action:** Review the bounded P13-A engineering contracts and obtain accountable decisions before any verified source, contact, taxonomy, routing, persistence, API, referral or patient/admin activation. Do not begin live P11-A/P11-E/document processing, P12 implementation, P13-B/C/D/E, or P21-A/B/C/D while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
 
 ---
 
@@ -49,7 +49,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | NOT STARTED | Pre-P12 specification/readiness drafts are pending independent and accountable human review; no runtime work or approval. |
-| P13 | Providers + Resources + Referrals | NOT STARTED | Real provider source may remain TBD. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A has strict engineering-synthetic, permanently unverified provider/source/resource domain records only. No source, contact, taxonomy, routing, registry query, persistence, API, referral or runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -2275,4 +2275,29 @@ Acceptance: PRIV-003/004 and AC-P22-007/008 remain LIVE NOT VERIFIED. Production
 authoritative schedule/hold matrix, durable execution state, real store and backup/provider
 integration, alert/runbook ownership, restore drills and independent review. P22-D/P22-E, P23,
 P24, pilot and release remain outside this unit.
+```
+
+---
+
+# 74. P13-A Synthetic Provider/Resource Domain Foundation
+
+```text
+Status: PARTIAL — ENGINEERING-SYNTHETIC DOMAIN FOUNDATION ONLY; P13 remains PARTIAL and every live
+AC-P13 criterion remains unverified.
+Baseline: exact merged origin/main @ 7dc45bf11285e7c061211436f804d4e5f8f5c2dd. Work was performed
+on phase/p13-a-synthetic-provider-resource-domain in an isolated worktree.
+Implementation: frozen/slotted SyntheticSourceEvidence, SyntheticProviderRecord and
+SyntheticCareResourceRecord contracts with strict synthetic prefixes, bounded labels/codes,
+SHA-256 artifact metadata, positive versions, aware-UTC normalization, temporal ordering, closed
+ENGINEERING_ONLY / ENGINEERING_SYNTHETIC / UNVERIFIED states and nested-object revalidation.
+Scope: no real or realistic provider/resource data; no contacts, URLs, facilities, geography,
+languages, hours, availability, eligibility, specialty taxonomy, ranking, clinical suitability,
+crisis authority, registry query, adapter, persistence, migration, API, referral, event, job,
+feature flag, UI, dependency or runtime registration.
+Acceptance truth: FR-DIR-001..017, FR-REF-001..013 and AC-P13-001..011 remain LIVE NOT VERIFIED.
+P7 manual intake and generic urgent-help navigation remain independent. P8-C/P9-C Stage 3 and
+P10/P11/P12 live restrictions remain unchanged.
+Next action: independent review of this bounded branch. P13-B routing, P13-C referral state,
+P13-D notifications and P13-E UI remain blocked until their source, clinical, privacy, identity,
+security, accessibility and operational decisions are explicitly recorded.
 ```

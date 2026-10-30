@@ -300,6 +300,19 @@ sealed composition metadata as `application.state.module_registry` and
 Registrations are explicit imports assembled at startup. Runtime plugin discovery, package
 scanning, global registries, and request-time provider mutation are intentionally unsupported.
 
+## P13-A synthetic directory domain
+
+`app.modules.providers.domain` and `app.modules.resources.domain` define frozen, slotted
+engineering-only provider/source and care-resource records. They accept only unmistakably synthetic
+identifiers, labels and symbolic nonclinical codes, retain SHA-256 source-artifact metadata, reject
+naive timestamps, normalize aware timestamps to UTC, and remain permanently classified
+`ENGINEERING_SYNTHETIC` / `UNVERIFIED`.
+
+These records contain no contact, URL, facility, geography, language, hours, availability,
+eligibility, specialty taxonomy, ranking, clinical suitability or crisis authority. They are not
+registered with FastAPI or the module/capability registry and add no source adapter, directory
+query, persistence, migration, API, referral, event, job, feature flag or runtime behavior.
+
 ## Feature flags and observability
 
 `application.state.feature_flags` exposes the provider-neutral `FeatureFlagService`. Valid but
