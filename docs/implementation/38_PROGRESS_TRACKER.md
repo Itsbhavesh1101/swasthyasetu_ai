@@ -48,8 +48,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P9 | Physical Safety Framework | PARTIAL | P9-A/P9-B and P9-C Stage 2 are merged. P9-C provides detached synthetic presentation and fail-closed degraded-state evidence only; real policy activation, API/persistence and patient routing remain approval-blocked. |
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
-| P12 | Multilingual Speech / Translation | NOT STARTED | Pre-P12 specification/readiness drafts are pending independent and accountable human review; no runtime work or approval. |
-| P13 | Providers + Resources + Referrals | PARTIAL | P13-A has strict engineering-synthetic, permanently unverified provider/source/resource domain records only. No source, contact, taxonomy, routing, registry query, persistence, API, referral or runtime activation exists; all live AC-P13 criteria remain unverified. |
+| P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C provide strict engineering-synthetic directory, symbolic match/abstention, and detached referral lifecycle/idempotency mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, persistence, API, adapter or runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, and a synthetic P22-C retention/purge foundation are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge contracts/failure telemetry and restore reconciliation are implemented; real retention policy/store execution, edge enforcement, upload controls, resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
+| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, and synthetic P22-C/P22-D foundations are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution and privacy-safe telemetry are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
@@ -2279,7 +2279,69 @@ P24, pilot and release remain outside this unit.
 
 ---
 
-# 74. P13-A Synthetic Provider/Resource Domain Foundation
+# 74. P22-D Kill-Switch/Resilience — Synthetic Engineering Foundation
+
+```text
+Status: PARTIAL — SYNTHETIC P22-D ENGINEERING FOUNDATION ONLY; P22 remains PARTIAL and all live
+AC-P22 acceptance remains unverified.
+Baseline: exact merged origin/main @ 7dc45bf11285e7c061211436f804d4e5f8f5c2dd. Work was performed
+on phase/p22-d-resilience-controls in an isolated worktree.
+Decision boundary: canonical documents leave the production capability/owner matrix, activation
+authority, distributed control topology, reset ceremony, monitoring, recovery objectives and drills
+unresolved. No such decision or approval is inferred.
+Implementation: closed optional-capability and failure vocabulary; immutable switch, deadline/retry
+and outcome contracts; fail-safe process-local switchboard; idempotent one-way trips; bounded
+dependency executor; post-call trip recheck; idempotent transient retry only; identifier-free
+telemetry; synthetic direct-constructor, outage, concurrency, timeout and privacy tests.
+Scope: every capability is disabled by default and the package is absent from runtime registration.
+No production enablement, provider request, clinical behavior, API/UI, schema/migration, job/worker,
+scheduler, event/outbox, deployment controller, dependency or lockfile change.
+Limitation: the process-local post-call check discards late results but cannot reverse an already-
+started external side effect; no side-effecting integration is wired in this unit.
+Acceptance: AC-P22-009/010 and live NFR-RES-001..007 remain LIVE NOT VERIFIED. Production work
+requires authoritative distributed controls, authenticated/audited operations, approved owners and
+re-enable rules, monitoring/alerts, real outage and partial-deploy/rollback drills, recovery targets
+and independent review. P22-E/P23/P24, pilot and release remain outside this unit.
+```
+
+---
+
+# 75. P12-A Synthetic Language and Speech Contract Foundation
+
+```text
+Status: COMPLETE SAFE ENGINEERING SUBSET — LIVE P12 REMAINS PARTIAL/UNAPPROVED.
+Baseline: exact merged origin/main @ 7dc45bf11285e7c061211436f804d4e5f8f5c2dd. Work was performed
+on phase/p12-a-synthetic-language-contracts in an isolated linked worktree; the primary worktree and
+its pre-existing untracked files were not modified, reset or stashed.
+Implementation: strict immutable versioned contracts for batch speech-to-text, language detection,
+transliteration, translation and text-to-speech; distinct original/derived artifact references;
+explicit language/script uncertainty, partial/final states, protected spans, optional labeled
+provider quality, UTC provenance and exact request/result lineage checks. Five independent async
+ports prevent a LanguageAIProvider god interface. Explicit version-pinned provider metadata accepts
+only ENGINEERING_ONLY / MOCK_ONLY descriptors and stores no executable adapter.
+Testing: deterministic exact-mapping mocks live only under backend/tests/language_support. Focused
+tests cover direct construction, immutability, strict types/versions, naive/non-UTC timestamps,
+malformed/oversize data, fabricated confidence, status/finality contradictions, stale generations,
+wrong operation/language/script/voice identity, registry duplicates/ambiguity, mutated frozen shells,
+unknown/injected/malformed mock outcomes and zero file/network I/O.
+Scope: no dependency/lockfile, model/provider SDK, audio bytes or real fixture, model download,
+network call, endpoint/credential, runtime adapter, FastAPI/module/capability registration, feature
+flag, API/BFF/UI/microphone, locale pack, schema/ORM/migration, persistence, job/worker/event/outbox,
+Docker/CI/infrastructure, consent policy, medical glossary, clinical copy, safety route or fact
+promotion was added. Alembic remains p7a_0007 and SpeechSettings remains disabled.
+Governance: P7 manual text/touch remains the supported fallback. P8-C/P9-C Stage 3 stay BLOCKED;
+P10/P11 live gates remain unchanged; no P11-E source access is enabled. P12-A engineering evidence
+does not approve a language, provider, model, voice, format, threshold, region, retention value,
+population, patient-data operation, benchmark result, pilot or production use. AC-P12-001..009 remain
+LIVE NOT VERIFIED; P12-B/C/D require separately authorized evidence and decisions.
+Next action: review this bounded P12-A feature branch. Do not begin real adapters (P12-B), voice UI
+(P12-C), governed multilingual regression/clinical-language evaluation (P12-D), or live activation
+until every applicable canonical readiness STOP condition has authoritative evidence.
+```
+
+---
+
+# 76. P13-A Synthetic Provider/Resource Domain Foundation
 
 ```text
 Status: PARTIAL — ENGINEERING-SYNTHETIC DOMAIN FOUNDATION ONLY; P13 remains PARTIAL and every live
@@ -2304,7 +2366,7 @@ security, accessibility and operational decisions are explicitly recorded.
 
 ---
 
-# 75. P13-B Synthetic Symbolic Routing and Abstention Foundation
+# 77. P13-B Synthetic Symbolic Routing and Abstention Foundation
 
 ```text
 Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-B SUBSET ONLY; P13 remains PARTIAL and all live
@@ -2330,7 +2392,7 @@ recorded source, clinical, privacy, identity, security, accessibility, and opera
 
 ---
 
-# 76. P13-C Synthetic Referral Lifecycle and Idempotency Foundation
+# 78. P13-C Synthetic Referral Lifecycle and Idempotency Foundation
 
 ```text
 Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-C SUBSET ONLY; P13 remains PARTIAL and all live
