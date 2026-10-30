@@ -181,6 +181,19 @@ synthetic only: it proves blocked plans make no calls, failures remain honest an
 identifiers, retries can report already-absent state, and restored tombstoned generations are
 reblocked. It does not establish a production deletion promise or satisfy `AC-P22-007/008`.
 
+## Optional dependency resilience foundation
+
+`app.resilience` contains provider-neutral safe-off contracts, a process-local one-way optional
+capability switchboard, bounded dependency execution, and identifier-free telemetry. Every
+capability is disabled by default. The package is not registered with FastAPI, the capability
+registry, jobs, or configuration, and its switchboard deliberately has no reset/re-enable path.
+
+The current evidence uses synthetic operations only. It proves disabled/tripped controls make no
+dependency call, in-flight results are discarded after a concurrent trip, only explicitly
+idempotent transient work retries within attempt/total deadlines, and failures remain honest and
+privacy-safe. It does not grant authorization or clinical approval, activate any optional feature,
+provide a distributed production control, or satisfy `AC-P22-009/010`.
+
 ## Sessions
 
 The default application explicitly registers the `sessions` module through the sealed module and

@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, and a synthetic P22-C retention/purge foundation are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge contracts/failure telemetry and restore reconciliation are implemented; real retention policy/store execution, edge enforcement, upload controls, resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
+| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, and synthetic P22-C/P22-D foundations are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution and privacy-safe telemetry are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
@@ -2279,7 +2279,34 @@ P24, pilot and release remain outside this unit.
 
 ---
 
-# 74. P12-A Synthetic Language and Speech Contract Foundation
+# 74. P22-D Kill-Switch/Resilience — Synthetic Engineering Foundation
+
+```text
+Status: PARTIAL — SYNTHETIC P22-D ENGINEERING FOUNDATION ONLY; P22 remains PARTIAL and all live
+AC-P22 acceptance remains unverified.
+Baseline: exact merged origin/main @ 7dc45bf11285e7c061211436f804d4e5f8f5c2dd. Work was performed
+on phase/p22-d-resilience-controls in an isolated worktree.
+Decision boundary: canonical documents leave the production capability/owner matrix, activation
+authority, distributed control topology, reset ceremony, monitoring, recovery objectives and drills
+unresolved. No such decision or approval is inferred.
+Implementation: closed optional-capability and failure vocabulary; immutable switch, deadline/retry
+and outcome contracts; fail-safe process-local switchboard; idempotent one-way trips; bounded
+dependency executor; post-call trip recheck; idempotent transient retry only; identifier-free
+telemetry; synthetic direct-constructor, outage, concurrency, timeout and privacy tests.
+Scope: every capability is disabled by default and the package is absent from runtime registration.
+No production enablement, provider request, clinical behavior, API/UI, schema/migration, job/worker,
+scheduler, event/outbox, deployment controller, dependency or lockfile change.
+Limitation: the process-local post-call check discards late results but cannot reverse an already-
+started external side effect; no side-effecting integration is wired in this unit.
+Acceptance: AC-P22-009/010 and live NFR-RES-001..007 remain LIVE NOT VERIFIED. Production work
+requires authoritative distributed controls, authenticated/audited operations, approved owners and
+re-enable rules, monitoring/alerts, real outage and partial-deploy/rollback drills, recovery targets
+and independent review. P22-E/P23/P24, pilot and release remain outside this unit.
+```
+
+---
+
+# 75. P12-A Synthetic Language and Speech Contract Foundation
 
 ```text
 Status: COMPLETE SAFE ENGINEERING SUBSET — LIVE P12 REMAINS PARTIAL/UNAPPROVED.
