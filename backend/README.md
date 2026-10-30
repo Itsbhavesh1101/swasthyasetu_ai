@@ -326,6 +326,18 @@ eligibility, specialty taxonomy, ranking, clinical suitability or crisis authori
 registered with FastAPI or the module/capability registry and add no source adapter, directory
 query, persistence, migration, API, referral, event, job, feature flag or runtime behavior.
 
+## P13-B synthetic symbolic routing
+
+`app.modules.providers.routing` adds detached, frozen engineering-only request, rule, policy, and
+decision contracts plus a pure exact-symbol evaluator. Exactly one matching reserved synthetic
+signal produces one reserved synthetic service code; zero or multiple matches abstain without a
+service or rule result. Rule order cannot resolve ambiguity.
+
+The evaluator accepts no free text, symptoms, clinical facts/categories, model output, patients,
+P9 result, thresholds, urgency, geography, eligibility, availability, provider record or contact.
+It is not registered with FastAPI or module composition and adds no real taxonomy/policy, registry
+query, ranking, persistence, migration, API, UI, dependency, feature flag, or runtime behavior.
+
 ## Synthetic language and speech contracts
 
 P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable

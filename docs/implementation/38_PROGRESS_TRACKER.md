@@ -49,7 +49,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
-| P13 | Providers + Resources + Referrals | PARTIAL | P13-A has strict engineering-synthetic, permanently unverified provider/source/resource domain records only. No source, contact, taxonomy, routing, registry query, persistence, API, referral or runtime activation exists; all live AC-P13 criteria remain unverified. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B provide strict engineering-synthetic directory records and exact symbolic match/abstention mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, persistence, API, referral or runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -2362,4 +2362,30 @@ P10/P11/P12 live restrictions remain unchanged.
 Next action: independent review of this bounded branch. P13-B routing, P13-C referral state,
 P13-D notifications and P13-E UI remain blocked until their source, clinical, privacy, identity,
 security, accessibility and operational decisions are explicitly recorded.
+```
+
+---
+
+# 77. P13-B Synthetic Symbolic Routing and Abstention Foundation
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-B SUBSET ONLY; P13 remains PARTIAL and all live
+AC-P13 acceptance remains unverified.
+Baseline: stacked on P13-A exact SHA fd1226505a7d0c96c46ab0068bbb120c5594c999. Work was performed
+on phase/p13-b-synthetic-routing-abstention in an isolated worktree.
+Implementation: immutable request, rule, versioned policy and decision contracts plus a pure exact
+symbol evaluator. Only reserved synthetic signal/service identifiers are accepted. Exactly one
+match returns a synthetic match; zero or multiple matches abstain with no selected service/rule.
+Nested values are revalidated, policy artifact identity is retained, timestamps are aware UTC, and
+direct-constructor invariants prevent inconsistent decisions.
+Scope: no free text, symptom, patient, clinical fact/category, threshold, model output, P9 input,
+urgency, geography, eligibility, availability, provider/resource lookup, contact, ranking, real
+taxonomy/policy, registry, source adapter, persistence, migration, API, UI, referral, notification,
+event, job, dependency, feature flag or runtime registration.
+Acceptance truth: this is only the readiness Gate 2 nonmedical symbolic matching/abstention
+allowance. FR-DIR-001..017, FR-REF-001..013 and AC-P13-001..011 remain LIVE NOT VERIFIED. P7 and
+generic urgent-help navigation remain independent; all P8-C/P9-C/P10/P11/P12 restrictions remain.
+Next action: independent review of the stacked bounded branch. Real directory query, specialty
+mapping, provider selection/ranking, referrals, notifications, and P13 UI remain blocked on their
+recorded source, clinical, privacy, identity, security, accessibility, and operational decisions.
 ```
