@@ -167,6 +167,20 @@ The typed configuration rejects invalid values and requires stricter layers to r
 than their parent budgets. Changing production budgets requires deployment evidence and security
 review; configuration alone does not create a distributed control.
 
+## Retention and purge foundation
+
+`app.retention` contains provider-neutral engineering contracts for externally authorized purge
+plans, idempotent target adapters, privacy-safe receipts, bounded failure telemetry, tombstones, and
+restore reconciliation. `PurgeCoordinator` is manually invoked and accepts only explicitly supplied
+adapters. It is not registered with FastAPI or the process-local job scaffold and no purge starts
+automatically.
+
+This package does not define a retention duration or decide legal holds. It has no PostgreSQL,
+object-storage, cache, search, backup, provider, or patient-data adapter. The current evidence is
+synthetic only: it proves blocked plans make no calls, failures remain honest and observable without
+identifiers, retries can report already-absent state, and restored tombstoned generations are
+reblocked. It does not establish a production deletion promise or satisfy `AC-P22-007/008`.
+
 ## Sessions
 
 The default application explicitly registers the `sessions` module through the sealed module and
