@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, and P18-A/B/C/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, and P18 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, P18-A/B/C/D, and P20-A have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, P18, and P20 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -56,7 +56,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P17 | ABDM / ABHA | PARTIAL | P17-A/B provide an inactive provider-neutral port, strict opaque request/result mechanics, and a deterministic zero-egress adapter under test support only. No official flow or identifier semantics, official sandbox, consent/authorization, FHIR payload, external traffic, persistence, API/UI, configuration wiring or runtime activation exists; all live AC-P17 criteria remain unverified. |
 | P18 | Classical ML | PARTIAL | P18-A/B/C/D provide isolated synthetic registry, split, preprocessing, evaluation, transparent baseline, and unapproved candidate/card metadata mechanics. No real dataset/task, scientifically valid benchmark, governed candidate registration, executable artifact, promotion or runtime inference exists; all live AC-P18 criteria remain unverified. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
-| P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
+| P20 | Unified Care Orchestration | PARTIAL | P20-A provides detached engineering-synthetic evidence/snapshot/candidate/decision contracts and fail-closed preservation-or-abstention mechanics only. No clinical precedence, data access, module integration, route, UI, persistence or runtime activation exists; P20-B/C/D and all live AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
@@ -2925,4 +2925,29 @@ AC-P22-001..011 remain LIVE NOT VERIFIED; accountable policy, deployment, indepe
 operations and release evidence remains outstanding.
 Next action: independently review the bounded suite, then resolve the documented live P22 gaps with
 accountable owners. Do not begin P23/P24 or pilot/release work from this evidence alone.
+```
+
+---
+
+# 99. P20-A Synthetic Care-Composition Contracts
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC P20-A SUBSET ONLY; P20 remains PARTIAL and
+all live AC-P20/product acceptance remains unverified.
+Baseline: exact origin/main @ 3051d88c8b874db42ed8b18e27acb2b271a21fba. Work was performed on
+phase/p20-a-synthetic-care-composition-contracts in an isolated worktree.
+Implementation: immutable content-free evidence, request, symbolic candidate and decision contracts
+bind exact engineering-only identities, versions, hashes, availability and UTC chronology. A pure
+detached function denies protected environments, reconstructs inputs, abstains before candidate
+inspection when any evidence is unavailable, rejects drift and aliases, and otherwise preserves all
+candidates in canonical order without ranking, suppression, selection or execution.
+Scope: no patient/clinical content or identifiers, policy/precedence, consent/authorization decision,
+provider output, cross-module adapter/data access, persistence/migration, route/API/UI, event/job,
+dependency, telemetry, feature flag, network, registration or runtime activation; no P20-B/C/D.
+Acceptance truth: symbolic contract mechanics are not a care orchestrator, clinical validation,
+coherent patient journey, operational evidence or release authorization. AC-P20-001..010 and
+AC-PROD-001..014 remain NOT VERIFIED; every recorded upstream and accountable decision remains open.
+Next action: independently review this bounded contract foundation. Any real module adapter,
+precedence, data access, patient journey, retrieval or E2E work requires a separately bounded unit
+and its applicable upstream authority.
 ```
