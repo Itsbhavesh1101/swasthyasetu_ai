@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, and P17-A/B/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, and P17 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, and P18-A have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, and P18 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -2780,4 +2780,32 @@ accountable decision remains outstanding.
 Next action: independent review of this tests-only evidence. P17-C remains blocked; official
 sandbox or live work remains blocked on current official sources and all identity, consent,
 clinical, architecture, privacy, security, partner/legal, operations and release gates.
+```
+
+---
+
+# 94. P18-A Synthetic Dataset and Experiment Registry
+
+```text
+Status: PARTIAL - BOUNDED OFFLINE ENGINEERING-SYNTHETIC P18-A SUBSET ONLY; P18 remains PARTIAL,
+P19 remains blocked and all live AC-P18 acceptance remains unverified.
+Baseline: exact merged origin/main @ 9c3cd1e50092d1385217cdc0e0a5b4bb6f07b76b. Work was performed
+on phase/p18-a-synthetic-dataset-experiment-registry in an isolated worktree.
+Implementation: immutable content-free dataset manifests and NOT_EXECUTED experiment records bind
+closed engineering identity, version, hashes, seed, authority and canonical UTC chronology.
+Immutable bounded registries snapshot reconstructed records, reject duplicates and fingerprint
+drift, resolve only exact ID/version pairs, expose no mutation/latest/promotion API, and deny
+protected environments before inspecting fixtures. Normal CI now verifies the isolated /ml tree and
+an architecture test prevents backend/app from importing it.
+Scope: fixed synthetic non-medical tokens only; no real/sample dataset, download, clinical task,
+label/feature/split, preprocessing, training, estimator, metric/threshold/calibration, artifact,
+candidate/card, MLflow/tracker, file/network/database I/O, API, worker, persistence/migration,
+dependency, feature flag, runtime module registration, inference, UI, P18-B/C/D/E or P19 behavior.
+Acceptance truth: registry mechanics are not real dataset admission, benchmark evidence, model
+validation or approval. FR-ML-001..017 and AC-P18-001..010 remain LIVE NOT VERIFIED; every
+accountable dataset, task, privacy/ethics, research, model-governance and release decision remains
+outstanding.
+Next action: independent review of this bounded subset. A separately scoped P18-B may exercise
+synthetic split/preprocessing mechanics only; real dataset use, training, candidate registration,
+inference and all P19 work remain blocked by P18_READINESS_GATE_REVIEW.md.
 ```
