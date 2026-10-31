@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
@@ -7,6 +8,7 @@ import pytest
 from app.config import Environment, Settings
 from app.main import create_app
 from app.modules.care_orchestration import (
+    SYNTHETIC_COMPOSITION_CONTRACT_VERSION,
     CompositionCode,
     CompositionContractError,
     EvidenceAvailability,
@@ -45,7 +47,11 @@ def request() -> SyntheticCompositionRequest:
     )
 
 
-def candidate(suffix: str) -> SyntheticActionCandidate:
+def candidate(
+    suffix: str,
+    *,
+    reason: SyntheticReasonCode = SyntheticReasonCode.SYNTHETIC_REASON_ALPHA,
+) -> SyntheticActionCandidate:
     return SyntheticActionCandidate(
         candidate_id=f"syn_comp_candidate_{suffix}",
         action=SyntheticActionCode.SYNTHETIC_ACTION_ALPHA,
@@ -53,7 +59,7 @@ def candidate(suffix: str) -> SyntheticActionCandidate:
         evidence_id="syn_comp_evidence_alpha",
         evidence_version="engineering.v1",
         evidence_hash=HASH_A,
-        reason_code=SyntheticReasonCode.SYNTHETIC_REASON_ALPHA,
+        reason_code=reason,
     )
 
 
@@ -62,6 +68,21 @@ def test_semantically_duplicate_candidates_cannot_alias_under_distinct_ids() -> 
         compose_synthetic_candidates(
             request(),
             (candidate("alpha"), candidate("beta")),
+            evaluated_at=NOW,
+            environment=Environment.TEST,
+        )
+
+    assert captured.value.code is CompositionCode.DUPLICATE_CANDIDATE
+
+
+def test_semantic_candidate_alias_cannot_hide_behind_a_different_reason() -> None:
+    with pytest.raises(CompositionContractError) as captured:
+        compose_synthetic_candidates(
+            request(),
+            (
+                candidate("alpha"),
+                candidate("beta", reason=SyntheticReasonCode.SYNTHETIC_REASON_BETA),
+            ),
             evaluated_at=NOW,
             environment=Environment.TEST,
         )
@@ -103,3 +124,20 @@ def test_decision_has_no_execution_approval_or_activation_surface() -> None:
         "suppress",
     ):
         assert not hasattr(decision, prohibited)
+
+    assert decision.composition_version == SYNTHETIC_COMPOSITION_CONTRACT_VERSION
+
+
+@pytest.mark.parametrize("invalid_version", ["synthetic-care-composition.v2", 1])
+def test_decision_rejects_noncanonical_composition_versions(invalid_version: object) -> None:
+    decision = compose_synthetic_candidates(
+        request(),
+        (candidate("alpha"),),
+        evaluated_at=NOW,
+        environment=Environment.TEST,
+    )
+
+    with pytest.raises(CompositionContractError) as captured:
+        replace(decision, composition_version=invalid_version)  # type: ignore[arg-type]
+
+    assert captured.value.code is CompositionCode.INVALID_VALUE

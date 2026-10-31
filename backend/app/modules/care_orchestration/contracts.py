@@ -330,6 +330,7 @@ class SyntheticCompositionDecision:
     authority: CompositionAuthority = CompositionAuthority.ENGINEERING_ONLY
     classification: CompositionClassification = CompositionClassification.ENGINEERING_SYNTHETIC
     verification: CompositionVerification = CompositionVerification.UNVERIFIED
+    composition_version: str = SYNTHETIC_COMPOSITION_CONTRACT_VERSION
 
     def __post_init__(self) -> None:
         _machine_string(self.request_id, _REQUEST_ID)
@@ -356,7 +357,6 @@ class SyntheticCompositionDecision:
                 item.evidence_id,
                 item.evidence_version,
                 item.evidence_hash,
-                item.reason_code,
             )
             for item in safe_candidates
         }
@@ -386,6 +386,11 @@ class SyntheticCompositionDecision:
         if not consistent:
             raise _error(CompositionCode.INCONSISTENT_DECISION)
         _authority(self.authority, self.classification, self.verification)
+        if (
+            type(self.composition_version) is not str
+            or self.composition_version != SYNTHETIC_COMPOSITION_CONTRACT_VERSION
+        ):
+            raise _error(CompositionCode.INVALID_VALUE)
         object.__setattr__(self, "candidates", safe_candidates)
         object.__setattr__(self, "unavailable_channels", unavailable)
         object.__setattr__(self, "evaluated_at", _utc(self.evaluated_at))
