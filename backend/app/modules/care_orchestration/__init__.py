@@ -1,5 +1,6 @@
 """Detached engineering-synthetic care-composition contracts."""
 
+from app.modules.care_orchestration.composition import compose_synthetic_candidates
 from app.modules.care_orchestration.contracts import (
     MAX_CANDIDATES,
     MAX_EVIDENCE_ITEMS,
@@ -40,4 +41,5 @@ __all__ = [
     "SyntheticCompositionRequest",
     "SyntheticEvidenceReference",
     "SyntheticReasonCode",
+    "compose_synthetic_candidates",
 ]
