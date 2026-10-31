@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, and P17-A have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, and P17 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, and P17-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, and P17 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -53,7 +53,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P14 | Mental Health / MannSetu | PARTIAL | P14-A/B/C/D/F provide detached content-free signal, safety-backstop, toy policy-routing, test-only presentation, and offline adversarial composition evidence using fixed nonmedical symbols. Protected environments are denied and no presentation is routed. P14-E remains blocked. No conversation, patient data, clinical signal/lexicon/policy/route, production adapter, resource, referral, API, persistence, live UI or runtime activation exists; all live AC-P14 criteria remain unverified. |
 | P15 | Self-Care / Ayurveda | PARTIAL | P15-A/B/E provide detached engineering-only knowledge-pack contracts, strict parsing, a fail-closed toy eligibility-state evaluator, and an offline P9-to-P15 safety regression harness using closed nonmedical tokens. No remedy/advice, real source, clinical eligibility/exclusion, approved retrieval, patient context, persistence, API, UI or runtime activation exists; all live AC-P15 criteria remain unverified. |
 | P16 | FHIR | PARTIAL | P16-A/B provide detached engineering-only R4 mapping metadata contracts, symbolic projection/import-candidate mechanics, a provider-neutral validation port/gateway, and a no-network deterministic fake. Only content-free structural mechanics can pass; profile and terminology modes fail unavailable. No clinical field crosswalk, real patient data, actual schema/profile validation, terminology, authorization, consent evaluation, persistence, API, transport, HAPI sidecar, ABDM behavior or runtime activation exists; all live AC-P16 criteria remain unverified. |
-| P17 | ABDM / ABHA | PARTIAL | P17-A provides only an inactive provider-neutral port and strict opaque engineering-synthetic request/result mechanics. No official flow or identifier semantics, adapter/mock, sandbox, consent/authorization, FHIR payload, external traffic, persistence, API/UI, configuration wiring or runtime activation exists; all live AC-P17 criteria remain unverified. |
+| P17 | ABDM / ABHA | PARTIAL | P17-A/B provide an inactive provider-neutral port, strict opaque request/result mechanics, and a deterministic zero-egress adapter under test support only. No official flow or identifier semantics, official sandbox, consent/authorization, FHIR payload, external traffic, persistence, API/UI, configuration wiring or runtime activation exists; all live AC-P17 criteria remain unverified. |
 | P18 | Classical ML | NOT STARTED | Dataset/task selection pending. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
@@ -2726,4 +2726,32 @@ Next action: independent review of the detached boundary. Any test adapter requi
 bounded P17-B authorization; official sandbox or live work remains blocked on current official
 sources and all identity, consent, clinical, architecture, privacy, security, partner/legal,
 operations and release gates.
+```
+
+---
+
+# 92. P17-B Zero-Egress Synthetic Test Adapter
+
+```text
+Status: PARTIAL - BOUNDED TEST-ONLY ENGINEERING-SYNTHETIC P17-B SUBSET; P17 remains PARTIAL and all
+live AC-P17 acceptance remains unverified.
+Baseline: exact merged origin/main @ 8f9617f575508c28ea75a5cb481c57759b9624d5. Work was performed
+on phase/p17-b-zero-egress-test-adapter in an isolated worktree.
+Implementation: a deterministic adapter under backend test support snapshots exact request-
+fingerprint-to-scenario mappings and returns only P17-A content-free accepted, rejected or unavailable
+results. It reconstructs requests before fixture lookup, validates result identity/chronology, fails
+unknown fingerprints unavailable, normalizes UTC clocks and denies protected environments before
+fixture or clock access.
+Scope: no production adapter/gateway, official sandbox, ABHA/real identifier, official operation or
+payload, identity link, consent behavior, FHIR resource, patient/clinical data, endpoint, credential,
+network/file/database I/O, retry/reconciliation/callback semantics, persistence/migration, API/BFF,
+UI, dependency, configuration, feature flag, event/job, module registration or runtime activation.
+Acceptance truth: this detached test adapter is not an approved official sandbox and does not satisfy
+AC-P17-004. It establishes no live access, exchange consent, clinical-data isolation, import/export
+provenance or official retry evidence. FR-ABDM-001..007 and AC-P17-001..007 remain LIVE NOT VERIFIED;
+every official and accountable decision remains outstanding.
+Next action: independent review of the test-only boundary. P17-C remains blocked. A separately
+bounded P17-D may prove offline failure isolation; official sandbox or live work remains blocked on
+current official sources and all identity, consent, clinical, architecture, privacy, security,
+partner/legal, operations and release gates.
 ```
