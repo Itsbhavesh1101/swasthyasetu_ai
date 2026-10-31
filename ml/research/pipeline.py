@@ -504,6 +504,10 @@ def _validate_preprocessing_receipt(value: object) -> SyntheticPreprocessingRece
         raise _error(ResearchBoundaryCode.INVALID_TYPE) from None
 
 
+def validate_synthetic_preprocessing_receipt(value: object) -> SyntheticPreprocessingReceipt:
+    return _validate_preprocessing_receipt(value)
+
+
 def synthetic_preprocessing_fingerprint(value: SyntheticPreprocessingReceipt) -> str:
     receipt = _validate_preprocessing_receipt(value)
     fields = [
@@ -639,6 +643,22 @@ class SyntheticTransformedBatch:
         if len({len(row.values) for row in rows}) != 1:
             raise _error(ResearchBoundaryCode.IDENTITY_MISMATCH)
         object.__setattr__(self, "rows", rows)
+
+
+def validate_synthetic_transformed_batch(value: object) -> SyntheticTransformedBatch:
+    if type(value) is not SyntheticTransformedBatch:
+        raise _error(ResearchBoundaryCode.INVALID_TYPE)
+    try:
+        return SyntheticTransformedBatch(
+            split_fingerprint=value.split_fingerprint,
+            preprocessing_fingerprint=value.preprocessing_fingerprint,
+            partition=value.partition,
+            rows=value.rows,
+        )
+    except ResearchBoundaryError:
+        raise
+    except (AttributeError, TypeError, ValueError):
+        raise _error(ResearchBoundaryCode.INVALID_TYPE) from None
 
 
 def transform_synthetic_partition(
@@ -883,4 +903,6 @@ __all__ = [
     "synthetic_split_fingerprint",
     "transform_synthetic_partition",
     "validate_synthetic_split_manifest",
+    "validate_synthetic_preprocessing_receipt",
+    "validate_synthetic_transformed_batch",
 ]

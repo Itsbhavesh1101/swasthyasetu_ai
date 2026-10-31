@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, and P18-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, and P18 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, and P18-A/B/C have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, and P18 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -54,7 +54,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P15 | Self-Care / Ayurveda | PARTIAL | P15-A/B/E provide detached engineering-only knowledge-pack contracts, strict parsing, a fail-closed toy eligibility-state evaluator, and an offline P9-to-P15 safety regression harness using closed nonmedical tokens. No remedy/advice, real source, clinical eligibility/exclusion, approved retrieval, patient context, persistence, API, UI or runtime activation exists; all live AC-P15 criteria remain unverified. |
 | P16 | FHIR | PARTIAL | P16-A/B provide detached engineering-only R4 mapping metadata contracts, symbolic projection/import-candidate mechanics, a provider-neutral validation port/gateway, and a no-network deterministic fake. Only content-free structural mechanics can pass; profile and terminology modes fail unavailable. No clinical field crosswalk, real patient data, actual schema/profile validation, terminology, authorization, consent evaluation, persistence, API, transport, HAPI sidecar, ABDM behavior or runtime activation exists; all live AC-P16 criteria remain unverified. |
 | P17 | ABDM / ABHA | PARTIAL | P17-A/B provide an inactive provider-neutral port, strict opaque request/result mechanics, and a deterministic zero-egress adapter under test support only. No official flow or identifier semantics, official sandbox, consent/authorization, FHIR payload, external traffic, persistence, API/UI, configuration wiring or runtime activation exists; all live AC-P17 criteria remain unverified. |
-| P18 | Classical ML | PARTIAL | P18-A/B provide isolated synthetic dataset/experiment registry, deterministic group split, train-only preprocessing and exact-label evaluation mechanics. No real dataset/task, model training, benchmark, registration or inference exists; all live AC-P18 criteria remain unverified. |
+| P18 | Classical ML | PARTIAL | P18-A/B/C provide isolated synthetic registry, split, preprocessing, evaluation and transparent baseline mechanics. No real dataset/task, scientifically valid benchmark, candidate registration or runtime inference exists; all live AC-P18 criteria remain unverified. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
@@ -2838,4 +2838,35 @@ task, privacy/ethics, metric, model-governance and release decision remains outs
 Next action: independent review of this bounded subset. A separately scoped P18-C may implement a
 synthetic deterministic baseline without clinical claims; real data, governed training,
 registration/inference, P18-E and all P19 work remain blocked by P18_READINESS_GATE_REVIEW.md.
+```
+
+---
+
+# 96. P18-C Synthetic Classical Baselines
+
+```text
+Status: PARTIAL - BOUNDED OFFLINE ENGINEERING-SYNTHETIC P18-C SUBSET ONLY; P18 remains PARTIAL,
+P19 remains blocked and all live AC-P18 acceptance remains unverified.
+Baseline: exact merged origin/main @ 255d33000b32e69006caa5548987fd24462f3547. Work was performed
+on phase/p18-c-synthetic-classical-baselines in an isolated worktree.
+Implementation: immutable TEST_ONLY_UNAPPROVED majority-class and nearest-centroid records bind
+exact P18-B split/preprocessing fingerprints, transformed training membership, closed labels,
+feature width, class counts, deterministic tie behavior and transparent parameters. Fitting is
+train-only; prediction is validation/test-only with exact partition membership and schema checks.
+Both baselines compose deterministically with the P18-B synthetic evaluator.
+Verification boundary: adversarial tests cover deterministic replay, input-order independence,
+direct-constructor mismatch, forced mutation, missing/extra/duplicate labels, degenerate classes,
+split/preprocessing/feature drift, train-prediction rejection, explicit tie handling, content-free
+errors, absent promotion/serialization surfaces and protected-environment short circuiting.
+Scope: fixed non-medical synthetic identities, values and classes only; no real/sample dataset,
+clinical task/label/feature, approved estimator, hyperparameter tuning, probability/threshold,
+clinical metric/calibration/fairness/explainability claim, artifact/candidate/card, MLflow/tracker,
+dependency, persistence/migration, API/UI/worker, backend runtime, P18-D/E or P19 behavior.
+Acceptance truth: the deterministic end-to-end exercise is not a real benchmark, clinical
+validation, approved model or production evidence. AC-P18-005 and all FR-ML-001..017 /
+AC-P18-001..010 remain LIVE NOT VERIFIED; accountable task, dataset, privacy/ethics, scientific
+validation, model-governance and release decisions remain outstanding.
+Next action: independent review of this bounded subset. A separately scoped P18-D may implement
+synthetic candidate metadata/model-card mechanics without artifact loading or promotion authority;
+real data, governed benchmark execution, inference, P18-E and P19 remain blocked.
 ```
