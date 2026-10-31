@@ -902,8 +902,8 @@ __all__ = [
     "synthetic_preprocessing_fingerprint",
     "synthetic_split_fingerprint",
     "transform_synthetic_partition",
-    "validate_synthetic_split_manifest",
-    "validate_synthetic_preprocessing_receipt",
     "validate_synthetic_evaluation_receipt",
+    "validate_synthetic_preprocessing_receipt",
+    "validate_synthetic_split_manifest",
     "validate_synthetic_transformed_batch",
 ]

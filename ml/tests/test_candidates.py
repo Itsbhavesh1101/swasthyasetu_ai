@@ -15,11 +15,17 @@ from ml.research.baselines import (
 )
 from ml.research.candidates import (
     REQUIRED_SYNTHETIC_LIMITATIONS,
+    SyntheticCandidateRegistry,
+    SyntheticCandidateStatus,
     SyntheticCardMetric,
     SyntheticCardPurpose,
+    SyntheticModelCandidate,
     SyntheticModelCard,
+    build_synthetic_model_candidate,
     build_synthetic_model_card,
+    synthetic_model_candidate_fingerprint,
     synthetic_model_card_fingerprint,
+    validate_synthetic_model_candidate,
     validate_synthetic_model_card,
 )
 from ml.research.contracts import (
@@ -42,6 +48,11 @@ from ml.tests.test_baselines import prepared
 
 class HostileLabels:
     def __iter__(self) -> object:
+        raise RuntimeError("private-canary")
+
+
+class HostileModel:
+    def __getattribute__(self, name: str) -> object:
         raise RuntimeError("private-canary")
 
     def __len__(self) -> int:
@@ -71,7 +82,9 @@ def evaluated() -> tuple[
     expected = tuple(
         SyntheticExpectedLabel(
             row_id=row.row_id,
-            label=SyntheticClass.CLASS_ALPHA if index % 2 == 0 else SyntheticClass.CLASS_BETA,
+            label=SyntheticClass.CLASS_ALPHA
+            if index % 2 == 0
+            else SyntheticClass.CLASS_BETA,
         )
         for index, row in enumerate(test.rows)
     )
@@ -108,6 +121,20 @@ def build_card(**changes: object) -> SyntheticModelCard:
     }
     arguments.update(changes)
     return build_synthetic_model_card(**arguments)  # type: ignore[arg-type]
+
+
+def build_candidate(**changes: object) -> SyntheticModelCandidate:
+    model, _, _, _, _, _ = evaluated()
+    arguments: dict[str, object] = {
+        "candidate_id": "syn_ml_candidate_0001",
+        "candidate_version": "engineering.v1",
+        "model": model,
+        "card": build_card(),
+        "registered_at": datetime(2026, 11, 1, 10, 45, tzinfo=UTC),
+        "environment": ResearchEnvironment.TEST,
+    }
+    arguments.update(changes)
+    return build_synthetic_model_candidate(**arguments)  # type: ignore[arg-type]
 
 
 class SyntheticModelCardTests(unittest.TestCase):
@@ -147,11 +174,16 @@ class SyntheticModelCardTests(unittest.TestCase):
         )
 
         for changes in variants:
-            with self.subTest(changes=changes), self.assertRaises(ResearchBoundaryError):
+            with (
+                self.subTest(changes=changes),
+                self.assertRaises(ResearchBoundaryError),
+            ):
                 build_card(**changes)
 
     def test_card_normalizes_aware_time_and_rejects_naive_time(self) -> None:
-        non_utc = datetime(2026, 11, 1, 16, 0, tzinfo=timezone(timedelta(hours=5, minutes=30)))
+        non_utc = datetime(
+            2026, 11, 1, 16, 0, tzinfo=timezone(timedelta(hours=5, minutes=30))
+        )
         card = build_card(generated_at=non_utc)
 
         self.assertEqual(card.generated_at, datetime(2026, 11, 1, 10, 30, tzinfo=UTC))
@@ -169,7 +201,10 @@ class SyntheticModelCardTests(unittest.TestCase):
         )
 
         for changes in variants:
-            with self.subTest(changes=changes), self.assertRaises(ResearchBoundaryError):
+            with (
+                self.subTest(changes=changes),
+                self.assertRaises(ResearchBoundaryError),
+            ):
                 replace(card, **changes)
 
     def test_card_is_immutable_and_validator_rejects_forced_mutation(self) -> None:
@@ -200,6 +235,175 @@ class SyntheticModelCardTests(unittest.TestCase):
             )
 
         self.assertIs(error.exception.code, ResearchBoundaryCode.PROTECTED_ENVIRONMENT)
+
+
+class SyntheticModelCandidateTests(unittest.TestCase):
+    def test_candidate_deterministically_binds_exact_model_and_card(self) -> None:
+        first = build_candidate()
+        second = build_candidate()
+        model, _, _, _, _, _ = evaluated()
+        card = build_card()
+
+        self.assertEqual(first, second)
+        self.assertEqual(
+            synthetic_model_candidate_fingerprint(first),
+            synthetic_model_candidate_fingerprint(second),
+        )
+        self.assertEqual(first.model_fingerprint, synthetic_baseline_fingerprint(model))
+        self.assertEqual(first.card_fingerprint, synthetic_model_card_fingerprint(card))
+        self.assertIs(first.status, SyntheticCandidateStatus.TEST_ONLY_UNAPPROVED)
+
+    def test_candidate_rejects_model_card_mismatch(self) -> None:
+        split, receipt, train, _, _, labels = prepared()
+        majority = fit_synthetic_baseline(
+            model_id="syn_ml_model_beta",
+            model_version="engineering.v1",
+            kind=SyntheticBaselineKind.MAJORITY_CLASS,
+            split=split,
+            preprocessing=receipt,
+            training_batch=train,
+            labels=labels,
+            tie_break_class=SyntheticClass.CLASS_ALPHA,
+            environment=ResearchEnvironment.TEST,
+        )
+
+        with self.assertRaises(ResearchBoundaryError) as error:
+            build_candidate(model=majority)
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.IDENTITY_MISMATCH)
+
+    def test_candidate_normalizes_aware_time_and_rejects_naive_time(self) -> None:
+        non_utc = datetime(
+            2026, 11, 1, 16, 15, tzinfo=timezone(timedelta(hours=5, minutes=30))
+        )
+        candidate = build_candidate(registered_at=non_utc)
+
+        self.assertEqual(
+            candidate.registered_at, datetime(2026, 11, 1, 10, 45, tzinfo=UTC)
+        )
+        with self.assertRaises(ResearchBoundaryError) as error:
+            build_candidate(registered_at=datetime(2026, 11, 1, 10, 45))
+        self.assertIs(error.exception.code, ResearchBoundaryCode.INVALID_TYPE)
+
+    def test_candidate_is_immutable_and_validator_rejects_forced_mutation(self) -> None:
+        candidate = build_candidate()
+        with self.assertRaises(FrozenInstanceError):
+            candidate.status = SyntheticCandidateStatus.TEST_ONLY_UNAPPROVED  # type: ignore[misc]
+        object.__setattr__(candidate, "card_fingerprint", "f" * 64)
+
+        with self.assertRaises(ResearchBoundaryError) as error:
+            validate_synthetic_model_candidate(candidate)
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.IDENTITY_MISMATCH)
+
+    def test_protected_environment_rejects_before_model_is_read(self) -> None:
+        with self.assertRaises(ResearchBoundaryError) as error:
+            build_candidate(
+                model=HostileModel(),
+                environment=ResearchEnvironment.PILOT,
+            )
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.PROTECTED_ENVIRONMENT)
+
+
+class SyntheticCandidateRegistryTests(unittest.TestCase):
+    def test_registry_resolves_exact_candidate_and_snapshots_inputs(self) -> None:
+        model, _, _, _, _, _ = evaluated()
+        card = build_card()
+        candidate = build_candidate(model=model, card=card)
+        registry = SyntheticCandidateRegistry(
+            candidates=(candidate,),
+            cards=(card,),
+            models=(model,),
+            environment=ResearchEnvironment.TEST,
+        )
+        expected = registry.resolve("syn_ml_candidate_0001", "engineering.v1")
+        object.__setattr__(candidate, "candidate_id", "mutated")
+
+        self.assertEqual(
+            registry.resolve("syn_ml_candidate_0001", "engineering.v1"),
+            expected,
+        )
+
+    def test_registry_rejects_unknown_or_duplicate_identity(self) -> None:
+        model, _, _, _, _, _ = evaluated()
+        card = build_card()
+        candidate = build_candidate(model=model, card=card)
+        registry = SyntheticCandidateRegistry(
+            candidates=(candidate,),
+            cards=(card,),
+            models=(model,),
+            environment=ResearchEnvironment.TEST,
+        )
+        with self.assertRaises(ResearchBoundaryError) as unknown:
+            registry.resolve("syn_ml_candidate_9999", "engineering.v1")
+        self.assertIs(unknown.exception.code, ResearchBoundaryCode.UNKNOWN_IDENTITY)
+
+        with self.assertRaises(ResearchBoundaryError) as duplicate:
+            SyntheticCandidateRegistry(
+                candidates=(candidate, candidate),
+                cards=(card,),
+                models=(model,),
+                environment=ResearchEnvironment.TEST,
+            )
+        self.assertIs(duplicate.exception.code, ResearchBoundaryCode.DUPLICATE_IDENTITY)
+
+    def test_registry_rejects_aliases_for_same_model_or_card(self) -> None:
+        model, _, _, _, _, _ = evaluated()
+        card = build_card()
+        first = build_candidate(model=model, card=card)
+        second = build_candidate(
+            candidate_id="syn_ml_candidate_0002",
+            model=model,
+            card=card,
+        )
+
+        with self.assertRaises(ResearchBoundaryError) as error:
+            SyntheticCandidateRegistry(
+                candidates=(first, second),
+                cards=(card,),
+                models=(model,),
+                environment=ResearchEnvironment.TEST,
+            )
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.DUPLICATE_IDENTITY)
+
+    def test_registry_rejects_capacity_before_reading_entries(self) -> None:
+        with self.assertRaises(ResearchBoundaryError) as error:
+            SyntheticCandidateRegistry(
+                candidates=(HostileModel(),) * 33,  # type: ignore[arg-type]
+                cards=(),
+                models=(),
+                environment=ResearchEnvironment.TEST,
+            )
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.CAPACITY_EXCEEDED)
+
+    def test_registry_and_candidate_expose_no_lifecycle_or_serialization_surface(
+        self,
+    ) -> None:
+        model, _, _, _, _, _ = evaluated()
+        card = build_card()
+        candidate = build_candidate(model=model, card=card)
+        registry = SyntheticCandidateRegistry(
+            candidates=(candidate,),
+            cards=(card,),
+            models=(model,),
+            environment=ResearchEnvironment.TEST,
+        )
+
+        for target in (candidate, registry):
+            for name in (
+                "approve",
+                "promote",
+                "activate",
+                "register",
+                "latest",
+                "save",
+                "load",
+            ):
+                with self.subTest(target=type(target).__name__, name=name):
+                    self.assertFalse(hasattr(target, name))
 
 
 if __name__ == "__main__":
