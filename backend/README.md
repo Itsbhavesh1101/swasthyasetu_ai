@@ -374,6 +374,20 @@ boundary. No adapter is supplied or registered. The package contains no narrativ
 identity, clinical signal name, score, confidence, screening instrument, prompt, provider, backstop,
 route, policy, resource, API, persistence, UI, or runtime activation.
 
+## P14-B synthetic safety-backstop contracts
+
+`app.modules.mental_health.backstop` defines frozen engineering-only artifact, request, matched/
+no-match result, and simulated-failure contracts over the same fixed ALPHA/BETA/GAMMA/DELTA toy
+tokens. Construction and explicit validation fail closed on noncanonical UTC time, identity drift,
+duplicate or unordered tokens, invalid chronology, inconsistent outcomes, and forced mutation.
+
+`SyntheticSafetyBackstopPort` is a detached provider-neutral boundary. The only implementation is a
+deterministic test helper under `backend/tests/mental_health_support`; it snapshots and validates the
+request before reading toy evidence, checks the deadline first, and has no clinical lexicon or
+production registration. There is no narrative processing, patient/session identity, clinical
+signal, route, policy, crisis resource, provider, network access, API, persistence, UI, or runtime
+activation.
+
 ## Synthetic language and speech contracts
 
 P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
