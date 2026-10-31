@@ -362,6 +362,18 @@ state, retry/deadline policy, webhook, preference, consent, or referral mutation
 persistence, migration, API, event, job, dependency, feature flag, network access, or runtime
 registration and cannot send or claim delivery of a notification.
 
+## P14-A synthetic mental-health signal contracts
+
+`app.modules.mental_health.contracts` defines frozen engineering-only artifact, extraction-request,
+toy signal-observation, parsed/abstained result, and content-free failure contracts. A strict parser
+accepts only fixed ALPHA/BETA/GAMMA/DELTA fixture tokens and canonical UTC metadata; an explicit
+binding function revalidates exact request, input, schema, and deadline identity.
+
+`app.modules.mental_health.ports.SyntheticSignalExtractorPort` is a detached provider-neutral
+boundary. No adapter is supplied or registered. The package contains no narrative, patient/session
+identity, clinical signal name, score, confidence, screening instrument, prompt, provider, backstop,
+route, policy, resource, API, persistence, UI, or runtime activation.
+
 ## Synthetic language and speech contracts
 
 P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
