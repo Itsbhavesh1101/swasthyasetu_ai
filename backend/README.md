@@ -350,6 +350,18 @@ destination, consent, payload, contact, transcript, external reference, adapter,
 or correction semantics. It adds no persistence, migration, API, event, job, dependency, feature
 flag, or runtime registration and cannot authorize external sharing.
 
+## P13-D synthetic notification failure contracts
+
+`app.modules.notifications.domain` defines frozen, slotted engineering-only template metadata,
+content-free intent, simulated failure, and failure-receipt contracts. A pure function validates
+exact template/variable binding and UTC chronology, then records only a deterministic fingerprint
+and simulated failure metadata.
+
+The module contains no message copy, recipient, contact, channel, provider, delivery port, success
+state, retry/deadline policy, webhook, preference, consent, or referral mutation. It adds no
+persistence, migration, API, event, job, dependency, feature flag, network access, or runtime
+registration and cannot send or claim delivery of a notification.
+
 ## Synthetic language and speech contracts
 
 P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
