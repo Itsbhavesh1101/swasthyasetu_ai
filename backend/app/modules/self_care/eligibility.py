@@ -93,6 +93,7 @@ class SyntheticEligibilityReason(StrEnum):
     SYNTHETIC_CONTEXT_CONFLICT = "SYNTHETIC_CONTEXT_CONFLICT"
     SYNTHETIC_CONTEXT_INCOMPLETE = "SYNTHETIC_CONTEXT_INCOMPLETE"
     SYNTHETIC_EXCLUSION_MATCH = "SYNTHETIC_EXCLUSION_MATCH"
+    SYNTHETIC_KNOWLEDGE_INVALID = "SYNTHETIC_KNOWLEDGE_INVALID"
     SYNTHETIC_NO_RULE_MATCH = "SYNTHETIC_NO_RULE_MATCH"
     SYNTHETIC_POLICY_EXPIRED = "SYNTHETIC_POLICY_EXPIRED"
     SYNTHETIC_POLICY_INVALID = "SYNTHETIC_POLICY_INVALID"
@@ -533,6 +534,28 @@ class SyntheticEligibilityResult:
             sorted(reason_values)
         ):
             raise _error(EligibilityContractCode.INVALID_VALUE)
+        allowed_reasons = {
+            SyntheticEligibilityOutcome.SYNTHETIC_ENGINEERING_CANDIDATE: {
+                SyntheticEligibilityReason.SYNTHETIC_RULE_MATCH
+            },
+            SyntheticEligibilityOutcome.SYNTHETIC_CLARIFICATION_REQUIRED: {
+                SyntheticEligibilityReason.SYNTHETIC_CONTEXT_CONFLICT,
+                SyntheticEligibilityReason.SYNTHETIC_CONTEXT_INCOMPLETE,
+                SyntheticEligibilityReason.SYNTHETIC_NO_RULE_MATCH,
+            },
+            SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED: {
+                SyntheticEligibilityReason.SYNTHETIC_EXCLUSION_MATCH,
+                SyntheticEligibilityReason.SYNTHETIC_KNOWLEDGE_INVALID,
+                SyntheticEligibilityReason.SYNTHETIC_POLICY_EXPIRED,
+                SyntheticEligibilityReason.SYNTHETIC_POLICY_INVALID,
+                SyntheticEligibilityReason.SYNTHETIC_POLICY_NOT_EFFECTIVE,
+                SyntheticEligibilityReason.SYNTHETIC_POLICY_SUSPENDED,
+                SyntheticEligibilityReason.SYNTHETIC_POLICY_UNAVAILABLE,
+                SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+            },
+        }
+        if len(reasons) != 1 or reasons[0] not in allowed_reasons[self.outcome]:
+            raise _error(EligibilityContractCode.INCONSISTENT_RESULT)
         if type(self.candidates) is not tuple:
             raise _error(EligibilityContractCode.INVALID_TYPE)
         candidates = tuple(_candidate(candidate) for candidate in self.candidates)
@@ -651,6 +674,15 @@ class SyntheticEligibilityEngine:
         safety_snapshot = _safety_decision(safety_decision)
         pack_snapshot = _knowledge_pack(knowledge_pack)
         policy_snapshot: SyntheticEligibilityPolicy | None
+        if not self._is_exact_positive_safety(safety_snapshot, evaluation_snapshot):
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=None,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+            )
         if policy is None:
             return self._result(
                 evaluation=evaluation_snapshot,
@@ -698,14 +730,14 @@ class SyntheticEligibilityEngine:
                 outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
                 reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_EXPIRED,
             )
-        if not self._is_exact_positive_safety(safety_snapshot, evaluation_snapshot):
+        if pack_snapshot.created_at > evaluation_snapshot.evaluated_at:
             return self._result(
                 evaluation=evaluation_snapshot,
                 safety=safety_snapshot,
                 pack=pack_snapshot,
                 policy=policy_snapshot,
                 outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
-                reason=SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+                reason=SyntheticEligibilityReason.SYNTHETIC_KNOWLEDGE_INVALID,
             )
         supplied = frozenset(evaluation_snapshot.predicates)
         if SyntheticEligibilityPredicate.CONFLICT_ALPHA in supplied:

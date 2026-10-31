@@ -330,6 +330,58 @@ def test_result_contract_requires_candidate_only_for_engineering_match() -> None
 
 
 @pytest.mark.parametrize(
+    ("outcome", "reason", "candidates"),
+    [
+        (
+            SyntheticEligibilityOutcome.SYNTHETIC_ENGINEERING_CANDIDATE,
+            SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+            (
+                SyntheticEligibilityCandidateReference(
+                    guidance_id="syn_selfcare_guidance_alpha",
+                    guidance_version="engineering.v1",
+                ),
+            ),
+        ),
+        (
+            SyntheticEligibilityOutcome.SYNTHETIC_CLARIFICATION_REQUIRED,
+            SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+            (),
+        ),
+        (
+            SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+            SyntheticEligibilityReason.SYNTHETIC_NO_RULE_MATCH,
+            (),
+        ),
+    ],
+)
+def test_result_rejects_reason_outcome_authority_mismatch(
+    outcome: SyntheticEligibilityOutcome,
+    reason: SyntheticEligibilityReason,
+    candidates: tuple[SyntheticEligibilityCandidateReference, ...],
+) -> None:
+    with pytest.raises(EligibilityContractError) as caught:
+        SyntheticEligibilityResult(
+            decision_id="syn_selfcare_eligibility_decision_alpha",
+            evaluation_id="syn_selfcare_eligibility_evaluation_alpha",
+            evaluation_fingerprint="e" * 64,
+            safety_fingerprint="5" * 64,
+            knowledge_pack_id="syn_selfcare_pack_fixture",
+            knowledge_pack_version="engineering.v1",
+            knowledge_pack_hash="a" * 64,
+            policy_reference=SyntheticEligibilityPolicyReference(
+                policy_id=SYNTHETIC_ELIGIBILITY_POLICY.policy_id,
+                policy_version=SYNTHETIC_ELIGIBILITY_POLICY.policy_version,
+                content_hash=SYNTHETIC_ELIGIBILITY_POLICY.content_hash,
+            ),
+            outcome=outcome,
+            reason_codes=(reason,),
+            candidates=candidates,
+            decided_at=NOW,
+        )
+    assert caught.value.code is EligibilityContractCode.INCONSISTENT_RESULT
+
+
+@pytest.mark.parametrize(
     "environment",
     [Environment.STAGING, Environment.PILOT, Environment.PRODUCTION],
 )
@@ -367,6 +419,22 @@ def test_safety_block_cannot_be_downgraded_by_matching_context() -> None:
     assert result.outcome is SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED
     assert result.reason_codes == (SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,)
     assert result.candidates == ()
+
+
+def test_safety_block_precedes_missing_eligibility_policy() -> None:
+    result = SyntheticEligibilityEngine().evaluate(
+        evaluation=evaluation(
+            SyntheticEligibilityPredicate.CONTEXT_COMPLETE_ALPHA,
+            SyntheticEligibilityPredicate.INCLUDE_ALPHA,
+        ),
+        safety_decision=safety(blocked=True),
+        knowledge_pack=knowledge_pack("alpha"),
+        policy=None,
+        environment=Environment.TEST,
+    )
+    assert result.outcome is SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED
+    assert result.reason_codes == (SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,)
+    assert result.policy_reference is None
 
 
 @pytest.mark.parametrize(
@@ -540,7 +608,7 @@ def test_unavailable_suspended_or_out_of_window_policy_blocks(
     )
     result = SyntheticEligibilityEngine().evaluate(
         evaluation=evaluated,
-        safety_decision=safety(),
+        safety_decision=replace(safety(), created_at=moment - timedelta(minutes=1)),
         knowledge_pack=knowledge_pack("alpha"),
         policy=policy,
         environment=Environment.TEST,
@@ -562,6 +630,30 @@ def test_policy_rule_missing_from_pack_blocks_as_invalid() -> None:
     )
     assert result.outcome is SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED
     assert result.reason_codes == (SyntheticEligibilityReason.SYNTHETIC_POLICY_INVALID,)
+
+
+def test_future_knowledge_pack_cannot_produce_candidate() -> None:
+    future_pack = create_synthetic_knowledge_pack(
+        pack_id="syn_selfcare_pack_fixture",
+        pack_version="engineering.v1",
+        schema_version="synthetic-self-care-knowledge.v1",
+        state=SyntheticKnowledgePackState.TEST_ONLY_UNAPPROVED,
+        created_at=NOW + timedelta(seconds=1),
+        items=knowledge_pack("alpha").items,
+    )
+    result = SyntheticEligibilityEngine().evaluate(
+        evaluation=evaluation(
+            SyntheticEligibilityPredicate.CONTEXT_COMPLETE_ALPHA,
+            SyntheticEligibilityPredicate.INCLUDE_ALPHA,
+        ),
+        safety_decision=safety(),
+        knowledge_pack=future_pack,
+        policy=SYNTHETIC_ELIGIBILITY_POLICY,
+        environment=Environment.TEST,
+    )
+    assert result.outcome is SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED
+    assert result.reason_codes == (SyntheticEligibilityReason.SYNTHETIC_KNOWLEDGE_INVALID,)
+    assert result.candidates == ()
 
 
 def test_forced_policy_mutation_blocks_as_invalid_without_leaking_value() -> None:

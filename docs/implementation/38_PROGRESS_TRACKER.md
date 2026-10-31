@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, and P15-A have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, and P15 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, and P15-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, and P15 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -51,7 +51,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
 | P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D/E provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, content-free simulated notification failure, and test-only unavailable/degraded/source-warning presentation evidence. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or UI/runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | PARTIAL | P14-A/B/C/D/F provide detached content-free signal, safety-backstop, toy policy-routing, test-only presentation, and offline adversarial composition evidence using fixed nonmedical symbols. Protected environments are denied and no presentation is routed. P14-E remains blocked. No conversation, patient data, clinical signal/lexicon/policy/route, production adapter, resource, referral, API, persistence, live UI or runtime activation exists; all live AC-P14 criteria remain unverified. |
-| P15 | Self-Care / Ayurveda | PARTIAL | P15-A provides detached engineering-only knowledge-pack contracts and strict in-memory parsing using closed nonmedical tokens and an unapproved-only state. No remedy/advice, real source, approval, eligibility, retrieval, patient context, persistence, API, UI or runtime activation exists; all live AC-P15 criteria remain unverified. |
+| P15 | Self-Care / Ayurveda | PARTIAL | P15-A/B provide detached engineering-only knowledge-pack contracts, strict parsing, and a fail-closed toy eligibility-state evaluator using closed nonmedical tokens. No remedy/advice, real source, clinical eligibility/exclusion, approved retrieval, patient context, persistence, API, UI or runtime activation exists; all live AC-P15 criteria remain unverified. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
 | P17 | ABDM / ABHA | NOT STARTED | Requires current ABDM integration spec. |
 | P18 | Classical ML | NOT STARTED | Dataset/task selection pending. |
@@ -2607,4 +2607,28 @@ registration/activation.
 Acceptance truth: schema mechanics and synthetic placeholders are not an approved content store,
 clinical validation, publication workflow, patient display, or live P15 acceptance. FR-SELF-001..017
 and AC-P15-001..010 remain LIVE NOT VERIFIED; all upstream governance restrictions stay active.
+```
+
+---
+
+# 87. P15-B Synthetic Eligibility Engine
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P15-B SUBSET ONLY; P15 remains PARTIAL and all live
+AC-P15 acceptance remains unverified.
+Baseline: exact merged origin/main @ 0ba2f85b353fcd3884b71a79f4f8ba8fb59146aa. Work was performed
+on phase/p15-b-synthetic-eligibility-engine in an isolated worktree.
+Implementation: immutable evaluation, toy policy, rule, candidate-reference, and result contracts
+bind exact P9 synthetic safety provenance, P15-A pack identity/hash, context snapshot, policy hash,
+and UTC decision time. A pure evaluator denies staging/pilot/production, preserves every safety
+block, fails closed on incomplete/conflicting context or invalid policy, applies closed exclusions
+before includes, and returns only content-free engineering placeholder references.
+Scope: no clinical eligibility or contraindication rule, allergy/medication/condition/age/pregnancy
+interpretation, remedy/advice/content, real patient/context, approved source/retrieval, RAG/vector/LLM,
+database/migration, API/BFF, admin workflow, UI, dependency, feature flag, event/job, or runtime
+registration/activation.
+Acceptance truth: SYNTHETIC_ENGINEERING_CANDIDATE proves only toy deterministic mechanics. It is not
+a low-risk classification, clinical validation, content approval, retrieval result, display authority,
+or live P15 acceptance. FR-SELF-001..017 and AC-P15-001..010 remain LIVE NOT VERIFIED; all upstream
+governance restrictions stay active.
 ```
