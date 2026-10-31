@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, and P13-A/B/C/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, and P13 remain partial.
-**Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 notification delivery/UI, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
+**Current macro stage:** P11-A/B/C/D, P12-A, and P13-A/B/C/D/E have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, and P13 remain partial.
+**Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
 
 ---
 
@@ -49,7 +49,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
-| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, and content-free simulated notification-failure mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or runtime activation exists; all live AC-P13 criteria remain unverified. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D/E provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, content-free simulated notification failure, and test-only unavailable/degraded/source-warning presentation evidence. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or UI/runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -2441,4 +2441,27 @@ P8-C/P9-C/P10/P11/P12 restrictions remain active.
 Next action: independent review of this bounded branch. Live notification work remains blocked on
 recipient/channel/provider selection, approved copy/locales, preferences/consent, retry/deadline,
 security/webhook, retention, delivery semantics and incident/correction decisions.
+```
+
+---
+
+# 80. P13-E Synthetic Referral Presentation Test Foundation
+
+```text
+Status: PARTIAL - BOUNDED TEST-ONLY P13-E SUBSET; P13 remains PARTIAL and all live AC-P13
+acceptance remains unverified.
+Baseline: exact merged origin/main @ ced4839c220cd598f1f3c65052828d7fdb4bd36e. Work was performed
+on phase/p13-e-synthetic-referral-presentation in an isolated worktree.
+Implementation: Vitest-only patient unavailable/unknown/failed referral preview and admin
+unavailable/unverified/stale/revoked source-warning preview. Closed vocabularies fail closed for
+hostile runtime values; accessible status semantics, explicit engineering labels, no-action states,
+and production-import isolation are regression tested.
+Scope: no production component or route change; no provider/resource/contact/source evidence,
+referral identifier/status authority, consent, moderation, API/BFF, network, browser storage,
+persistence, migration, dependency, feature flag or runtime activation.
+Acceptance truth: synthetic presentation fixtures do not approve copy, roles, source warnings,
+identity, accessibility, referral status or live UI. AC-P13-001..011 and all live P13 requirements
+remain LIVE NOT VERIFIED. All P8-C/P9-C/P10/P11/P12 restrictions remain active.
+Next action: live P13 remains blocked on accountable source, clinical, identity/consent, privacy,
+security, copy/localization, accessibility, operational and release decisions.
 ```
