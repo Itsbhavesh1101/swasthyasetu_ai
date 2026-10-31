@@ -1,0 +1,43 @@
+"""Detached engineering-synthetic care-composition contracts."""
+
+from app.modules.care_orchestration.contracts import (
+    MAX_CANDIDATES,
+    MAX_EVIDENCE_ITEMS,
+    SYNTHETIC_COMPOSITION_CONTRACT_VERSION,
+    CompositionAuthority,
+    CompositionClassification,
+    CompositionCode,
+    CompositionContractError,
+    CompositionDisposition,
+    CompositionReason,
+    CompositionVerification,
+    EvidenceAvailability,
+    EvidenceChannel,
+    SyntheticActionCandidate,
+    SyntheticActionCode,
+    SyntheticCompositionDecision,
+    SyntheticCompositionRequest,
+    SyntheticEvidenceReference,
+    SyntheticReasonCode,
+)
+
+__all__ = [
+    "CompositionAuthority",
+    "CompositionClassification",
+    "CompositionCode",
+    "CompositionContractError",
+    "CompositionDisposition",
+    "CompositionReason",
+    "CompositionVerification",
+    "EvidenceAvailability",
+    "EvidenceChannel",
+    "MAX_CANDIDATES",
+    "MAX_EVIDENCE_ITEMS",
+    "SYNTHETIC_COMPOSITION_CONTRACT_VERSION",
+    "SyntheticActionCandidate",
+    "SyntheticActionCode",
+    "SyntheticCompositionDecision",
+    "SyntheticCompositionRequest",
+    "SyntheticEvidenceReference",
+    "SyntheticReasonCode",
+]
