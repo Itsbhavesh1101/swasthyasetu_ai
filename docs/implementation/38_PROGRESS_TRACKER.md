@@ -58,7 +58,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
 | P20 | Unified Care Orchestration | NOT STARTED | PRE-P20 DRAFT DOCUMENTATION, P20 RUNTIME NOT STARTED AND LIVE AC NOT VERIFIED. |
 | P21 | Admin + Governance + Review | NOT STARTED | Spec 25 exists as unapproved Pre-P13/P21 draft; Pre-P21 decision reconciliation prepared; P21-A/B/C/D runtime NOT STARTED and live acceptance NOT VERIFIED; accountable decisions pending. |
-| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, and synthetic P22-C/P22-D foundations are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution and privacy-safe telemetry are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
+| P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
 | P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
@@ -2899,4 +2899,30 @@ all accountable task, dataset, privacy/ethics, scientific-validation, artifact-s
 model-governance and release decisions remain outstanding.
 Next action: independent review of this bounded subset. P18-E and P19 remain blocked by
 P18_READINESS_GATE_REVIEW.md until an approved real benchmark and all accountable decisions exist.
+```
+
+---
+
+# 98. P22-E Security Regression Suite
+
+```text
+Status: PARTIAL - BOUNDED TESTS-ONLY ENGINEERING-SYNTHETIC P22-E EVIDENCE; P22 remains PARTIAL and
+all live AC-P22 acceptance remains unverified.
+Baseline: exact origin/main @ 75eab2e79e5a86fe19392b5cd5f312b2987d9159. Work was performed on
+phase/p22-e-security-regression-suite in an isolated worktree.
+Evidence: a detached adversarial pytest suite composes the existing P22-B API abuse boundary,
+P22-C purge/restore foundation and P22-D optional-dependency resilience foundation. It proves that
+limiter failure blocks route work with sanitized security headers; unauthorized/held purge and
+disabled/tripped optional capabilities make zero downstream calls; separate control planes do not
+cross-authorize; late results are discarded after a trip; tombstoned generations remain reblocked;
+and synthetic exception, locator and result canaries stay out of returned surfaces.
+Scope: tests and documentation only; no production package, patient/clinical data, live provider,
+upload, real retention policy or deletion, distributed control, persistence/migration, API/UI,
+worker/job/event, dependency, configuration, runtime registration/activation, P23 or P24 behavior.
+Acceptance truth: composition regression evidence is not a penetration assessment, policy approval,
+operational drill, live security/privacy/resilience verification or release authorization.
+AC-P22-001..011 remain LIVE NOT VERIFIED; accountable policy, deployment, independent review,
+operations and release evidence remains outstanding.
+Next action: independently review the bounded suite, then resolve the documented live P22 gaps with
+accountable owners. Do not begin P23/P24 or pilot/release work from this evidence alone.
 ```
