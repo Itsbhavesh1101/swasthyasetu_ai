@@ -1,5 +1,6 @@
 from dataclasses import FrozenInstanceError, replace
 from datetime import UTC, datetime, timedelta, timezone
+from typing import Never
 
 import pytest
 
@@ -8,6 +9,7 @@ from app.modules.self_care.contracts import (
     SelfCareContractError,
     SyntheticGuidancePlaceholder,
     SyntheticKnowledgeItem,
+    SyntheticKnowledgePack,
     SyntheticKnowledgePackState,
     SyntheticKnowledgeReviewState,
     SyntheticKnowledgeTag,
@@ -38,7 +40,7 @@ def item(
     )
 
 
-def pack(*items: SyntheticKnowledgeItem):
+def pack(*items: SyntheticKnowledgeItem) -> SyntheticKnowledgePack:
     return create_synthetic_knowledge_pack(
         pack_id="syn_selfcare_pack_fixture",
         pack_version="engineering.v1",
@@ -79,7 +81,7 @@ def test_pack_is_hash_bound_immutable_and_cannot_represent_guidance() -> None:
 def test_item_direct_constructor_rejects_open_or_nonengineering_values(
     field: str, value: object
 ) -> None:
-    values = {
+    values: dict[str, object] = {
         "guidance_id": "syn_selfcare_guidance_alpha",
         "version": "engineering.v1",
         "placeholder_token": SyntheticGuidancePlaceholder.ALPHA,
@@ -259,7 +261,7 @@ def test_parser_rejects_missing_nested_and_hostile_mappings_content_free() -> No
     assert incomplete.value.code is SelfCareContractCode.MISSING_FIELD
 
     class Hostile(dict[object, object]):
-        def keys(self):
+        def keys(self) -> Never:
             raise AssertionError("private-canary")
 
     with pytest.raises(SelfCareContractError) as hostile:
