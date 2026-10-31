@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, and P16-A have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, and P16 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, and P16-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, and P16 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -52,7 +52,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D/E provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, content-free simulated notification failure, and test-only unavailable/degraded/source-warning presentation evidence. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or UI/runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | PARTIAL | P14-A/B/C/D/F provide detached content-free signal, safety-backstop, toy policy-routing, test-only presentation, and offline adversarial composition evidence using fixed nonmedical symbols. Protected environments are denied and no presentation is routed. P14-E remains blocked. No conversation, patient data, clinical signal/lexicon/policy/route, production adapter, resource, referral, API, persistence, live UI or runtime activation exists; all live AC-P14 criteria remain unverified. |
 | P15 | Self-Care / Ayurveda | PARTIAL | P15-A/B/E provide detached engineering-only knowledge-pack contracts, strict parsing, a fail-closed toy eligibility-state evaluator, and an offline P9-to-P15 safety regression harness using closed nonmedical tokens. No remedy/advice, real source, clinical eligibility/exclusion, approved retrieval, patient context, persistence, API, UI or runtime activation exists; all live AC-P15 criteria remain unverified. |
-| P16 | FHIR | PARTIAL | P16-A provides detached engineering-only R4 mapping metadata contracts and symbolic projection/import-candidate mechanics. No clinical field crosswalk, real patient data, profile/schema validation, terminology, authorization, consent evaluation, persistence, API, adapter, transport, HAPI sidecar, ABDM behavior or runtime activation exists; all live AC-P16 criteria remain unverified. |
+| P16 | FHIR | PARTIAL | P16-A/B provide detached engineering-only R4 mapping metadata contracts, symbolic projection/import-candidate mechanics, a provider-neutral validation port/gateway, and a no-network deterministic fake. Only content-free structural mechanics can pass; profile and terminology modes fail unavailable. No clinical field crosswalk, real patient data, actual schema/profile validation, terminology, authorization, consent evaluation, persistence, API, transport, HAPI sidecar, ABDM behavior or runtime activation exists; all live AC-P16 criteria remain unverified. |
 | P17 | ABDM / ABHA | NOT STARTED | Requires current ABDM integration spec. |
 | P18 | Classical ML | NOT STARTED | Dataset/task selection pending. |
 | P19 | Hybrid QML | NOT STARTED | Depends on P18 baseline. |
@@ -2676,5 +2676,27 @@ migration, API/BFF, adapter, transport/network, HAPI sidecar, dependency, featur
 or runtime registration/activation.
 Acceptance truth: symbolic metadata mechanics are not a real FHIR mapper, approved clinical mapping,
 validator evidence, exchange authority or live P16 acceptance. FR-FHIR-001..011 and AC-P16-001..010
+remain LIVE NOT VERIFIED; all upstream governance restrictions stay active.
+```
+
+---
+
+# 90. P16-B Synthetic FHIR Validation Gateway
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC P16-B SUBSET ONLY; P16 remains PARTIAL and
+all live AC-P16 acceptance remains unverified.
+Baseline: exact merged origin/main @ 9dbb5195ec5ef497639cef3b2b74d51099fc590e. Work was performed
+on phase/p16-b-synthetic-fhir-validation-gateway in an isolated worktree.
+Implementation: immutable validation requests/results bind exact P16-A mapping identity and UTC
+chronology through a provider-neutral port. An offline gateway and deterministic test fake exercise
+structural pass/rejection, provider unavailability, mapping drift, forged responses, invalid clocks,
+provider failure and protected-environment denial. Profile and terminology modes always fail closed
+as unavailable because no approved packages or validator exist.
+Scope: no real FHIR JSON/schema/profile/terminology validation, package/download, clinical content,
+patient data, authorization/consent decision, remote client/endpoint/credential/network, HAPI,
+persistence/migration, API/BFF, dependency, feature flag, ABDM behavior or runtime activation.
+Acceptance truth: synthetic structural mechanics are not conformance, clinical validity, exchange
+authority, validator qualification or live P16 acceptance. FR-FHIR-001..011 and AC-P16-001..010
 remain LIVE NOT VERIFIED; all upstream governance restrictions stay active.
 ```
