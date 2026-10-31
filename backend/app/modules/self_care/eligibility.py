@@ -9,6 +9,14 @@ from enum import StrEnum
 from hashlib import sha256
 from typing import Final
 
+from app.config.settings import Environment
+from app.modules.safety.domain import SafetyDecision, SafetyRoute
+from app.modules.self_care.contracts import (
+    SelfCareContractError,
+    SyntheticKnowledgePack,
+    validate_synthetic_knowledge_pack,
+)
+
 MAX_SYNTHETIC_ELIGIBILITY_PREDICATES: Final = 4
 MAX_SYNTHETIC_ELIGIBILITY_RULES: Final = 4
 MAX_SYNTHETIC_ELIGIBILITY_REASONS: Final = 4
@@ -392,6 +400,44 @@ def validate_synthetic_eligibility_policy(value: object) -> SyntheticEligibility
         raise _error(EligibilityContractCode.INVALID_TYPE) from None
 
 
+def _safety_decision(value: object) -> SafetyDecision:
+    if type(value) is not SafetyDecision:
+        raise _error(EligibilityContractCode.INVALID_TYPE)
+    try:
+        return SafetyDecision(
+            route=value.route,
+            reason_codes=value.reason_codes,
+            policy_id=value.policy_id,
+            policy_version=value.policy_version,
+            requires_clarification=value.requires_clarification,
+            blocks_self_care=value.blocks_self_care,
+            created_at=value.created_at,
+        )
+    except (AttributeError, TypeError, ValueError):
+        raise _error(EligibilityContractCode.INVALID_VALUE) from None
+
+
+def safety_decision_fingerprint(value: SafetyDecision) -> str:
+    snapshot = _safety_decision(value)
+    fields = (
+        snapshot.route.value,
+        *snapshot.reason_codes,
+        snapshot.policy_id,
+        snapshot.policy_version,
+        str(snapshot.requires_clarification).lower(),
+        str(snapshot.blocks_self_care).lower(),
+        snapshot.created_at.isoformat(),
+    )
+    return sha256("\x1f".join(fields).encode("ascii")).hexdigest()
+
+
+def _knowledge_pack(value: object) -> SyntheticKnowledgePack:
+    try:
+        return validate_synthetic_knowledge_pack(value)
+    except SelfCareContractError:
+        raise _error(EligibilityContractCode.INVALID_VALUE) from None
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SyntheticEligibilityCandidateReference:
     guidance_id: str
@@ -509,6 +555,274 @@ class SyntheticEligibilityResult:
         object.__setattr__(self, "decided_at", _utc(self.decided_at))
 
 
+def _result(value: object) -> SyntheticEligibilityResult:
+    if type(value) is not SyntheticEligibilityResult:
+        raise _error(EligibilityContractCode.INVALID_TYPE)
+    try:
+        return SyntheticEligibilityResult(
+            decision_id=value.decision_id,
+            evaluation_id=value.evaluation_id,
+            evaluation_fingerprint=value.evaluation_fingerprint,
+            safety_fingerprint=value.safety_fingerprint,
+            knowledge_pack_id=value.knowledge_pack_id,
+            knowledge_pack_version=value.knowledge_pack_version,
+            knowledge_pack_hash=value.knowledge_pack_hash,
+            policy_reference=value.policy_reference,
+            outcome=value.outcome,
+            reason_codes=value.reason_codes,
+            candidates=value.candidates,
+            decided_at=value.decided_at,
+            authority=value.authority,
+            classification=value.classification,
+            verification=value.verification,
+        )
+    except EligibilityContractError:
+        raise
+    except (AttributeError, TypeError, ValueError):
+        raise _error(EligibilityContractCode.INVALID_TYPE) from None
+
+
+def _reference(policy: SyntheticEligibilityPolicy) -> SyntheticEligibilityPolicyReference:
+    return SyntheticEligibilityPolicyReference(
+        policy_id=policy.policy_id,
+        policy_version=policy.policy_version,
+        content_hash=policy.content_hash,
+    )
+
+
+def _decision_id(evaluation: SyntheticEligibilityEvaluation) -> str:
+    suffix = evaluation.evaluation_id.removeprefix("syn_selfcare_eligibility_evaluation_")
+    return f"syn_selfcare_eligibility_decision_{suffix}"
+
+
+def validate_synthetic_eligibility_result(
+    *,
+    evaluation: SyntheticEligibilityEvaluation,
+    safety_decision: SafetyDecision,
+    knowledge_pack: SyntheticKnowledgePack,
+    policy: SyntheticEligibilityPolicy | None,
+    result: SyntheticEligibilityResult,
+) -> SyntheticEligibilityResult:
+    evaluation_snapshot = _evaluation(evaluation)
+    safety_snapshot = _safety_decision(safety_decision)
+    pack_snapshot = _knowledge_pack(knowledge_pack)
+    result_snapshot = _result(result)
+    policy_snapshot = None if policy is None else validate_synthetic_eligibility_policy(policy)
+    expected_reference = None if policy_snapshot is None else _reference(policy_snapshot)
+    if (
+        result_snapshot.decision_id != _decision_id(evaluation_snapshot)
+        or result_snapshot.evaluation_id != evaluation_snapshot.evaluation_id
+        or result_snapshot.evaluation_fingerprint
+        != synthetic_eligibility_evaluation_fingerprint(evaluation_snapshot)
+        or result_snapshot.safety_fingerprint != safety_decision_fingerprint(safety_snapshot)
+        or result_snapshot.knowledge_pack_id != pack_snapshot.pack_id
+        or result_snapshot.knowledge_pack_version != pack_snapshot.pack_version
+        or result_snapshot.knowledge_pack_hash != pack_snapshot.content_hash
+        or result_snapshot.policy_reference != expected_reference
+        or result_snapshot.decided_at != evaluation_snapshot.evaluated_at
+    ):
+        raise _error(EligibilityContractCode.IDENTITY_MISMATCH)
+    known_items = {(item.guidance_id, item.version) for item in pack_snapshot.items}
+    if any(
+        (candidate.guidance_id, candidate.guidance_version) not in known_items
+        for candidate in result_snapshot.candidates
+    ):
+        raise _error(EligibilityContractCode.IDENTITY_MISMATCH)
+    return result_snapshot
+
+
+class SyntheticEligibilityEngine:
+    """Pure toy evaluator; never produces clinical or display authority."""
+
+    def evaluate(
+        self,
+        *,
+        evaluation: SyntheticEligibilityEvaluation,
+        safety_decision: SafetyDecision,
+        knowledge_pack: SyntheticKnowledgePack,
+        policy: SyntheticEligibilityPolicy | None,
+        environment: Environment,
+    ) -> SyntheticEligibilityResult:
+        if type(environment) is not Environment:
+            raise _error(EligibilityContractCode.INVALID_TYPE)
+        if environment not in {Environment.LOCAL, Environment.TEST}:
+            raise _error(EligibilityContractCode.PROTECTED_ENVIRONMENT)
+        evaluation_snapshot = _evaluation(evaluation)
+        safety_snapshot = _safety_decision(safety_decision)
+        pack_snapshot = _knowledge_pack(knowledge_pack)
+        policy_snapshot: SyntheticEligibilityPolicy | None
+        if policy is None:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=None,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_UNAVAILABLE,
+            )
+        try:
+            policy_snapshot = validate_synthetic_eligibility_policy(policy)
+        except EligibilityContractError:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=None,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_INVALID,
+            )
+        if policy_snapshot.state is SyntheticEligibilityPolicyState.TEST_ONLY_SUSPENDED:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_SUSPENDED,
+            )
+        if evaluation_snapshot.evaluated_at < policy_snapshot.effective_at:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_NOT_EFFECTIVE,
+            )
+        if evaluation_snapshot.evaluated_at >= policy_snapshot.expires_at:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_EXPIRED,
+            )
+        if not self._is_exact_positive_safety(safety_snapshot, evaluation_snapshot):
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_SAFETY_BLOCK,
+            )
+        supplied = frozenset(evaluation_snapshot.predicates)
+        if SyntheticEligibilityPredicate.CONFLICT_ALPHA in supplied:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_CLARIFICATION_REQUIRED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_CONTEXT_CONFLICT,
+            )
+        if SyntheticEligibilityPredicate.CONTEXT_COMPLETE_ALPHA not in supplied:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_CLARIFICATION_REQUIRED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_CONTEXT_INCOMPLETE,
+            )
+        matched = tuple(
+            rule for rule in policy_snapshot.rules if rule.required_predicate in supplied
+        )
+        if any(rule.exclusion_predicate in supplied for rule in matched):
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_EXCLUSION_MATCH,
+            )
+        if not matched:
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_CLARIFICATION_REQUIRED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_NO_RULE_MATCH,
+            )
+        known_items = {(item.guidance_id, item.version) for item in pack_snapshot.items}
+        if any((rule.guidance_id, rule.guidance_version) not in known_items for rule in matched):
+            return self._result(
+                evaluation=evaluation_snapshot,
+                safety=safety_snapshot,
+                pack=pack_snapshot,
+                policy=policy_snapshot,
+                outcome=SyntheticEligibilityOutcome.SYNTHETIC_BLOCKED,
+                reason=SyntheticEligibilityReason.SYNTHETIC_POLICY_INVALID,
+            )
+        candidates = tuple(
+            SyntheticEligibilityCandidateReference(
+                guidance_id=rule.guidance_id,
+                guidance_version=rule.guidance_version,
+            )
+            for rule in matched
+        )
+        return self._result(
+            evaluation=evaluation_snapshot,
+            safety=safety_snapshot,
+            pack=pack_snapshot,
+            policy=policy_snapshot,
+            outcome=SyntheticEligibilityOutcome.SYNTHETIC_ENGINEERING_CANDIDATE,
+            reason=SyntheticEligibilityReason.SYNTHETIC_RULE_MATCH,
+            candidates=candidates,
+        )
+
+    @staticmethod
+    def _is_exact_positive_safety(
+        safety: SafetyDecision,
+        evaluation: SyntheticEligibilityEvaluation,
+    ) -> bool:
+        return (
+            safety.route is SafetyRoute.SUPPORTED_SELF_CARE
+            and safety.reason_codes == ("SYNTHETIC_SELF_CARE_A",)
+            and safety.policy_id == "synthetic-physical-safety-metadata"
+            and safety.policy_version == "engineering.1"
+            and not safety.requires_clarification
+            and not safety.blocks_self_care
+            and safety.created_at <= evaluation.evaluated_at
+        )
+
+    @staticmethod
+    def _result(
+        *,
+        evaluation: SyntheticEligibilityEvaluation,
+        safety: SafetyDecision,
+        pack: SyntheticKnowledgePack,
+        policy: SyntheticEligibilityPolicy | None,
+        outcome: SyntheticEligibilityOutcome,
+        reason: SyntheticEligibilityReason,
+        candidates: tuple[SyntheticEligibilityCandidateReference, ...] = (),
+    ) -> SyntheticEligibilityResult:
+        result = SyntheticEligibilityResult(
+            decision_id=_decision_id(evaluation),
+            evaluation_id=evaluation.evaluation_id,
+            evaluation_fingerprint=synthetic_eligibility_evaluation_fingerprint(evaluation),
+            safety_fingerprint=safety_decision_fingerprint(safety),
+            knowledge_pack_id=pack.pack_id,
+            knowledge_pack_version=pack.pack_version,
+            knowledge_pack_hash=pack.content_hash,
+            policy_reference=None if policy is None else _reference(policy),
+            outcome=outcome,
+            reason_codes=(reason,),
+            candidates=candidates,
+            decided_at=evaluation.evaluated_at,
+        )
+        return validate_synthetic_eligibility_result(
+            evaluation=evaluation,
+            safety_decision=safety,
+            knowledge_pack=pack,
+            policy=policy,
+            result=result,
+        )
+
+
 __all__ = [
     "MAX_SYNTHETIC_ELIGIBILITY_PREDICATES",
     "SYNTHETIC_ELIGIBILITY_CONTRACT_VERSION",
@@ -518,6 +832,7 @@ __all__ = [
     "SyntheticEligibilityCandidateReference",
     "SyntheticEligibilityClassification",
     "SyntheticEligibilityEvaluation",
+    "SyntheticEligibilityEngine",
     "SyntheticEligibilityOutcome",
     "SyntheticEligibilityPolicy",
     "SyntheticEligibilityPolicyReference",
@@ -527,6 +842,8 @@ __all__ = [
     "SyntheticEligibilityResult",
     "SyntheticEligibilityRule",
     "SyntheticEligibilityVerification",
+    "safety_decision_fingerprint",
     "synthetic_eligibility_evaluation_fingerprint",
+    "validate_synthetic_eligibility_result",
     "validate_synthetic_eligibility_policy",
 ]
