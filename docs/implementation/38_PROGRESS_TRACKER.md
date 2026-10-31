@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, and P14-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, and P14 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, and P14-A/B/C have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, and P14 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -50,7 +50,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
 | P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D/E provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, content-free simulated notification failure, and test-only unavailable/degraded/source-warning presentation evidence. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or UI/runtime activation exists; all live AC-P13 criteria remain unverified. |
-| P14 | Mental Health / MannSetu | PARTIAL | P14-A/B provide detached content-free engineering-only signal and safety-backstop contracts using fixed nonmedical toy tokens, plus a test-only deterministic backstop mock. No conversation, patient data, clinical signal or lexicon, production adapter, policy, route, resource, referral, API, persistence, UI or runtime activation exists; all live AC-P14 criteria remain unverified. |
+| P14 | Mental Health / MannSetu | PARTIAL | P14-A/B/C provide detached content-free signal, safety-backstop, and toy policy-routing mechanics using fixed nonmedical symbols. Executable mappings remain test-only and protected environments are denied. No conversation, patient data, clinical signal/lexicon/policy/route, production adapter, resource, referral, API, persistence, UI or runtime activation exists; all live AC-P14 criteria remain unverified. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
 | P17 | ABDM / ABHA | NOT STARTED | Requires current ABDM integration spec. |
@@ -2516,4 +2516,29 @@ backstop or grant mental-health authority. FR-MH-001..020 and AC-P14-001..013 re
 VERIFIED. All P7/P8-C/P9-C/P10/P11/P12/P13 restrictions stay active.
 Next action: independent review of this bounded subset. P14-C and all live P14 work remain blocked
 on recorded clinical, language, privacy, identity, resource, accessibility and release decisions.
+```
+
+---
+
+# 83. P14-C Synthetic Policy-Routing Mechanics
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P14-C SUBSET ONLY; P14 remains PARTIAL and all live
+AC-P14 acceptance remains unverified.
+Baseline: exact merged origin/main @ 9244864dc79be72fd8d0db53b0d381af1bf47a88. Work was performed
+on phase/p14-c-synthetic-policy-routing in an isolated worktree.
+Implementation: immutable engineering-only rule, policy, evaluation, reference, and decision
+contracts; exact policy-content and evidence/decision fingerprints; fixed toy override,
+clarification, and standard precedence; explicit degraded outcomes; and hard denial before reading
+input in staging, pilot, or production. The only executable rule mapping is test-only.
+Scope: closed SYNTHETIC symbols only. No ROUTE_A/B/C meaning, clinical signal/rule/threshold,
+questionnaire, narrative/patient/session data, model score/route authority, crisis disposition,
+resource, referral, consent behavior, API, persistence, migration, event/job, dependency, UI,
+feature flag, module registration, or runtime activation.
+Acceptance truth: engineering mechanics are not a clinically approved deterministic mental-health
+policy and do not satisfy live routing acceptance. FR-MH-001..020 and AC-P14-001..013 remain LIVE
+NOT VERIFIED. All P7/P8-C/P9-C/P10/P11/P12/P13 restrictions stay active.
+Next action: independent review of this bounded subset. P14-D patient fallback UI and every live P14
+capability remain blocked on the recorded clinical, language, privacy, resource, accessibility,
+operations, and release decisions.
 ```

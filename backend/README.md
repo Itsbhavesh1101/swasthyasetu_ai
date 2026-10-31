@@ -388,6 +388,21 @@ production registration. There is no narrative processing, patient/session ident
 signal, route, policy, crisis resource, provider, network access, API, persistence, UI, or runtime
 activation.
 
+## P14-C synthetic policy-routing mechanics
+
+`app.modules.mental_health.policy` defines immutable engineering-only rule, policy-artifact,
+evaluation, policy-reference, and decision contracts over closed toy signal and route vocabularies.
+The pure evaluator verifies exact policy content hashes, canonical UTC lifecycle bounds, complete
+evidence and policy fingerprints, fixed override/clarification/standard precedence, and deterministic
+reason ordering. Missing, invalid, future, expired, suspended, unmatched, disagreeing, or conflicting
+toy inputs produce an explicit synthetic degraded state rather than a guessed route.
+
+The engine rejects staging, pilot, and production before reading policy or evidence. No policy
+mapping exists in application code; the only executable mapping lives under
+`backend/tests/mental_health_support`. The module has no `ROUTE_A/B/C` semantics, clinical terms,
+model route/score input, patient/session identity, narrative processing, API, persistence, UI,
+feature flag, module registration, or runtime activation.
+
 ## Synthetic language and speech contracts
 
 P12-A adds an inert `app.modules.language` engineering package. It defines strict immutable
