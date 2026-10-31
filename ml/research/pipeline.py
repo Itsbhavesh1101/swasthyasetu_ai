@@ -784,7 +784,7 @@ class SyntheticEvaluationReceipt:
         _strict_enum(self.authority, ResearchAuthority)
 
 
-def _validate_evaluation_receipt(value: object) -> SyntheticEvaluationReceipt:
+def validate_synthetic_evaluation_receipt(value: object) -> SyntheticEvaluationReceipt:
     if type(value) is not SyntheticEvaluationReceipt:
         raise _error(ResearchBoundaryCode.INVALID_TYPE)
     try:
@@ -810,7 +810,7 @@ def _validate_evaluation_receipt(value: object) -> SyntheticEvaluationReceipt:
 
 
 def synthetic_evaluation_fingerprint(value: SyntheticEvaluationReceipt) -> str:
-    receipt = _validate_evaluation_receipt(value)
+    receipt = validate_synthetic_evaluation_receipt(value)
     return _canonical_hash(
         (
             receipt.evaluation_version,
@@ -904,5 +904,6 @@ __all__ = [
     "transform_synthetic_partition",
     "validate_synthetic_split_manifest",
     "validate_synthetic_preprocessing_receipt",
+    "validate_synthetic_evaluation_receipt",
     "validate_synthetic_transformed_batch",
 ]
