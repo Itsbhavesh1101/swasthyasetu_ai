@@ -185,7 +185,7 @@ class SyntheticModelCard:
     def __post_init__(self) -> None:
         _machine_string(self.card_id, _CARD_ID)
         _machine_string(self.card_version, _VERSION)
-        # Model identity is fully reconstructed by the builder/validator fingerprint.
+        # Closed grammar prevents free-form identity metadata at this boundary.
         _machine_string(self.model_id, _MODEL_ID)
         _machine_string(self.model_version, _VERSION)
         _machine_string(self.model_fingerprint, _SHA256)

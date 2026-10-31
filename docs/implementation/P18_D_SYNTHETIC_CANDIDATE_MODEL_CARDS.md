@@ -38,7 +38,7 @@ activation, inference, P18-E, or P19 behavior is introduced.
 ## Acceptance truth
 
 These are synthetic metadata-integrity mechanics, not a governed model registration. Registry
-presence does not satisfy `AC-P18-009`; the synthetic card does not satisfy `AC-P18-016` or create a
+presence does not satisfy `AC-P18-009`; the synthetic card does not satisfy `FR-ML-016` or create a
 promoted model. `FR-ML-001..017` and `AC-P18-001..010` remain LIVE NOT VERIFIED.
 
 ## Next action
