@@ -27,8 +27,8 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D synthetic engineering subsets and the Pre-P11-E source-access/UI design are merged; P11-focused draft security, threat, and privacy material awaits accountable review. The Pre-P12 speech/language, Pre-P13 provider-routing/readiness, and Pre-P13/P21 admin-governance packs are draft documentation pending independent/human review. P13-A now has a bounded engineering-synthetic domain foundation only; P13 live directory/referral work and P21 remain not started. P11 is partial while P8, P9, P10 and P13 remain partial.
-**Current recommended next action:** Review the bounded P13-A engineering contracts and obtain accountable decisions before any verified source, contact, taxonomy, routing, persistence, API, referral or patient/admin activation. Do not begin live P11-A/P11-E/document processing, P12 implementation, P13-B/C/D/E, or P21-A/B/C/D while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
+**Current macro stage:** P11-A/B/C/D, P12-A, and P13-A/B/C/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, and P13 remain partial.
+**Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 notification delivery/UI, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked. The drafted `25_ADMIN_PORTAL_SPEC.md` is not an approval or implementation authorization.
 
 ---
 
@@ -49,7 +49,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P10 | Clinician Dashboard + Summary | PARTIAL | P10-A safe engineering domain/test subset merged in PR #30. P10-B, sensitive P10-C and P10-D remain blocked; no live clinician workflow is authorized. |
 | P11 | Document AI / OCR | PARTIAL | P11-A/B/C and P11-D are merged through PR #35 at `f71662322b27ec79004745ec6217283887700ac8`; reviewed P11-D head `963f5e11eccec4d1ef7a80386ae49f61833bc28e` is tree-equivalent. Pre-P11-E is documentation-only; its P11-A approval-readiness package is prepared with every human decision pending. No upload, storage, live document workflow, medical extraction, executable processor, OCR provider or P11-E UI is approved. |
 | P12 | Multilingual Speech / Translation | PARTIAL | P12-A synthetic contract/port/metadata/mock foundation implemented; no runtime registration, provider/model, audio, API/UI, persistence, clinical use or live approval. P12-B/C/D and all live AC-P12 criteria remain blocked/not verified. |
-| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C provide strict engineering-synthetic directory, symbolic match/abstention, and detached referral lifecycle/idempotency mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, persistence, API, adapter or runtime activation exists; all live AC-P13 criteria remain unverified. |
+| P13 | Providers + Resources + Referrals | PARTIAL | P13-A/B/C/D provide strict engineering-synthetic directory, symbolic match/abstention, detached referral lifecycle/idempotency, and content-free simulated notification-failure mechanics only. No verified source, contact, clinical taxonomy, provider query/ranking, live consent/sharing, delivery, persistence, API, adapter or runtime activation exists; all live AC-P13 criteria remain unverified. |
 | P14 | Mental Health / MannSetu | NOT STARTED | Real routing/copy requires clinical approval. |
 | P15 | Self-Care / Ayurveda | NOT STARTED | Real content requires approved knowledge. |
 | P16 | FHIR | NOT STARTED | Depends on stable domain model. |
@@ -2415,4 +2415,30 @@ urgent-help navigation remain independent; all P8-C/P9-C/P10/P11/P12 restriction
 Next action: independent review of the stacked bounded branch. Live referral work remains blocked
 on consent/identity, recipient/destination, payload minimization, approved transitions and races,
 durable transaction/outbox/idempotency, adapter/reconciliation, privacy/security and operations.
+```
+
+---
+
+# 79. P13-D Synthetic Notification Failure Contracts
+
+```text
+Status: PARTIAL - BOUNDED ENGINEERING-SYNTHETIC P13-D SUBSET ONLY; P13 remains PARTIAL and all live
+AC-P13 acceptance remains unverified.
+Baseline: exact merged origin/main @ 86eaccba6010dbe64c612f7fe66bb97b33f8df70. Work was performed
+on phase/p13-d-synthetic-notification-contracts in an isolated worktree.
+Implementation: immutable template metadata, safe symbolic variable, content-free notification
+intent, simulated failure and failure-receipt contracts plus a pure recorder. Constructors enforce
+reserved synthetic identifiers, bounded exact variable sets, version/hash binding, aware UTC
+normalization, chronology, nested revalidation and fixed engineering-only authority. The receipt
+retains a deterministic fingerprint and simulated failure metadata only.
+Scope: no message copy/body, recipient, contact, channel, provider, delivery port, success state,
+retry/deadline policy, signature/webhook, preference/consent, referral mutation, persistence,
+migration, API, outbox/event, job/worker, dependency, feature flag, network or runtime registration.
+Acceptance truth: failure evidence does not prove or authorize notification delivery or referral
+sharing. FR-NOTIF-001..006, FR-REF-001..013 and AC-P13-006..011 remain LIVE NOT VERIFIED, as do all
+other live P13 criteria. P7 and generic urgent-help navigation remain independent; all
+P8-C/P9-C/P10/P11/P12 restrictions remain active.
+Next action: independent review of this bounded branch. Live notification work remains blocked on
+recipient/channel/provider selection, approved copy/locales, preferences/consent, retry/deadline,
+security/webhook, retention, delivery semantics and incident/correction decisions.
 ```
