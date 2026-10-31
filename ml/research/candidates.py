@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from datetime import UTC, datetime
 from enum import StrEnum
 from hashlib import sha256
@@ -44,6 +44,7 @@ from ml.research.pipeline import (
 
 _CARD_ID = re.compile(r"^syn_ml_card_(?:alpha|beta|gamma|delta)$")
 _CANDIDATE_ID = re.compile(r"^syn_ml_candidate_[0-9]{4}$")
+_MODEL_ID = re.compile(r"^syn_ml_model_(?:alpha|beta|gamma|delta)$")
 _VERSION = re.compile(r"^engineering\.v[1-9][0-9]{0,5}$")
 _SHA256 = re.compile(r"^[a-f0-9]{64}$")
 
@@ -115,6 +116,7 @@ def _card_evidence_fingerprint(
     model_version: str,
     model_fingerprint: str,
     model_kind: SyntheticBaselineKind,
+    dataset_fingerprint: str,
     split_fingerprint: str,
     preprocessing_fingerprint: str,
     evaluation_fingerprint: str,
@@ -137,6 +139,7 @@ def _card_evidence_fingerprint(
             model_version,
             model_fingerprint,
             model_kind.value,
+            dataset_fingerprint,
             split_fingerprint,
             preprocessing_fingerprint,
             evaluation_fingerprint,
@@ -163,6 +166,7 @@ class SyntheticModelCard:
     model_fingerprint: str
     model_kind: SyntheticBaselineKind
     data_classification: SyntheticDataClassification
+    dataset_fingerprint: str
     split_fingerprint: str
     preprocessing_fingerprint: str
     evaluation_fingerprint: str
@@ -182,16 +186,14 @@ class SyntheticModelCard:
         _machine_string(self.card_id, _CARD_ID)
         _machine_string(self.card_version, _VERSION)
         # Model identity is fully reconstructed by the builder/validator fingerprint.
-        if type(self.model_id) is not str or type(self.model_version) is not str:
-            raise _error(ResearchBoundaryCode.INVALID_TYPE)
+        _machine_string(self.model_id, _MODEL_ID)
+        _machine_string(self.model_version, _VERSION)
         _machine_string(self.model_fingerprint, _SHA256)
         _strict_enum(self.model_kind, SyntheticBaselineKind)
         _strict_enum(self.data_classification, SyntheticDataClassification)
-        if (
-            self.data_classification
-            is not SyntheticDataClassification.SYNTHETIC_NON_MEDICAL
-        ):
+        if self.data_classification is not SyntheticDataClassification.SYNTHETIC_NON_MEDICAL:
             raise _error(ResearchBoundaryCode.INVALID_VALUE)
+        _machine_string(self.dataset_fingerprint, _SHA256)
         _machine_string(self.split_fingerprint, _SHA256)
         _machine_string(self.preprocessing_fingerprint, _SHA256)
         _machine_string(self.evaluation_fingerprint, _SHA256)
@@ -220,6 +222,7 @@ class SyntheticModelCard:
             model_version=self.model_version,
             model_fingerprint=self.model_fingerprint,
             model_kind=self.model_kind,
+            dataset_fingerprint=self.dataset_fingerprint,
             split_fingerprint=self.split_fingerprint,
             preprocessing_fingerprint=self.preprocessing_fingerprint,
             evaluation_fingerprint=self.evaluation_fingerprint,
@@ -251,6 +254,7 @@ def validate_synthetic_model_card(value: object) -> SyntheticModelCard:
             model_fingerprint=value.model_fingerprint,
             model_kind=value.model_kind,
             data_classification=value.data_classification,
+            dataset_fingerprint=value.dataset_fingerprint,
             split_fingerprint=value.split_fingerprint,
             preprocessing_fingerprint=value.preprocessing_fingerprint,
             evaluation_fingerprint=value.evaluation_fingerprint,
@@ -340,6 +344,7 @@ def build_synthetic_model_card(
         model_version=safe_model.model_version,
         model_fingerprint=model_fingerprint,
         model_kind=safe_model.kind,
+        dataset_fingerprint=safe_split.dataset_fingerprint,
         split_fingerprint=split_fingerprint,
         preprocessing_fingerprint=preprocessing_fingerprint,
         evaluation_fingerprint=synthetic_evaluation_fingerprint(reproduced),
@@ -362,6 +367,7 @@ def build_synthetic_model_card(
         model_fingerprint=model_fingerprint,
         model_kind=safe_model.kind,
         data_classification=SyntheticDataClassification.SYNTHETIC_NON_MEDICAL,
+        dataset_fingerprint=safe_split.dataset_fingerprint,
         split_fingerprint=split_fingerprint,
         preprocessing_fingerprint=preprocessing_fingerprint,
         evaluation_fingerprint=synthetic_evaluation_fingerprint(reproduced),
@@ -432,8 +438,8 @@ class SyntheticModelCandidate:
     def __post_init__(self) -> None:
         _machine_string(self.candidate_id, _CANDIDATE_ID)
         _machine_string(self.candidate_version, _VERSION)
-        if type(self.model_id) is not str or type(self.model_version) is not str:
-            raise _error(ResearchBoundaryCode.INVALID_TYPE)
+        _machine_string(self.model_id, _MODEL_ID)
+        _machine_string(self.model_version, _VERSION)
         _machine_string(self.model_fingerprint, _SHA256)
         _machine_string(self.card_id, _CARD_ID)
         _machine_string(self.card_version, _VERSION)
@@ -512,6 +518,8 @@ def build_synthetic_model_candidate(
         or safe_card.model_fingerprint != model_fingerprint
     ):
         raise _error(ResearchBoundaryCode.IDENTITY_MISMATCH)
+    if normalized_time < safe_card.generated_at:
+        raise _error(ResearchBoundaryCode.INVALID_VALUE)
     status = SyntheticCandidateStatus.TEST_ONLY_UNAPPROVED
     authority = ResearchAuthority.ENGINEERING_ONLY
     evidence_fingerprint = _candidate_evidence_fingerprint(
@@ -547,42 +555,35 @@ type _Identity = tuple[str, str]
 
 
 def _candidate_identity(identifier: object, version: object) -> _Identity:
-    return _machine_string(identifier, _CANDIDATE_ID), _machine_string(
-        version, _VERSION
-    )
+    return _machine_string(identifier, _CANDIDATE_ID), _machine_string(version, _VERSION)
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SyntheticCandidateRegistry:
     candidates: tuple[SyntheticModelCandidate, ...]
     cards: tuple[SyntheticModelCard, ...]
-    models: tuple[SyntheticBaselineModel, ...]
+    models: InitVar[tuple[SyntheticBaselineModel, ...]]
     environment: ResearchEnvironment
     _by_identity: Mapping[_Identity, SyntheticModelCandidate] = field(
         init=False, repr=False, compare=False
     )
 
-    def __post_init__(self) -> None:
+    def __post_init__(self, model_values: tuple[SyntheticBaselineModel, ...]) -> None:
         environment = validate_research_environment(self.environment)
-        for collection in (self.candidates, self.cards, self.models):
+        for collection in (self.candidates, self.cards, model_values):
             if type(collection) is not tuple:
                 raise _error(ResearchBoundaryCode.INVALID_TYPE)
-        if (
-            max(len(self.candidates), len(self.cards), len(self.models))
-            > _MAX_CANDIDATES
-        ):
+        if max(len(self.candidates), len(self.cards), len(model_values)) > _MAX_CANDIDATES:
             raise _error(ResearchBoundaryCode.CAPACITY_EXCEEDED)
 
-        models: list[SyntheticBaselineModel] = []
         models_by_identity: dict[_Identity, SyntheticBaselineModel] = {}
         model_fingerprints: set[str] = set()
-        for model_value in self.models:
+        for model_value in model_values:
             model = validate_synthetic_baseline_model(model_value)
             identity = (model.model_id, model.model_version)
             fingerprint = synthetic_baseline_fingerprint(model)
             if identity in models_by_identity or fingerprint in model_fingerprints:
                 raise _error(ResearchBoundaryCode.DUPLICATE_IDENTITY)
-            models.append(model)
             models_by_identity[identity] = model
             model_fingerprints.add(fingerprint)
 
@@ -598,8 +599,7 @@ class SyntheticCandidateRegistry:
             linked_model = models_by_identity.get((card.model_id, card.model_version))
             if (
                 linked_model is None
-                or synthetic_baseline_fingerprint(linked_model)
-                != card.model_fingerprint
+                or synthetic_baseline_fingerprint(linked_model) != card.model_fingerprint
             ):
                 raise _error(ResearchBoundaryCode.IDENTITY_MISMATCH)
             cards.append(card)
@@ -615,21 +615,17 @@ class SyntheticCandidateRegistry:
             identity = (candidate.candidate_id, candidate.candidate_version)
             if identity in by_identity:
                 raise _error(ResearchBoundaryCode.DUPLICATE_IDENTITY)
-            linked_model = models_by_identity.get(
-                (candidate.model_id, candidate.model_version)
-            )
-            linked_card = cards_by_identity.get(
-                (candidate.card_id, candidate.card_version)
-            )
+            linked_model = models_by_identity.get((candidate.model_id, candidate.model_version))
+            linked_card = cards_by_identity.get((candidate.card_id, candidate.card_version))
             if (
                 linked_model is None
                 or linked_card is None
-                or synthetic_baseline_fingerprint(linked_model)
-                != candidate.model_fingerprint
-                or synthetic_model_card_fingerprint(linked_card)
-                != candidate.card_fingerprint
+                or synthetic_baseline_fingerprint(linked_model) != candidate.model_fingerprint
+                or synthetic_model_card_fingerprint(linked_card) != candidate.card_fingerprint
             ):
                 raise _error(ResearchBoundaryCode.IDENTITY_MISMATCH)
+            if candidate.registered_at < linked_card.generated_at:
+                raise _error(ResearchBoundaryCode.INVALID_VALUE)
             if (
                 candidate.model_fingerprint in claimed_models
                 or candidate.card_fingerprint in claimed_cards
@@ -642,17 +638,12 @@ class SyntheticCandidateRegistry:
 
         object.__setattr__(self, "candidates", tuple(candidates))
         object.__setattr__(self, "cards", tuple(cards))
-        object.__setattr__(self, "models", tuple(models))
         object.__setattr__(self, "environment", environment)
         object.__setattr__(self, "_by_identity", MappingProxyType(by_identity))
 
-    def resolve(
-        self, candidate_id: object, candidate_version: object
-    ) -> SyntheticModelCandidate:
+    def resolve(self, candidate_id: object, candidate_version: object) -> SyntheticModelCandidate:
         try:
-            return self._by_identity[
-                _candidate_identity(candidate_id, candidate_version)
-            ]
+            return self._by_identity[_candidate_identity(candidate_id, candidate_version)]
         except KeyError:
             raise _error(ResearchBoundaryCode.UNKNOWN_IDENTITY) from None
 

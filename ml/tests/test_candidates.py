@@ -82,9 +82,7 @@ def evaluated() -> tuple[
     expected = tuple(
         SyntheticExpectedLabel(
             row_id=row.row_id,
-            label=SyntheticClass.CLASS_ALPHA
-            if index % 2 == 0
-            else SyntheticClass.CLASS_BETA,
+            label=SyntheticClass.CLASS_ALPHA if index % 2 == 0 else SyntheticClass.CLASS_BETA,
         )
         for index, row in enumerate(test.rows)
     )
@@ -149,6 +147,7 @@ class SyntheticModelCardTests(unittest.TestCase):
             synthetic_model_card_fingerprint(second),
         )
         self.assertEqual(first.model_fingerprint, synthetic_baseline_fingerprint(model))
+        self.assertEqual(first.dataset_fingerprint, evaluated()[1].dataset_fingerprint)
         self.assertEqual(first.evaluated_count, evaluation.evaluated_count)
         self.assertEqual(first.correct_count, evaluation.correct_count)
         self.assertEqual(first.error_count, evaluation.error_count)
@@ -181,9 +180,7 @@ class SyntheticModelCardTests(unittest.TestCase):
                 build_card(**changes)
 
     def test_card_normalizes_aware_time_and_rejects_naive_time(self) -> None:
-        non_utc = datetime(
-            2026, 11, 1, 16, 0, tzinfo=timezone(timedelta(hours=5, minutes=30))
-        )
+        non_utc = datetime(2026, 11, 1, 16, 0, tzinfo=timezone(timedelta(hours=5, minutes=30)))
         card = build_card(generated_at=non_utc)
 
         self.assertEqual(card.generated_at, datetime(2026, 11, 1, 10, 30, tzinfo=UTC))
@@ -273,17 +270,19 @@ class SyntheticModelCandidateTests(unittest.TestCase):
         self.assertIs(error.exception.code, ResearchBoundaryCode.IDENTITY_MISMATCH)
 
     def test_candidate_normalizes_aware_time_and_rejects_naive_time(self) -> None:
-        non_utc = datetime(
-            2026, 11, 1, 16, 15, tzinfo=timezone(timedelta(hours=5, minutes=30))
-        )
+        non_utc = datetime(2026, 11, 1, 16, 15, tzinfo=timezone(timedelta(hours=5, minutes=30)))
         candidate = build_candidate(registered_at=non_utc)
 
-        self.assertEqual(
-            candidate.registered_at, datetime(2026, 11, 1, 10, 45, tzinfo=UTC)
-        )
+        self.assertEqual(candidate.registered_at, datetime(2026, 11, 1, 10, 45, tzinfo=UTC))
         with self.assertRaises(ResearchBoundaryError) as error:
             build_candidate(registered_at=datetime(2026, 11, 1, 10, 45))
         self.assertIs(error.exception.code, ResearchBoundaryCode.INVALID_TYPE)
+
+    def test_candidate_registration_cannot_predate_card_generation(self) -> None:
+        with self.assertRaises(ResearchBoundaryError) as error:
+            build_candidate(registered_at=datetime(2026, 11, 1, 10, 0, tzinfo=UTC))
+
+        self.assertIs(error.exception.code, ResearchBoundaryCode.INVALID_VALUE)
 
     def test_candidate_is_immutable_and_validator_rejects_forced_mutation(self) -> None:
         candidate = build_candidate()
@@ -324,6 +323,8 @@ class SyntheticCandidateRegistryTests(unittest.TestCase):
             registry.resolve("syn_ml_candidate_0001", "engineering.v1"),
             expected,
         )
+        with self.assertRaises(AttributeError):
+            object.__getattribute__(registry, "models")
 
     def test_registry_rejects_unknown_or_duplicate_identity(self) -> None:
         model, _, _, _, _, _ = evaluated()
