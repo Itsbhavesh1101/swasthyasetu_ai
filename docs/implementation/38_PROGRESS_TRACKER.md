@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, and P17-A/B have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, and P17 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, and P17-A/B/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, and P17 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -2754,4 +2754,30 @@ Next action: independent review of the test-only boundary. P17-C remains blocked
 bounded P17-D may prove offline failure isolation; official sandbox or live work remains blocked on
 current official sources and all identity, consent, clinical, architecture, privacy, security,
 partner/legal, operations and release gates.
+```
+
+---
+
+# 93. P17-D Offline Failure-Isolation Evidence
+
+```text
+Status: PARTIAL - BOUNDED TEST-ONLY ENGINEERING-SYNTHETIC P17-D EVIDENCE; P17 remains PARTIAL,
+P17-C remains blocked and all live AC-P17 acceptance remains unverified.
+Baseline: exact merged origin/main @ 42314e0547181cddeecc74de272e75d55d76d2b4. Work was performed
+on phase/p17-d-offline-failure-isolation in an isolated worktree.
+Evidence: real PostgreSQL tests commit a minimal content-free P7 intake and skipped answer before
+invoking the detached P17-B adapter. Synthetic rejection, unavailability and sanitized adapter
+clock failure occur outside the database transaction. Fresh sessions prove the exact local records
+remain present, and a later transaction proves the intake remains writable through completion.
+Scope: tests and documentation only; no production orchestrator, official operation/payload,
+remote transaction, ABHA/real identifier, patient/clinical content, endpoint, credential, network,
+retry/reconciliation/callback, consent behavior, provenance workflow, persistence/migration,
+API/BFF, UI, dependency, configuration, feature flag, event/job or runtime activation.
+Acceptance truth: this is bounded evidence toward the local-preservation intent of FR-ABDM-005,
+not official exchange or resilience verification. It does not satisfy AC-P17-005 or any other live
+P17 criterion. FR-ABDM-001..007 and AC-P17-001..007 remain LIVE NOT VERIFIED; every official and
+accountable decision remains outstanding.
+Next action: independent review of this tests-only evidence. P17-C remains blocked; official
+sandbox or live work remains blocked on current official sources and all identity, consent,
+clinical, architecture, privacy, security, partner/legal, operations and release gates.
 ```
