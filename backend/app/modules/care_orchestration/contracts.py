@@ -349,6 +349,19 @@ class SyntheticCompositionDecision:
         )
         if len({item.candidate_id for item in safe_candidates}) != len(safe_candidates):
             raise _error(CompositionCode.DUPLICATE_CANDIDATE)
+        semantic_candidates = {
+            (
+                item.action,
+                item.channel,
+                item.evidence_id,
+                item.evidence_version,
+                item.evidence_hash,
+                item.reason_code,
+            )
+            for item in safe_candidates
+        }
+        if len(semantic_candidates) != len(safe_candidates):
+            raise _error(CompositionCode.DUPLICATE_CANDIDATE)
         if type(self.unavailable_channels) is not tuple or any(
             type(item) is not EvidenceChannel for item in self.unavailable_channels
         ):

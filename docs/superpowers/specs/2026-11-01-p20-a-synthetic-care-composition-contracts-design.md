@@ -83,4 +83,3 @@ No real subject/session/encounter/actor/institution identifiers; no raw narrativ
 no consent or authorization decision; no P9/P14/P15 policy evaluation; no provider recommendation;
 no action ranking or precedence; no patient/clinician/admin UI; no P20-B/C/D; and no live
 `AC-P20-001..010` or `AC-PROD-001..014` acceptance claim.
-

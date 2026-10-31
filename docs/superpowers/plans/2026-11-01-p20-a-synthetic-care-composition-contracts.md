@@ -106,4 +106,3 @@ pytest, Ruff, mypy.
       Docker/PostgreSQL, Playwright, Gitleaks, Trivy, and diff/privacy audits.**
 - [ ] **Step 5: Commit, push, open a PR, verify all six CI jobs on the exact SHA, merge only when green,
       and verify all six jobs on the merge SHA.**
-
