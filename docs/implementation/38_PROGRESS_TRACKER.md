@@ -3213,3 +3213,34 @@ Next action: independently review this bounded schema. No pilot or release work 
 the upstream P22/P23 evidence, exact-scope artifacts and genuine accountable approvals required by
 P24_READINESS_GATE_REVIEW.md exist. Green CI cannot record a release decision.
 ```
+
+---
+
+# 109. P24-B Synthetic Safety-Evaluation Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-EVALUATION P24-B FOUNDATION ONLY; P24
+remains NOT STARTED for pilot/release purposes and all live AC-P24-001..013 remain unverified.
+Baseline: exact merged origin/main @ a6400871279a71bad543c93e4a30da77f6ee5850. Work was performed
+on phase/p24-b-synthetic-safety-evaluation-planning in an isolated worktree.
+Implementation: the unregistered app.validation package defines exact immutable plans for the six
+canonical P24 safety-evaluation areas. Plans bind only engineering version, build and proposed
+synthetic fixture, oracle, metric, analysis, privacy, negative-test and responsible-role hashes.
+The complete canonical manifest enforces exact build, order and chronology. Every record remains
+engineering-only, synthetic, unverified, not executed, not eligible, human-metric-and-approval-
+required and release-decision-not-recorded. Protected environments fail before input inspection.
+Isolation: no clinical fixture, language corpus, resource, route, metric value, threshold,
+denominator, score, result, pass/fail, signature, approval, waiver, evaluation or release operation
+exists. The package has no module registration, route, persistence or runtime activation.
+Scope: no patient/clinical data, policy, clinical inference, safety result, human participant,
+institution, persistence/migration, API/UI, event/job, dependency, network, configuration change,
+pilot, production, deployment or rollout behavior.
+Acceptance truth: planning-integrity mechanics are not clinical safety evidence. AC-P24-008/009,
+all other AC-P24 criteria and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED. Qualified
+clinical, language/content, resource, privacy, statistical, institution and independent validation
+decisions remain outstanding.
+Next action: independently review this bounded schema. Any evaluation requires separately approved
+clinical sources, population/languages, fixtures and rights, oracles, metrics/denominators,
+thresholds, analysis, privacy/evidence handling and qualified independent review. No pilot or
+release work follows from this foundation.
+```
