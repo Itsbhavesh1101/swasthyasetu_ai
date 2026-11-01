@@ -3183,3 +3183,33 @@ durability/applicability, claim/lease/idempotency, retry/deadline/backoff, order
 cancellation/tombstone, recovery-objective, monitoring, kill-switch, rollback and incident rules.
 P24 remains blocked.
 ```
+
+---
+
+# 108. P24-A Synthetic Release Evidence Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-RELEASE P24-A FOUNDATION ONLY; P24
+remains NOT STARTED for pilot/release purposes and all live AC-P24-001..013 remain unverified.
+Baseline: exact merged origin/main @ a05c3eb708bdbe344b71cff2014a8219adf6f93f. Work was performed
+on phase/p24-a-synthetic-release-candidate-evidence in an isolated worktree.
+Implementation: the unregistered app.validation package defines the exact 13 canonical pre-pilot
+evidence categories, immutable version/build/hash/UTC-bound requirements and a complete canonical
+manifest. Every record is engineering-only, synthetic, unverified, not executed, not eligible,
+human-applicability-and-approval-required and release-decision-not-recorded. The builder rejects
+protected environments before hostile input inspection.
+Isolation: there is no evidence body, signature, reviewer identity, approval, waiver, eligibility
+assessment, GO/CONDITIONAL GO/NO-GO selector, deployment, promotion, rehearsal or result type. The
+package has no route or module registration and no persistence or release authority.
+Scope: no human participant, institution, patient/clinical data, policy/content/resource approval,
+notice/consent approval, threat or incident finding, retention execution, safety evaluation,
+operational drill, persistence/migration, API/UI, event/job, dependency, network, feature flag,
+pilot, production or rollout behavior.
+Acceptance truth: metadata-integrity mechanics are not release evidence or P24 entry. All
+AC-P24-001..013 and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED. Genuine accountable
+clinical, privacy/legal/ethics, security, accessibility, institution, operations and independent
+release decisions remain outstanding.
+Next action: independently review this bounded schema. No pilot or release work may proceed until
+the upstream P22/P23 evidence, exact-scope artifacts and genuine accountable approvals required by
+P24_READINESS_GATE_REVIEW.md exist. Green CI cannot record a release decision.
+```
