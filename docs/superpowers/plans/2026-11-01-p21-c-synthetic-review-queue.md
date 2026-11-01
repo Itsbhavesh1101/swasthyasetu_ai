@@ -30,10 +30,12 @@
 ### Task 1: Strict queue contracts
 
 **Files:**
+
 - Create: `backend/app/modules/admin_governance/review_queue_contracts.py`
 - Test: `backend/tests/test_admin_review_queue_contracts.py`
 
 **Interfaces:**
+
 - Produces: `ReviewQueueContractCode`, `ReviewQueueContractError`, `SyntheticReviewItemKind`, `SyntheticReviewItemState`, `SyntheticReviewQueueItem`, `SyntheticReviewQueueSnapshot`, `snapshot_review_queue_item`, and `snapshot_review_queue`.
 
 - [ ] Write constructor, normalization, immutability, fingerprint, drift, strict-value, forbidden-field, and content-free-error tests.
@@ -44,12 +46,14 @@
 ### Task 2: Deterministic fail-closed builder
 
 **Files:**
+
 - Create: `backend/app/modules/admin_governance/review_queue.py`
 - Modify: `backend/app/modules/admin_governance/__init__.py`
 - Test: `backend/tests/test_admin_review_queue_projection.py`
 - Test: `backend/tests/test_admin_review_queue_boundaries.py`
 
 **Interfaces:**
+
 - Consumes: Task 1 contracts.
 - Produces: `build_synthetic_review_queue(items: tuple[SyntheticReviewQueueItem, ...], *, snapshot_id: str, generated_at: datetime, environment: Environment) -> SyntheticReviewQueueSnapshot`.
 
@@ -61,10 +65,12 @@
 ### Task 3: Scope documentation and full verification
 
 **Files:**
+
 - Create: `docs/implementation/P21_C_SYNTHETIC_REVIEW_QUEUE.md`
 - Modify: `docs/implementation/38_PROGRESS_TRACKER.md`
 
 **Interfaces:**
+
 - Records bounded implementation truth; creates no runtime interface.
 
 - [ ] Record exact baseline, implemented invariants, exclusions, acceptance truth, and P21 PARTIAL status.
