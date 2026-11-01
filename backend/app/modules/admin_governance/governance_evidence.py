@@ -84,12 +84,8 @@ def evaluate_synthetic_maker_checker(
         reason = SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION
 
     return SyntheticMakerCheckerReceipt(
-        check_id=safe_submission.check_id,
-        proposal_id=safe_proposal.proposal_id,
-        proposal_fingerprint=safe_proposal.fingerprint,
-        submission_fingerprint=safe_submission.fingerprint,
-        maker_actor_id=safe_proposal.maker_actor_id,
-        checker_actor_id=safe_submission.checker_actor_id,
+        proposal=safe_proposal,
+        submission=safe_submission,
         disposition=disposition,
         reason=reason,
         evaluated_at=safe_evaluated_at,

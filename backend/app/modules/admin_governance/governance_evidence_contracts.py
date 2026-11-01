@@ -214,12 +214,8 @@ class SyntheticCheckerSubmission:
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SyntheticMakerCheckerReceipt:
-    check_id: str
-    proposal_id: str
-    proposal_fingerprint: str
-    submission_fingerprint: str
-    maker_actor_id: str
-    checker_actor_id: str
+    proposal: SyntheticGovernanceProposal
+    submission: SyntheticCheckerSubmission
     disposition: SyntheticIndependenceDisposition
     reason: SyntheticIndependenceReason
     evaluated_at: datetime
@@ -230,34 +226,40 @@ class SyntheticMakerCheckerReceipt:
     _fingerprint: str = field(init=False, repr=False, compare=True)
 
     def __post_init__(self) -> None:
-        _machine_string(self.check_id, _CHECK_ID)
-        _machine_string(self.proposal_id, _PROPOSAL_ID)
-        _machine_string(self.proposal_fingerprint, _SHA256)
-        _machine_string(self.submission_fingerprint, _SHA256)
-        _machine_string(self.maker_actor_id, _ACTOR_ID)
-        _machine_string(self.checker_actor_id, _ACTOR_ID)
+        proposal = snapshot_governance_proposal(self.proposal)
+        submission = snapshot_checker_submission(self.submission)
         _strict_enum(self.disposition, SyntheticIndependenceDisposition)
         _strict_enum(self.reason, SyntheticIndependenceReason)
-        consistent = (
-            self.disposition is SyntheticIndependenceDisposition.INDEPENDENCE_CONFIRMED
-            and self.reason is SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION
-            and self.maker_actor_id != self.checker_actor_id
-        ) or (
-            self.disposition is SyntheticIndependenceDisposition.ABSTAINED
-            and (
-                (
-                    self.reason is SyntheticIndependenceReason.SELF_REVIEW
-                    and self.maker_actor_id == self.checker_actor_id
-                )
-                or (
-                    self.reason is SyntheticIndependenceReason.SCOPE_MISMATCH
-                    and self.maker_actor_id != self.checker_actor_id
-                )
-            )
+        scope_matches = (
+            submission.proposal_id == proposal.proposal_id
+            and submission.proposal_fingerprint == proposal.fingerprint
+            and submission.object_id == proposal.object_id
+            and submission.object_version == proposal.object_version
+            and submission.object_hash == proposal.object_hash
+            and submission.institution_id == proposal.institution_id
+            and submission.source_id == proposal.source_id
+            and submission.purpose_id == proposal.purpose_id
         )
-        if not consistent:
+        if submission.checker_actor_id == proposal.maker_actor_id:
+            expected = (
+                SyntheticIndependenceDisposition.ABSTAINED,
+                SyntheticIndependenceReason.SELF_REVIEW,
+            )
+        elif not scope_matches:
+            expected = (
+                SyntheticIndependenceDisposition.ABSTAINED,
+                SyntheticIndependenceReason.SCOPE_MISMATCH,
+            )
+        else:
+            expected = (
+                SyntheticIndependenceDisposition.INDEPENDENCE_CONFIRMED,
+                SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION,
+            )
+        if (self.disposition, self.reason) != expected:
             raise _error(GovernanceEvidenceContractCode.INCONSISTENT_RECEIPT)
         evaluated_at = _utc(self.evaluated_at)
+        if submission.submitted_at < proposal.created_at or evaluated_at < submission.submitted_at:
+            raise _error(GovernanceEvidenceContractCode.INVALID_CHRONOLOGY)
         _labels(self.authority, self.classification, self.verification)
         if (
             type(self.contract_version) is not str
@@ -266,20 +268,42 @@ class SyntheticMakerCheckerReceipt:
             raise _error(GovernanceEvidenceContractCode.INVALID_VALUE)
         fingerprint = _canonical_hash(
             {
-                "check_id": self.check_id,
-                "checker_actor_id": self.checker_actor_id,
                 "contract_version": self.contract_version,
                 "disposition": self.disposition.value,
                 "evaluated_at": evaluated_at.isoformat(),
-                "maker_actor_id": self.maker_actor_id,
-                "proposal_fingerprint": self.proposal_fingerprint,
-                "proposal_id": self.proposal_id,
+                "proposal_fingerprint": proposal.fingerprint,
                 "reason": self.reason.value,
-                "submission_fingerprint": self.submission_fingerprint,
+                "submission_fingerprint": submission.fingerprint,
             }
         )
+        object.__setattr__(self, "proposal", proposal)
+        object.__setattr__(self, "submission", submission)
         object.__setattr__(self, "evaluated_at", evaluated_at)
         object.__setattr__(self, "_fingerprint", fingerprint)
+
+    @property
+    def check_id(self) -> str:
+        return self.submission.check_id
+
+    @property
+    def proposal_id(self) -> str:
+        return self.proposal.proposal_id
+
+    @property
+    def proposal_fingerprint(self) -> str:
+        return self.proposal.fingerprint
+
+    @property
+    def submission_fingerprint(self) -> str:
+        return self.submission.fingerprint
+
+    @property
+    def maker_actor_id(self) -> str:
+        return self.proposal.maker_actor_id
+
+    @property
+    def checker_actor_id(self) -> str:
+        return self.submission.checker_actor_id
 
     @property
     def fingerprint(self) -> str:
@@ -348,12 +372,8 @@ def snapshot_maker_checker_receipt(value: object) -> SyntheticMakerCheckerReceip
         raise _error(GovernanceEvidenceContractCode.INVALID_TYPE)
     try:
         snapshot = SyntheticMakerCheckerReceipt(
-            check_id=value.check_id,
-            proposal_id=value.proposal_id,
-            proposal_fingerprint=value.proposal_fingerprint,
-            submission_fingerprint=value.submission_fingerprint,
-            maker_actor_id=value.maker_actor_id,
-            checker_actor_id=value.checker_actor_id,
+            proposal=value.proposal,
+            submission=value.submission,
             disposition=value.disposition,
             reason=value.reason,
             evaluated_at=value.evaluated_at,

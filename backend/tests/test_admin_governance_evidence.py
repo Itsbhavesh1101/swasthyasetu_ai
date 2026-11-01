@@ -200,16 +200,13 @@ def test_audit_builder_rejects_duplicates_aliases_and_capacity_first() -> None:
     result = evaluate(value, submission(value))
     with pytest.raises(GovernanceEvidenceContractError) as duplicate:
         build((result, result))
-    alias = SyntheticMakerCheckerReceipt(
-        check_id="syn_governance_check_beta",
-        proposal_id=result.proposal_id,
-        proposal_fingerprint=result.proposal_fingerprint,
-        submission_fingerprint="b" * 64,
-        maker_actor_id=result.maker_actor_id,
-        checker_actor_id="syn_governance_actor_gamma",
-        disposition=SyntheticIndependenceDisposition.INDEPENDENCE_CONFIRMED,
-        reason=SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION,
-        evaluated_at=result.evaluated_at,
+    alias = evaluate(
+        value,
+        submission(
+            value,
+            suffix="beta",
+            checker_actor_id="syn_governance_actor_gamma",
+        ),
     )
     with pytest.raises(GovernanceEvidenceContractError) as ambiguous:
         build((result, alias))

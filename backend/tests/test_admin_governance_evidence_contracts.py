@@ -76,12 +76,8 @@ def receipt(
     bound = value or proposal()
     bound_check = check or submission(bound)
     values: dict[str, object] = {
-        "check_id": bound_check.check_id,
-        "proposal_id": bound.proposal_id,
-        "proposal_fingerprint": bound.fingerprint,
-        "submission_fingerprint": bound_check.fingerprint,
-        "maker_actor_id": bound.maker_actor_id,
-        "checker_actor_id": bound_check.checker_actor_id,
+        "proposal": bound,
+        "submission": bound_check,
         "disposition": SyntheticIndependenceDisposition.INDEPENDENCE_CONFIRMED,
         "reason": SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION,
         "evaluated_at": NOW + timedelta(minutes=2),
@@ -166,15 +162,15 @@ def test_submission_is_strict_immutable_and_fingerprinted() -> None:
 def test_receipt_constructor_enforces_closed_consistency() -> None:
     bound = proposal()
     check = submission(bound)
+    self_check = submission(bound, checker_actor_id=bound.maker_actor_id)
 
     with pytest.raises(GovernanceEvidenceContractError) as same_actor_confirmed:
-        receipt(bound, check, checker_actor_id=bound.maker_actor_id)
+        receipt(bound, self_check)
     with pytest.raises(GovernanceEvidenceContractError) as wrong_reason:
         receipt(bound, check, reason=SyntheticIndependenceReason.SELF_REVIEW)
     abstained = receipt(
         bound,
-        check,
-        checker_actor_id=bound.maker_actor_id,
+        self_check,
         disposition=SyntheticIndependenceDisposition.ABSTAINED,
         reason=SyntheticIndependenceReason.SELF_REVIEW,
     )
@@ -182,6 +178,22 @@ def test_receipt_constructor_enforces_closed_consistency() -> None:
     assert same_actor_confirmed.value.code is GovernanceEvidenceContractCode.INCONSISTENT_RECEIPT
     assert wrong_reason.value.code is GovernanceEvidenceContractCode.INCONSISTENT_RECEIPT
     assert abstained.disposition is SyntheticIndependenceDisposition.ABSTAINED
+
+
+def test_receipt_direct_constructor_revalidates_bound_proposal_and_submission() -> None:
+    bound = proposal()
+    mismatched = submission(bound, object_hash="b" * 64)
+
+    with pytest.raises(GovernanceEvidenceContractError) as captured:
+        SyntheticMakerCheckerReceipt(
+            proposal=bound,
+            submission=mismatched,
+            disposition=SyntheticIndependenceDisposition.INDEPENDENCE_CONFIRMED,
+            reason=SyntheticIndependenceReason.DISTINCT_ACTOR_EXACT_REVISION,
+            evaluated_at=NOW + timedelta(minutes=2),
+        )
+
+    assert captured.value.code is GovernanceEvidenceContractCode.INCONSISTENT_RECEIPT
 
 
 def test_snapshot_helpers_reconstruct_and_detect_forced_mutation() -> None:
@@ -197,8 +209,8 @@ def test_snapshot_helpers_reconstruct_and_detect_forced_mutation() -> None:
 
     object.__setattr__(bound, "object_id", "patient-123")
     object.__setattr__(check, "object_id", "patient-123")
-    object.__setattr__(result, "proposal_fingerprint", "b" * 64)
-    object.__setattr__(view.receipts[0], "proposal_fingerprint", "b" * 64)
+    object.__setattr__(result.proposal, "object_id", "patient-123")
+    object.__setattr__(view.receipts[0].proposal, "object_id", "patient-123")
 
     for value, snapshotter in (
         (bound, snapshot_governance_proposal),
@@ -236,8 +248,13 @@ def test_audit_snapshot_requires_canonical_unique_receipts_and_chronology() -> N
         audit(beta, alpha)
     with pytest.raises(GovernanceEvidenceContractError) as duplicate:
         audit(alpha, alpha)
+    alias_submission = submission(
+        alpha_proposal,
+        suffix="beta",
+        checker_actor_id="syn_governance_actor_gamma",
+    )
     with pytest.raises(GovernanceEvidenceContractError) as alias:
-        audit(alpha, replace(alpha, check_id="syn_governance_check_beta"))
+        audit(alpha, receipt(alpha_proposal, alias_submission))
     with pytest.raises(GovernanceEvidenceContractError) as early:
         audit(alpha, generated_at=alpha.evaluated_at - timedelta(microseconds=1))
 
