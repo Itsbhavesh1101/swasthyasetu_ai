@@ -3060,3 +3060,32 @@ Next action: independently review this detached foundation. Any live P21-D work 
 approved identity/assignment, source-domain authority, event/access/retention/integrity policy,
 maker-checker rules, audit-of-audit, persistence/API/UI architecture and privacy/security evidence.
 ```
+
+---
+
+# 104. P23-A Synthetic Journey Evidence Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC P23-A FOUNDATION ONLY; P23 remains PARTIAL
+and all live AC-P23-001..012 acceptance remains unverified.
+Baseline: exact merged origin/main @ d834ea891dcef4ade87d4d4792db961ef0def4c4. Work was performed
+on phase/p23-a-synthetic-journey-evidence in an isolated worktree.
+Implementation: an unregistered app.validation package defines the exact canonical 18-journey
+inventory, immutable version/hash/SHA/UTC-bound definitions and observations, tamper-evident evidence
+receipts and an exact manifest. Pure mechanics canonicalize the inventory and return only synthetic
+metadata consistency or abstention. Structured intake is labeled bounded P7 technical evidence; the
+other 17 journeys remain blocked. Blocked journeys and protected environments fail closed before
+hostile evidence is inspected.
+Isolation: no browser/API/database journey is added. The package has no route or module registration
+and no execute, run, pass, approve, publish, release, persist, search or export authority.
+Scope: no patient/clinical data or oracle, cross-module runtime, accessibility certification, load
+measurement, resilience/recovery drill, observability acceptance, persistence/migration, API/UI,
+event/job, dependency, network, feature flag, pilot or release behavior; no P23-B/C/D or P24.
+Acceptance truth: metadata-integrity mechanics are not E2E validation or product evidence. All
+AC-P23-001..012 and AC-PROD-001..014 remain NOT VERIFIED; all accountable clinical, privacy,
+identity, accessibility, performance, operations, domain, independent QA and release decisions remain
+outstanding.
+Next action: independently review this bounded foundation. Live P23-A requires approved journey
+applicability, fixture rights, independent action/abstention oracles, identity/consent/privacy scope,
+owning runtime approvals and browser/API/PostgreSQL evidence design. P23-B/C/D and P24 remain blocked.
+```

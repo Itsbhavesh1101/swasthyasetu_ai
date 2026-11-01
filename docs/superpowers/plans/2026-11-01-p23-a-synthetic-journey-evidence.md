@@ -31,11 +31,13 @@
 ### Task 1: Strict synthetic journey evidence contracts
 
 **Files:**
+
 - Create: `backend/app/validation/__init__.py`
 - Create: `backend/app/validation/contracts.py`
 - Test: `backend/tests/test_synthetic_journey_evidence_contracts.py`
 
 **Interfaces:**
+
 - Consumes: canonical 18-journey list in `docs/34_MASTER_IMPLEMENTATION_PLAN.md`
 - Produces: strict journey enums, `SyntheticJourneyDefinition`, `SyntheticJourneyObservation`, `SyntheticJourneyEvidenceReceipt`, `SyntheticJourneyManifest`, snapshot helpers, and stable contract errors
 
@@ -66,12 +68,14 @@ Commit message: `feat(validation): add synthetic journey evidence contracts`
 ### Task 2: Pure manifest and evidence mechanics
 
 **Files:**
+
 - Create: `backend/app/validation/evidence.py`
 - Modify: `backend/app/validation/__init__.py`
 - Test: `backend/tests/test_synthetic_journey_evidence.py`
 - Test: `backend/tests/test_synthetic_journey_evidence_boundaries.py`
 
 **Interfaces:**
+
 - Consumes: Task 1 contract/snapshot interfaces and `app.config.Environment`
 - Produces: `build_synthetic_journey_manifest(...)` and `evaluate_synthetic_journey_evidence(...)`
 
@@ -103,10 +107,12 @@ Commit message: `feat(validation): evaluate synthetic journey evidence`
 ### Task 3: Boundary documentation, tracker, and complete verification
 
 **Files:**
+
 - Create: `docs/implementation/P23_A_SYNTHETIC_JOURNEY_EVIDENCE.md`
 - Modify: `docs/implementation/38_PROGRESS_TRACKER.md`
 
 **Interfaces:**
+
 - Consumes: verified implementation/test results from Tasks 1-2
 - Produces: exact bounded-scope record and truthful P23 status
 

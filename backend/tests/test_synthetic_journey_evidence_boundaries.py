@@ -20,6 +20,8 @@ def definition() -> SyntheticJourneyDefinition:
     return SyntheticJourneyDefinition(
         journey_id=SyntheticJourneyId.STRUCTURED_CLINICAL_INTAKE,
         definition_version="engineering.v1",
+        build_sha="c" * 40,
+        config_hash="d" * 64,
         fixture_hash="a" * 64,
         oracle_hash="b" * 64,
         readiness=SyntheticJourneyReadiness.BOUNDED_P7_TECHNICAL_ONLY,

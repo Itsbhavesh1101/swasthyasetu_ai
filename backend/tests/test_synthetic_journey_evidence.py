@@ -45,6 +45,8 @@ def definition(
     return SyntheticJourneyDefinition(
         journey_id=journey_id,
         definition_version="engineering.v1",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_C,
         fixture_hash=HASH_A,
         oracle_hash=HASH_B,
         readiness=readiness,
@@ -55,14 +57,16 @@ def definition(
 def observation(
     item: SyntheticJourneyDefinition,
     *,
+    build_sha: str | None = None,
+    config_hash: str | None = None,
     fixture_hash: str | None = None,
 ) -> SyntheticJourneyObservation:
     return SyntheticJourneyObservation(
         observation_id="syn_journey_observation_alpha",
         journey_id=item.journey_id,
         definition_fingerprint=item.fingerprint,
-        build_sha=BUILD_SHA,
-        config_hash=HASH_C,
+        build_sha=build_sha or BUILD_SHA,
+        config_hash=config_hash or HASH_C,
         fixture_hash=fixture_hash or item.fixture_hash,
         oracle_hash=item.oracle_hash,
         state=SyntheticObservationState.METADATA_RECORDED,
@@ -116,6 +120,20 @@ def test_manifest_builder_is_deterministic_for_input_order() -> None:
     assert first.fingerprint == second.fingerprint
 
 
+def test_manifest_builder_rejects_wrong_cardinality_before_item_inspection() -> None:
+    hostile_items = tuple(HostileInput() for _ in range(19))
+
+    with pytest.raises(JourneyEvidenceContractError) as captured:
+        build_synthetic_journey_manifest(
+            hostile_items,  # type: ignore[arg-type]
+            manifest_id="syn_journey_manifest_alpha",
+            generated_at=NOW,
+            environment=Environment.TEST,
+        )
+
+    assert captured.value.code is JourneyEvidenceContractCode.INCOMPLETE_INVENTORY
+
+
 @pytest.mark.parametrize(
     "environment", [Environment.STAGING, Environment.PILOT, Environment.PRODUCTION]
 )
@@ -161,6 +179,27 @@ def test_scope_drift_abstains_without_echoing_evidence() -> None:
     assert result.disposition is SyntheticEvidenceDisposition.ABSTAINED
     assert result.reason is SyntheticEvidenceReason.SCOPE_MISMATCH
     assert HASH_C not in str(result)
+
+
+@pytest.mark.parametrize(
+    "drifted",
+    [
+        {"build_sha": "e" * 40},
+        {"config_hash": "e" * 64},
+    ],
+)
+def test_build_or_config_drift_abstains(drifted: dict[str, str]) -> None:
+    item = definition()
+
+    result = evaluate_synthetic_journey_evidence(
+        item,
+        observation(item, **drifted),
+        evaluated_at=NOW + timedelta(minutes=2),
+        environment=Environment.TEST,
+    )
+
+    assert result.disposition is SyntheticEvidenceDisposition.ABSTAINED
+    assert result.reason is SyntheticEvidenceReason.SCOPE_MISMATCH
 
 
 def test_blocked_journey_abstains_before_observation_is_inspected() -> None:

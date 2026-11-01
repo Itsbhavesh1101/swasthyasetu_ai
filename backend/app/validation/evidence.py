@@ -12,6 +12,7 @@ from app.validation.contracts import (
     SyntheticEvidenceReason,
     SyntheticJourneyDefinition,
     SyntheticJourneyEvidenceReceipt,
+    SyntheticJourneyId,
     SyntheticJourneyManifest,
     SyntheticJourneyObservation,
     SyntheticJourneyReadiness,
@@ -42,6 +43,8 @@ def _scope_matches(
     return (
         observation.journey_id is definition.journey_id
         and observation.definition_fingerprint == definition.fingerprint
+        and observation.build_sha == definition.build_sha
+        and observation.config_hash == definition.config_hash
         and observation.fixture_hash == definition.fixture_hash
         and observation.oracle_hash == definition.oracle_hash
     )
@@ -59,6 +62,8 @@ def build_synthetic_journey_manifest(
     _check_environment(environment)
     if type(definitions) is not tuple:
         raise _error(JourneyEvidenceContractCode.INVALID_TYPE)
+    if len(definitions) != len(SyntheticJourneyId):
+        raise _error(JourneyEvidenceContractCode.INCOMPLETE_INVENTORY)
     safe_definitions = tuple(
         sorted(
             (snapshot_journey_definition(item) for item in definitions),

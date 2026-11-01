@@ -144,6 +144,8 @@ def _canonical_hash(payload: object) -> str:
 class SyntheticJourneyDefinition:
     journey_id: SyntheticJourneyId
     definition_version: str
+    build_sha: str = field(repr=False)
+    config_hash: str = field(repr=False)
     fixture_hash: str = field(repr=False)
     oracle_hash: str = field(repr=False)
     readiness: SyntheticJourneyReadiness
@@ -159,6 +161,8 @@ class SyntheticJourneyDefinition:
     def __post_init__(self) -> None:
         _strict_enum(self.journey_id, SyntheticJourneyId)
         _machine_string(self.definition_version, _VERSION)
+        _machine_string(self.build_sha, _GIT_SHA)
+        _machine_string(self.config_hash, _SHA256)
         _machine_string(self.fixture_hash, _SHA256)
         _machine_string(self.oracle_hash, _SHA256)
         _strict_enum(self.readiness, SyntheticJourneyReadiness)
@@ -175,6 +179,8 @@ class SyntheticJourneyDefinition:
                 "contract_version": self.contract_version,
                 "created_at": created_at.isoformat(),
                 "definition_version": self.definition_version,
+                "build_sha": self.build_sha,
+                "config_hash": self.config_hash,
                 "fixture_hash": self.fixture_hash,
                 "journey_id": self.journey_id.value,
                 "oracle_hash": self.oracle_hash,
@@ -249,6 +255,8 @@ def snapshot_journey_definition(value: object) -> SyntheticJourneyDefinition:
         snapshot = SyntheticJourneyDefinition(
             journey_id=value.journey_id,
             definition_version=value.definition_version,
+            build_sha=value.build_sha,
+            config_hash=value.config_hash,
             fixture_hash=value.fixture_hash,
             oracle_hash=value.oracle_hash,
             readiness=value.readiness,
@@ -302,6 +310,8 @@ def _observation_matches(
     return (
         observation.journey_id is definition.journey_id
         and observation.definition_fingerprint == definition.fingerprint
+        and observation.build_sha == definition.build_sha
+        and observation.config_hash == definition.config_hash
         and observation.fixture_hash == definition.fixture_hash
         and observation.oracle_hash == definition.oracle_hash
     )

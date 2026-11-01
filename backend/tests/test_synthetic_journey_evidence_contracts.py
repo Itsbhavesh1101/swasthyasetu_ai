@@ -63,6 +63,8 @@ def definition(
     return SyntheticJourneyDefinition(
         journey_id=journey_id,
         definition_version="engineering.v1",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_C,
         fixture_hash=HASH_A,
         oracle_hash=HASH_B,
         readiness=readiness,
@@ -140,6 +142,8 @@ def test_definition_normalizes_aware_time_and_has_engineering_only_labels() -> N
     item = SyntheticJourneyDefinition(
         journey_id=SyntheticJourneyId.STRUCTURED_CLINICAL_INTAKE,
         definition_version="engineering.v7",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_C,
         fixture_hash=HASH_A,
         oracle_hash=HASH_B,
         readiness=SyntheticJourneyReadiness.BOUNDED_P7_TECHNICAL_ONLY,
@@ -159,6 +163,8 @@ def test_definition_normalizes_aware_time_and_has_engineering_only_labels() -> N
     [
         ("journey_id", "STRUCTURED_CLINICAL_INTAKE"),
         ("definition_version", "latest"),
+        ("build_sha", "d" * 39),
+        ("config_hash", "c" * 63),
         ("fixture_hash", "not-a-hash"),
         ("oracle_hash", "A" * 64),
         ("readiness", "BLOCKED_UNAPPROVED"),
@@ -169,6 +175,8 @@ def test_definition_rejects_loose_or_malformed_values(field: str, value: object)
     values: dict[str, object] = {
         "journey_id": SyntheticJourneyId.STRUCTURED_CLINICAL_INTAKE,
         "definition_version": "engineering.v1",
+        "build_sha": BUILD_SHA,
+        "config_hash": HASH_C,
         "fixture_hash": HASH_A,
         "oracle_hash": HASH_B,
         "readiness": SyntheticJourneyReadiness.BOUNDED_P7_TECHNICAL_ONLY,
