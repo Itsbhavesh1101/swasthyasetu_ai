@@ -144,8 +144,8 @@ def _canonical_hash(payload: object) -> str:
 class SyntheticJourneyDefinition:
     journey_id: SyntheticJourneyId
     definition_version: str
-    fixture_hash: str
-    oracle_hash: str
+    fixture_hash: str = field(repr=False)
+    oracle_hash: str = field(repr=False)
     readiness: SyntheticJourneyReadiness
     created_at: datetime
     authority: JourneyEvidenceAuthority = JourneyEvidenceAuthority.ENGINEERING_ONLY
@@ -193,11 +193,11 @@ class SyntheticJourneyDefinition:
 class SyntheticJourneyObservation:
     observation_id: str
     journey_id: SyntheticJourneyId
-    definition_fingerprint: str
-    build_sha: str
-    config_hash: str
-    fixture_hash: str
-    oracle_hash: str
+    definition_fingerprint: str = field(repr=False)
+    build_sha: str = field(repr=False)
+    config_hash: str = field(repr=False)
+    fixture_hash: str = field(repr=False)
+    oracle_hash: str = field(repr=False)
     state: SyntheticObservationState
     captured_at: datetime
     authority: JourneyEvidenceAuthority = JourneyEvidenceAuthority.ENGINEERING_ONLY
@@ -309,8 +309,8 @@ def _observation_matches(
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SyntheticJourneyEvidenceReceipt:
-    definition: SyntheticJourneyDefinition
-    observation: SyntheticJourneyObservation | None
+    definition: SyntheticJourneyDefinition = field(repr=False)
+    observation: SyntheticJourneyObservation | None = field(repr=False)
     disposition: SyntheticEvidenceDisposition
     reason: SyntheticEvidenceReason
     evaluated_at: datetime
@@ -405,7 +405,7 @@ def snapshot_journey_evidence_receipt(value: object) -> SyntheticJourneyEvidence
 class SyntheticJourneyManifest:
     manifest_id: str
     generated_at: datetime
-    definitions: tuple[SyntheticJourneyDefinition, ...]
+    definitions: tuple[SyntheticJourneyDefinition, ...] = field(repr=False)
     authority: JourneyEvidenceAuthority = JourneyEvidenceAuthority.ENGINEERING_ONLY
     classification: JourneyEvidenceClassification = (
         JourneyEvidenceClassification.ENGINEERING_SYNTHETIC
