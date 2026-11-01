@@ -71,6 +71,31 @@ class HostileTimezone(tzinfo):
         return "HOSTILE"
 
 
+class HostileContractTimezone(tzinfo):
+    def utcoffset(self, value: datetime | None) -> timedelta:
+        error = ReleaseRehearsalContractError(ReleaseRehearsalContractCode.INVALID_VALUE)
+        error.args = ("secret-patient@example.test", error.code)
+        raise error
+
+    def dst(self, value: datetime | None) -> timedelta:
+        return timedelta(0)
+
+    def tzname(self, value: datetime | None) -> str:
+        return "HOSTILE_CONTRACT"
+
+
+class AlwaysEqualFingerprint:
+    def __eq__(self, other: object) -> bool:
+        return True
+
+    def __ne__(self, other: object) -> bool:
+        return False
+
+
+class FingerprintSubclass(str):
+    pass
+
+
 def plan(
     scenario: SyntheticReleaseRehearsalScenario = (
         SyntheticReleaseRehearsalScenario.APPLICATION_ROLLBACK
@@ -267,6 +292,30 @@ def test_invalid_aware_clock_becomes_content_free_contract_error(created_at: dat
     assert captured.value.__cause__ is None
 
 
+def test_hostile_contract_timezone_is_sanitized_at_plan_and_manifest_boundaries() -> None:
+    hostile_clock = datetime(2026, 11, 2, 9, 0, tzinfo=HostileContractTimezone())
+
+    with pytest.raises(ReleaseRehearsalContractError) as plan_error:
+        plan(created_at=hostile_clock)
+    with pytest.raises(ReleaseRehearsalContractError) as manifest_error:
+        SyntheticReleaseRehearsalManifest(
+            manifest_id="syn_release_rehearsal_alpha",
+            build_sha=BUILD_SHA,
+            config_hash=HASH_A,
+            proposed_scope_hash=HASH_D,
+            generated_at=hostile_clock,
+            plans=tuple(
+                plan(item)
+                for item in sorted(SyntheticReleaseRehearsalScenario, key=lambda x: x.value)
+            ),
+        )
+
+    for captured in (plan_error.value, manifest_error.value):
+        assert captured.code is ReleaseRehearsalContractCode.INVALID_TYPE
+        assert str(captured) == "INVALID_TYPE"
+        assert captured.__cause__ is None
+
+
 def test_manifest_builder_is_complete_canonical_and_deterministic() -> None:
     first = build_synthetic_release_rehearsal_manifest(
         plans(),
@@ -447,6 +496,90 @@ def test_manifest_snapshot_rejects_forced_nested_and_scalar_mutation() -> None:
         snapshot_release_rehearsal_manifest(inventory)
 
     assert captured.value.code is ReleaseRehearsalContractCode.SNAPSHOT_DRIFT
+
+
+@pytest.mark.parametrize(
+    "substitute",
+    [AlwaysEqualFingerprint(), FingerprintSubclass("a" * 64), "not-a-fingerprint"],
+)
+def test_plan_snapshot_rejects_substituted_stored_fingerprint(substitute: object) -> None:
+    item = plan()
+    object.__setattr__(item, "_fingerprint", substitute)
+
+    with pytest.raises(ReleaseRehearsalContractError) as captured:
+        snapshot_release_rehearsal_plan(item)
+
+    assert captured.value.code is ReleaseRehearsalContractCode.SNAPSHOT_DRIFT
+
+
+@pytest.mark.parametrize(
+    "substitute",
+    [AlwaysEqualFingerprint(), FingerprintSubclass("a" * 64), "not-a-fingerprint"],
+)
+def test_manifest_snapshot_rejects_substituted_stored_fingerprint(substitute: object) -> None:
+    inventory = build_synthetic_release_rehearsal_manifest(
+        plans(),
+        manifest_id="syn_release_rehearsal_alpha",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_A,
+        proposed_scope_hash=HASH_D,
+        generated_at=NOW + timedelta(minutes=1),
+        environment=Environment.TEST,
+    )
+    object.__setattr__(inventory, "_fingerprint", substitute)
+
+    with pytest.raises(ReleaseRehearsalContractError) as captured:
+        snapshot_release_rehearsal_manifest(inventory)
+
+    assert captured.value.code is ReleaseRehearsalContractCode.SNAPSHOT_DRIFT
+
+
+def test_snapshots_convert_missing_stored_fingerprints_to_contract_errors() -> None:
+    item = plan()
+    inventory = build_synthetic_release_rehearsal_manifest(
+        plans(),
+        manifest_id="syn_release_rehearsal_alpha",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_A,
+        proposed_scope_hash=HASH_D,
+        generated_at=NOW + timedelta(minutes=1),
+        environment=Environment.TEST,
+    )
+    object.__delattr__(item, "_fingerprint")
+    object.__delattr__(inventory, "_fingerprint")
+
+    for snapshot, value in (
+        (snapshot_release_rehearsal_plan, item),
+        (snapshot_release_rehearsal_manifest, inventory),
+    ):
+        with pytest.raises(ReleaseRehearsalContractError) as captured:
+            snapshot(value)
+        assert captured.value.code is ReleaseRehearsalContractCode.INVALID_TYPE
+
+
+def test_snapshot_rejects_simultaneous_data_and_fingerprint_substitution() -> None:
+    item = plan()
+    inventory = build_synthetic_release_rehearsal_manifest(
+        plans(),
+        manifest_id="syn_release_rehearsal_alpha",
+        build_sha=BUILD_SHA,
+        config_hash=HASH_A,
+        proposed_scope_hash=HASH_D,
+        generated_at=NOW + timedelta(minutes=1),
+        environment=Environment.TEST,
+    )
+    object.__setattr__(item, "oracle_plan_hash", HASH_A)
+    object.__setattr__(item, "_fingerprint", AlwaysEqualFingerprint())
+    object.__setattr__(inventory, "proposed_scope_hash", HASH_E)
+    object.__setattr__(inventory, "_fingerprint", AlwaysEqualFingerprint())
+
+    for snapshot, value in (
+        (snapshot_release_rehearsal_plan, item),
+        (snapshot_release_rehearsal_manifest, inventory),
+    ):
+        with pytest.raises(ReleaseRehearsalContractError) as captured:
+            snapshot(value)
+        assert captured.value.code is ReleaseRehearsalContractCode.SNAPSHOT_DRIFT
 
 
 def test_errors_and_representations_are_content_free() -> None:

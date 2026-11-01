@@ -111,8 +111,6 @@ def _utc(value: object) -> datetime:
         if value.utcoffset() is None:
             raise _error(ReleaseRehearsalContractCode.INVALID_TYPE)
         return value.astimezone(UTC)
-    except ReleaseRehearsalContractError:
-        raise
     except Exception:
         raise _error(ReleaseRehearsalContractCode.INVALID_TYPE) from None
 
@@ -152,6 +150,16 @@ def _labels(
 def _canonical_hash(payload: object) -> str:
     encoded = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
     return sha256(encoded).hexdigest()
+
+
+def _stored_fingerprint(value: object) -> str:
+    try:
+        fingerprint = value.__getattribute__("fingerprint")
+    except Exception:
+        raise _error(ReleaseRehearsalContractCode.INVALID_TYPE) from None
+    if type(fingerprint) is not str or _SHA256.fullmatch(fingerprint) is None:
+        raise _error(ReleaseRehearsalContractCode.SNAPSHOT_DRIFT)
+    return fingerprint
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -246,6 +254,7 @@ class SyntheticReleaseRehearsalPlan:
 def snapshot_release_rehearsal_plan(value: object) -> SyntheticReleaseRehearsalPlan:
     if type(value) is not SyntheticReleaseRehearsalPlan:
         raise _error(ReleaseRehearsalContractCode.INVALID_TYPE)
+    stored_fingerprint = _stored_fingerprint(value)
     try:
         snapshot = SyntheticReleaseRehearsalPlan(
             scenario=value.scenario,
@@ -275,7 +284,7 @@ def snapshot_release_rehearsal_plan(value: object) -> SyntheticReleaseRehearsalP
         raise
     except (AttributeError, TypeError, ValueError):
         raise _error(ReleaseRehearsalContractCode.INVALID_TYPE) from None
-    if snapshot.fingerprint != value.fingerprint:
+    if snapshot.fingerprint != stored_fingerprint:
         raise _error(ReleaseRehearsalContractCode.SNAPSHOT_DRIFT)
     return snapshot
 
@@ -366,6 +375,7 @@ class SyntheticReleaseRehearsalManifest:
 def snapshot_release_rehearsal_manifest(value: object) -> SyntheticReleaseRehearsalManifest:
     if type(value) is not SyntheticReleaseRehearsalManifest:
         raise _error(ReleaseRehearsalContractCode.INVALID_TYPE)
+    stored_fingerprint = _stored_fingerprint(value)
     try:
         snapshot = SyntheticReleaseRehearsalManifest(
             manifest_id=value.manifest_id,
@@ -387,7 +397,7 @@ def snapshot_release_rehearsal_manifest(value: object) -> SyntheticReleaseRehear
         raise
     except (AttributeError, TypeError, ValueError):
         raise _error(ReleaseRehearsalContractCode.INVALID_TYPE) from None
-    if snapshot.fingerprint != value.fingerprint:
+    if snapshot.fingerprint != stored_fingerprint:
         raise _error(ReleaseRehearsalContractCode.SNAPSHOT_DRIFT)
     return snapshot
 
