@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | PARTIAL | P20-A provides detached engineering-synthetic evidence/snapshot/candidate/decision contracts and fail-closed preservation-or-abstention mechanics only. No clinical precedence, data access, module integration, route, UI, persistence or runtime activation exists; P20-B/C/D and all live AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
-| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded metadata foundations and the P23-C no-run synthetic performance-plan foundation are delivered. No live journey, accessibility audit, or performance run has occurred; P23-D is not started, AC-P23-001..012 remain LIVE NOT VERIFIED, and upstream/human approvals remain pending. |
+| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded metadata foundations plus P23-C no-run performance and P23-D no-drill recovery planning foundations are delivered. No live journey, accessibility audit, performance run, or recovery drill has occurred; AC-P23-001..012 remain LIVE NOT VERIFIED and upstream/human approvals remain pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
@@ -3150,4 +3150,36 @@ Next action: independently review this bounded schema. Any run requires separate
 environment, objective, synthetic workload/rights, method, repetitions/concurrency/clocks,
 metrics/uncertainty, cleanup/retention, third-party restrictions and owner-approved thresholds.
 P23-D and P24 remain blocked.
+```
+
+---
+
+# 107. P23-D Synthetic Recovery Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-DRILL P23-D FOUNDATION ONLY; P23 remains
+PARTIAL and all live AC-P23-001..012 acceptance remains unverified.
+Baseline: exact merged origin/main @ 77b37857c1088dad35e23ee8b6ee22a3904723f8. Work was performed
+on phase/p23-d-synthetic-recovery-planning in an isolated worktree.
+Implementation: the unregistered app.validation package defines exact immutable plans for the five
+canonical recovery scenarios. Projection rebuild applicability remains undecided; all others remain
+proposed and unapproved. Plans bind only engineering version, SHA/configuration and proposed failure
+injection, recovery-oracle, isolation/cleanup, privacy-canary and rollback hashes. The canonical
+manifest reconstructs inputs, enforces completeness/order/applicability/chronology and rejects
+protected environments before hostile plan inspection. Every record remains synthetic, unverified,
+not executed and human-approval-required.
+Isolation: there is no drill execution or result type. The package exposes no restart, retry/replay,
+dispatch, projection rebuild, failure injection, kill switch, lease/heartbeat, RTO/RPO, exactly-once,
+pass, persistence or release authority.
+Scope: no infrastructure/database/process operation, network partition, backup/restore, patient
+data, telemetry export, persistence/migration, API/UI, event/job, dependency, CI/configuration,
+feature flag, runtime activation, pilot or release; no P24.
+Acceptance truth: planning-integrity mechanics are not recovery evidence. AC-P23-011/012,
+NFR-RES-001..007, all other AC-P23 criteria and product acceptance remain NOT VERIFIED. SRE/incident,
+architecture, outbox/job, domain/clinical, privacy/security, observability, infrastructure and
+release decisions remain outstanding.
+Next action: independently review this bounded schema. Any drill requires separately approved
+durability/applicability, claim/lease/idempotency, retry/deadline/backoff, ordering/late-result,
+cancellation/tombstone, recovery-objective, monitoring, kill-switch, rollback and incident rules.
+P24 remains blocked.
 ```
