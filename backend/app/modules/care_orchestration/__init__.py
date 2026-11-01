@@ -21,6 +21,17 @@ from app.modules.care_orchestration.contracts import (
     SyntheticEvidenceReference,
     SyntheticReasonCode,
 )
+from app.modules.care_orchestration.sources import (
+    SourceBoundaryCode,
+    SourceBoundaryError,
+    SyntheticEvidenceSourceDescriptor,
+    SyntheticEvidenceSourcePort,
+    SyntheticEvidenceSourceQuery,
+    SyntheticEvidenceSourceReceipt,
+    inspect_synthetic_evidence,
+    synthetic_source_query_fingerprint,
+    validate_synthetic_source_receipt,
+)
 
 __all__ = [
     "CompositionAuthority",
@@ -35,11 +46,20 @@ __all__ = [
     "MAX_CANDIDATES",
     "MAX_EVIDENCE_ITEMS",
     "SYNTHETIC_COMPOSITION_CONTRACT_VERSION",
+    "SourceBoundaryCode",
+    "SourceBoundaryError",
     "SyntheticActionCandidate",
     "SyntheticActionCode",
     "SyntheticCompositionDecision",
     "SyntheticCompositionRequest",
     "SyntheticEvidenceReference",
+    "SyntheticEvidenceSourceDescriptor",
+    "SyntheticEvidenceSourcePort",
+    "SyntheticEvidenceSourceQuery",
+    "SyntheticEvidenceSourceReceipt",
     "SyntheticReasonCode",
     "compose_synthetic_candidates",
+    "inspect_synthetic_evidence",
+    "synthetic_source_query_fingerprint",
+    "validate_synthetic_source_receipt",
 ]
