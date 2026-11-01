@@ -63,4 +63,3 @@ fingerprints, direct-constructor and forced-mutation drift, self-review, exact-s
 chronology, deterministic ordering, duplicate/alias rejection, capacity, protected-environment
 short-circuiting, content-free errors, forbidden action/search/export surfaces, and continued
 non-registration/no-route isolation.
-

@@ -77,4 +77,3 @@
 - [ ] Record the exact baseline, invariants, exclusions, acceptance truth, and P21 PARTIAL status.
 - [ ] Run backend/frontend quality gates, migration-head check, diff/scope/privacy checks, and complete self-review.
 - [ ] Commit, push, open a PR, verify all six CI jobs on the exact SHA, merge after success, and verify all six jobs on merged `main`.
-
