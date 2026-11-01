@@ -5,9 +5,11 @@ from datetime import UTC, datetime, timedelta, timezone, tzinfo
 
 import pytest
 
+import app.validation as validation
 from app.config import Environment, Settings
 from app.main import create_app
-from app.validation.release_rehearsal import (
+from app.validation import (
+    SYNTHETIC_RELEASE_REHEARSAL_PLAN_CONTRACT_VERSION,
     ReleaseRehearsalApplicability,
     ReleaseRehearsalAuthority,
     ReleaseRehearsalClassification,
@@ -109,6 +111,30 @@ def plans(
 
 def test_rehearsal_scenario_inventory_is_exact_and_closed() -> None:
     assert {item.value for item in SyntheticReleaseRehearsalScenario} == EXPECTED_SCENARIOS
+    assert (
+        SYNTHETIC_RELEASE_REHEARSAL_PLAN_CONTRACT_VERSION == "synthetic-release-rehearsal-plan.v1"
+    )
+
+
+def test_public_package_exposes_contracts_but_no_operational_authority() -> None:
+    for expected in (
+        "SyntheticReleaseRehearsalPlan",
+        "SyntheticReleaseRehearsalManifest",
+        "build_synthetic_release_rehearsal_manifest",
+        "snapshot_release_rehearsal_plan",
+        "snapshot_release_rehearsal_manifest",
+    ):
+        assert expected in validation.__all__
+
+    for prohibited in (
+        "approve_release_rehearsal",
+        "execute_release_rehearsal",
+        "record_release_rehearsal_evidence",
+        "record_release_rehearsal_result",
+        "run_release_rehearsal",
+    ):
+        assert prohibited not in validation.__all__
+        assert not hasattr(validation, prohibited)
 
 
 def test_plan_is_unexecuted_unverified_ineligible_and_human_gated() -> None:
