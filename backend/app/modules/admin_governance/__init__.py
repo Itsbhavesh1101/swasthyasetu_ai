@@ -17,6 +17,7 @@ from app.modules.admin_governance.contracts import (
     snapshot_admin_grant,
     snapshot_admin_request,
 )
+from app.modules.admin_governance.preflight import evaluate_synthetic_admin_preflight
 
 __all__ = [
     "MAX_SYNTHETIC_GRANTS",
@@ -32,6 +33,7 @@ __all__ = [
     "SyntheticAdminDecision",
     "SyntheticAdminGrant",
     "SyntheticAdminRequest",
+    "evaluate_synthetic_admin_preflight",
     "snapshot_admin_grant",
     "snapshot_admin_request",
 ]
