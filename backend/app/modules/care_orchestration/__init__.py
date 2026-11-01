@@ -21,6 +21,14 @@ from app.modules.care_orchestration.contracts import (
     SyntheticEvidenceReference,
     SyntheticReasonCode,
 )
+from app.modules.care_orchestration.reconciliation import (
+    SYNTHETIC_RECONCILIATION_VERSION,
+    ReconciliationCode,
+    ReconciliationError,
+    SyntheticSnapshotReconciliation,
+    SyntheticSnapshotState,
+    reconcile_synthetic_snapshot,
+)
 from app.modules.care_orchestration.sources import (
     SourceBoundaryCode,
     SourceBoundaryError,
@@ -46,6 +54,9 @@ __all__ = [
     "MAX_CANDIDATES",
     "MAX_EVIDENCE_ITEMS",
     "SYNTHETIC_COMPOSITION_CONTRACT_VERSION",
+    "SYNTHETIC_RECONCILIATION_VERSION",
+    "ReconciliationCode",
+    "ReconciliationError",
     "SourceBoundaryCode",
     "SourceBoundaryError",
     "SyntheticActionCandidate",
@@ -58,8 +69,11 @@ __all__ = [
     "SyntheticEvidenceSourceQuery",
     "SyntheticEvidenceSourceReceipt",
     "SyntheticReasonCode",
+    "SyntheticSnapshotReconciliation",
+    "SyntheticSnapshotState",
     "compose_synthetic_candidates",
     "inspect_synthetic_evidence",
+    "reconcile_synthetic_snapshot",
     "synthetic_source_query_fingerprint",
     "validate_synthetic_source_receipt",
 ]
