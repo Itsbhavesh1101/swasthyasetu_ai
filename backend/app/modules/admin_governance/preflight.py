@@ -46,6 +46,19 @@ def _matches(request: SyntheticAdminRequest, grant: SyntheticAdminGrant) -> bool
     )
 
 
+def _semantic_key(grant: SyntheticAdminGrant) -> tuple[object, ...]:
+    return (
+        grant.actor_id,
+        grant.action,
+        grant.object_id,
+        grant.object_version,
+        grant.object_hash,
+        grant.institution_id,
+        grant.source_id,
+        grant.purpose_id,
+    )
+
+
 def _decision(
     request: SyntheticAdminRequest,
     *,
@@ -99,6 +112,16 @@ def evaluate_synthetic_admin_preflight(
     )
     if len({item.grant_id for item in safe_grants}) != len(safe_grants):
         raise _error(AdminContractCode.DUPLICATE_GRANT)
+    grants_by_scope: dict[tuple[object, ...], list[SyntheticAdminGrant]] = {}
+    for item in safe_grants:
+        grants_by_scope.setdefault(_semantic_key(item), []).append(item)
+    for scoped_grants in grants_by_scope.values():
+        ordered = sorted(scoped_grants, key=lambda item: (item.valid_from, item.expires_at))
+        if any(
+            current.valid_from < previous.expires_at
+            for previous, current in zip(ordered, ordered[1:], strict=False)
+        ):
+            raise _error(AdminContractCode.AMBIGUOUS_GRANT)
 
     matches = tuple(
         item

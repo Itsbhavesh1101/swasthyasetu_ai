@@ -31,11 +31,13 @@
 ### Task 1: Strict synthetic contracts
 
 **Files:**
+
 - Create: `backend/app/modules/admin_governance/__init__.py`
 - Create: `backend/app/modules/admin_governance/contracts.py`
 - Test: `backend/tests/test_admin_authorization_contracts.py`
 
 **Interfaces:**
+
 - Consumes: Python standard library only.
 - Produces: immutable request, grant and decision contracts; closed enums; snapshot helpers.
 
@@ -48,11 +50,13 @@
 ### Task 2: Fail-closed detached evaluator
 
 **Files:**
+
 - Create: `backend/app/modules/admin_governance/preflight.py`
 - Modify: `backend/app/modules/admin_governance/__init__.py`
 - Test: `backend/tests/test_admin_authorization_preflight.py`
 
 **Interfaces:**
+
 - Consumes: Task 1 snapshot helpers and contracts; `app.config.Environment`.
 - Produces: `evaluate_synthetic_admin_preflight(request, grants, evaluated_at, environment)`.
 
@@ -65,11 +69,13 @@
 ### Task 3: Boundary evidence and tracker
 
 **Files:**
+
 - Create: `backend/tests/test_admin_authorization_boundaries.py`
 - Create: `docs/implementation/P21_A_SYNTHETIC_ADMIN_AUTHORIZATION_CONTRACTS.md`
 - Modify: `docs/implementation/38_PROGRESS_TRACKER.md`
 
 **Interfaces:**
+
 - Consumes: Tasks 1 and 2 public surface.
 - Produces: regression evidence that the module is detached and P21 remains partial.
 
