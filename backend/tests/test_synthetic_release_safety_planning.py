@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import FrozenInstanceError
-from datetime import UTC, datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone, tzinfo
 
 import pytest
 
@@ -51,6 +51,17 @@ class HostileInput:
 
     def __len__(self) -> int:
         raise AssertionError("hostile input length was read")
+
+
+class HostileTimezone(tzinfo):
+    def utcoffset(self, value: datetime | None) -> timedelta:
+        raise RuntimeError("secret-patient@example.test")
+
+    def dst(self, value: datetime | None) -> timedelta:
+        return timedelta(0)
+
+    def tzname(self, value: datetime | None) -> str:
+        return "HOSTILE"
 
 
 def plan(
@@ -154,6 +165,24 @@ def test_aware_non_utc_clock_normalizes_and_plan_is_immutable() -> None:
     assert item.created_at.tzinfo is UTC
     with pytest.raises(FrozenInstanceError):
         item.area = SyntheticReleaseSafetyArea.ROUTE_CONCORDANCE  # type: ignore[misc]
+
+
+@pytest.mark.parametrize(
+    "created_at",
+    [
+        datetime(2026, 11, 1, 22, 0, tzinfo=HostileTimezone()),
+        datetime.min.replace(tzinfo=timezone(timedelta(hours=23, minutes=59))),
+    ],
+)
+def test_clock_failures_become_stable_content_free_contract_errors(
+    created_at: datetime,
+) -> None:
+    with pytest.raises(ReleaseSafetyPlanContractError) as captured:
+        plan(created_at=created_at)
+
+    assert captured.value.code is ReleaseSafetyPlanContractCode.INVALID_TYPE
+    assert str(captured.value) == "INVALID_TYPE"
+    assert "secret-patient" not in str(captured.value)
 
 
 @pytest.mark.parametrize(

@@ -97,9 +97,16 @@ def _machine_string(value: object, pattern: re.Pattern[str]) -> str:
 
 
 def _utc(value: object) -> datetime:
-    if type(value) is not datetime or value.tzinfo is None or value.utcoffset() is None:
+    if type(value) is not datetime or value.tzinfo is None:
         raise _error(ReleaseSafetyPlanContractCode.INVALID_TYPE)
-    return value.astimezone(UTC)
+    try:
+        if value.utcoffset() is None:
+            raise _error(ReleaseSafetyPlanContractCode.INVALID_TYPE)
+        return value.astimezone(UTC)
+    except ReleaseSafetyPlanContractError:
+        raise
+    except Exception:
+        raise _error(ReleaseSafetyPlanContractCode.INVALID_TYPE) from None
 
 
 def _contract_version(value: object) -> None:
