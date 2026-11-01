@@ -3244,3 +3244,36 @@ clinical sources, population/languages, fixtures and rights, oracles, metrics/de
 thresholds, analysis, privacy/evidence handling and qualified independent review. No pilot or
 release work follows from this foundation.
 ```
+
+---
+
+# 110. P24-C Synthetic Operational Rehearsal Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-DRILL P24-C FOUNDATION ONLY; P24
+remains NOT STARTED for pilot/release purposes and all live AC-P24-001..013 remain unverified.
+Baseline: exact merged origin/main @ d6766f9f8ebb27ca15704f07cd2d5dfbf3e779c2. Work was performed
+on phase/p24-c-synthetic-operational-rehearsal-planning in an isolated worktree.
+Implementation: the unregistered app.validation package defines exact immutable plans for the eight
+canonical P24 operational-rehearsal scenarios. Plans bind only engineering version, exact build,
+configuration and proposed prerequisite, failure-injection, oracle, isolation/cleanup,
+privacy-canary, rollback-or-safe-off, evidence and responsible-role hashes. The complete canonical
+manifest enforces exact build/configuration, order and chronology. Every record remains
+engineering-only, synthetic, unverified, not executed, not eligible, applicability-undecided,
+human-applicability-and-operational-approval-required and release-decision-not-recorded. Protected
+environments fail before input inspection.
+Isolation: no drill, failure injection, deployment, rollback, policy/model activation, resource
+disable, incident escalation, backup, restore, purge, provider call, infrastructure mutation,
+metric, RTO/RPO, result, pass/fail, evidence, signature, approval, waiver or release operation
+exists. The package has no module registration, route, persistence or runtime activation.
+Scope: no patient/clinical data, process/database/network operation, external endpoint,
+persistence/migration, API/UI, event/job, dependency, feature flag, configuration change, pilot,
+production, deployment or rollout behavior.
+Acceptance truth: planning-integrity mechanics are not operational-rehearsal evidence.
+AC-P24-010/011, all other AC-P24 criteria and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT
+VERIFIED. SRE/release, incident, data/records, privacy/security, clinical policy, model/resource,
+provider and independent validation decisions remain outstanding.
+Next action: independently review this bounded schema. Any rehearsal requires separately approved
+scope, environment, prerequisites, oracles, evidence handling, rollback/safe-off semantics,
+accountable owners and independent review. No pilot or release work follows from this foundation.
+```
