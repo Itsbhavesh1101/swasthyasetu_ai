@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | PARTIAL | P20-A provides detached engineering-synthetic evidence/snapshot/candidate/decision contracts and fail-closed preservation-or-abstention mechanics only. No clinical precedence, data access, module integration, route, UI, persistence or runtime activation exists; P20-B/C/D and all live AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
-| P23 | E2E + Accessibility + Performance | NOT STARTED | Pre-P23 bounded coverage/gap review and unsigned readiness inventory drafted; P23-A/B/C/D NOT STARTED, AC-P23-001..012 LIVE NOT VERIFIED, upstream/human approvals pending. |
+| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A and P23-B bounded engineering-synthetic metadata foundations are delivered. No live journey or accessibility audit has run; P23-C/D are not started, AC-P23-001..012 remain LIVE NOT VERIFIED, and upstream/human approvals remain pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
@@ -3088,4 +3088,35 @@ outstanding.
 Next action: independently review this bounded foundation. Live P23-A requires approved journey
 applicability, fixture rights, independent action/abstention oracles, identity/consent/privacy scope,
 owning runtime approvals and browser/API/PostgreSQL evidence design. P23-B/C/D and P24 remain blocked.
+```
+
+---
+
+# 105. P23-B Synthetic Accessibility Evidence Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC P23-B FOUNDATION ONLY; P23 remains PARTIAL
+and all live AC-P23-001..012 acceptance remains unverified.
+Baseline: exact merged origin/main @ 032062d326e43b499c913d182e2ec95080417670. Work was performed
+on phase/p23-b-synthetic-accessibility-evidence in an isolated worktree.
+Implementation: the unregistered app.validation package defines the exact eight-area P23
+accessibility evidence catalog, immutable version/hash/SHA/UTC-bound definitions and observations,
+tamper-evident receipts and an exact manifest. Pure mechanics canonicalize the catalog and return
+only synthetic metadata consistency or abstention. Every object remains engineering-only,
+synthetic, unverified and human-review-required. Protected environments fail closed before hostile
+evidence is inspected.
+Isolation: no accessibility scanner, browser or assistive-technology audit is run. The package has
+no route or module registration and no pass, finding, severity, remediation, certification,
+approval, persistence or release authority.
+Scope: no patient/user content, clinical-language or resource review, supported AT/browser/device/
+locale matrix, WCAG claim, screenshot/recording, persistence/migration, API/UI, event/job, telemetry,
+dependency, network, feature flag, pilot or runtime activation; no P23-C/D or P24.
+Acceptance truth: metadata-integrity mechanics are not an accessibility audit or conformance result.
+AC-P23-008, AC-P23-009, NFR-ACCESS-001..007, all other AC-P23 criteria and all product acceptance
+remain NOT VERIFIED. Qualified accessibility, language/content, privacy/security, institution,
+product and application-owner decisions remain outstanding.
+Next action: independently review this bounded foundation. A live P23-B audit requires an approved
+critical-flow inventory, AT/browser/device/locale matrix, reviewed copy, severity/remediation rules,
+kiosk/shared-device policy, privacy-safe evidence handling and qualified human review. P23-C/D and
+P24 remain blocked.
 ```
