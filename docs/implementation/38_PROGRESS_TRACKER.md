@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | PARTIAL | P20-A provides detached engineering-synthetic evidence/snapshot/candidate/decision contracts and fail-closed preservation-or-abstention mechanics only. No clinical precedence, data access, module integration, route, UI, persistence or runtime activation exists; P20-B/C/D and all live AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
-| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A and P23-B bounded engineering-synthetic metadata foundations are delivered. No live journey or accessibility audit has run; P23-C/D are not started, AC-P23-001..012 remain LIVE NOT VERIFIED, and upstream/human approvals remain pending. |
+| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded metadata foundations and the P23-C no-run synthetic performance-plan foundation are delivered. No live journey, accessibility audit, or performance run has occurred; P23-D is not started, AC-P23-001..012 remain LIVE NOT VERIFIED, and upstream/human approvals remain pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
@@ -3119,4 +3119,35 @@ Next action: independently review this bounded foundation. A live P23-B audit re
 critical-flow inventory, AT/browser/device/locale matrix, reviewed copy, severity/remediation rules,
 kiosk/shared-device policy, privacy-safe evidence handling and qualified human review. P23-C/D and
 P24 remain blocked.
+```
+
+---
+
+# 106. P23-C Synthetic Performance Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-RUN P23-C FOUNDATION ONLY; P23 remains
+PARTIAL and all live AC-P23-001..012 acceptance remains unverified.
+Baseline: exact merged origin/main @ 4c966ddbc33b99a282091d66e54c5171b452dd69. Work was performed
+on phase/p23-c-synthetic-performance-planning in an isolated worktree.
+Implementation: the unregistered app.validation package defines exact immutable plans for the five
+canonical P23 measurement targets. Plans bind only engineering version, SHA/configuration and
+proposed synthetic workload, provenance, method, isolation and analysis hashes. The canonical
+manifest reconstructs inputs, enforces completeness/order/chronology and rejects protected
+environments before hostile plan inspection. Every record remains synthetic, unverified, not
+executed and human-approval-required.
+Isolation: there is no execution, measurement or result type. The package exposes no load,
+concurrency, latency value, percentile, throughput, error budget, SLO, threshold, baseline,
+comparison, pass, persistence or release authority.
+Scope: no request/browser/database/job/model/external operation, network, patient data, telemetry
+export, dashboard, persistence/migration, API/UI, event/job, dependency, CI/configuration, feature
+flag, runtime activation, pilot or release; no P23-D or P24.
+Acceptance truth: planning-integrity mechanics are not a performance baseline. AC-P23-010,
+NFR-PERF-001..006, all other AC-P23 criteria and product acceptance remain NOT VERIFIED. Product,
+clinical operations, SRE/performance, database, privacy/security, accessibility, observability and
+owning-module decisions remain outstanding.
+Next action: independently review this bounded schema. Any run requires separately approved
+environment, objective, synthetic workload/rights, method, repetitions/concurrency/clocks,
+metrics/uncertainty, cleanup/retention, third-party restrictions and owner-approved thresholds.
+P23-D and P24 remain blocked.
 ```
