@@ -27,7 +27,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 
 # 2. Project-Level Status
 
-**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, P18-A/B/C/D, P19-A, P20-A, and P21-A/B/C/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, P18, P19, P20, and P21 remain partial.
+**Current macro stage:** P11-A/B/C/D, P12-A, P13-A/B/C/D/E, P14-A/B/C/D/F, P15-A/B/E, P16-A/B, P17-A/B/D, P18-A/B/C/D, P19-A/B, P20-A, and P21-A/B/C/D have bounded synthetic engineering foundations only; the related live workflows remain unapproved. P11 is partial while P8, P9, P10, P12, P13, P14, P15, P16, P17, P18, P19, P20, and P21 remain partial.
 **Current recommended next action:** Review the bounded synthetic foundations and obtain accountable decisions before any verified source, clinical signal/rule, contact, taxonomy, routing, persistence, API, notification delivery, referral sharing, or patient/admin activation. Do not begin live P11 document processing, P12 providers/voice, P13 delivery/UI activation, P14 mental-health processing/routing, or P21 runtime while applicable decisions remain unresolved. P11 stays 0/9 approved (5 OPEN, 4 BLOCKED), P10 live stays 0/9 approved, and all P8-C/P9-C Stage 3 gates remain blocked.
 
 ---
@@ -55,7 +55,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P16 | FHIR | PARTIAL | P16-A/B provide detached engineering-only R4 mapping metadata contracts, symbolic projection/import-candidate mechanics, a provider-neutral validation port/gateway, and a no-network deterministic fake. Only content-free structural mechanics can pass; profile and terminology modes fail unavailable. No clinical field crosswalk, real patient data, actual schema/profile validation, terminology, authorization, consent evaluation, persistence, API, transport, HAPI sidecar, ABDM behavior or runtime activation exists; all live AC-P16 criteria remain unverified. |
 | P17 | ABDM / ABHA | PARTIAL | P17-A/B provide an inactive provider-neutral port, strict opaque request/result mechanics, and a deterministic zero-egress adapter under test support only. No official flow or identifier semantics, official sandbox, consent/authorization, FHIR payload, external traffic, persistence, API/UI, configuration wiring or runtime activation exists; all live AC-P17 criteria remain unverified. |
 | P18 | Classical ML | PARTIAL | P18-A/B/C/D provide isolated synthetic registry, split, preprocessing, evaluation, transparent baseline, and unapproved candidate/card metadata mechanics. No real dataset/task, scientifically valid benchmark, governed candidate registration, executable artifact, promotion or runtime inference exists; all live AC-P18 criteria remain unverified. |
-| P19 | Hybrid QML | PARTIAL | P19-A provides only detached metadata contracts, a provider-neutral validation port and a deterministic no-quantum test fake bound to synthetic P18 fingerprints. No approved P18 benchmark, quantum dependency, circuit, simulator, experiment, result, comparison, claim, hardware, API or runtime activation exists; all live AC-P19 criteria remain unverified. |
+| P19 | Hybrid QML | PARTIAL | P19-A/B provide only detached metadata contracts, a provider-neutral validation port, a deterministic no-quantum fake, and non-executable plans whose encoding/circuit/optimizer/shots/backend/framework remain unselected. No approved P18 benchmark, quantum dependency, circuit, simulator, experiment, result, comparison, claim, hardware, API or runtime activation exists; all live AC-P19 criteria remain unverified. |
 | P20 | Unified Care Orchestration | PARTIAL | P20-A provides detached engineering-synthetic evidence/snapshot/candidate/decision contracts and fail-closed preservation-or-abstention mechanics only. No clinical precedence, data access, module integration, route, UI, persistence or runtime activation exists; P20-B/C/D and all live AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
@@ -3306,4 +3306,33 @@ privacy/ethics, security, dependency, model-governance and release decision rema
 Next action: independently review this detached boundary. Do not add a framework, simulator,
 circuit, experiment, comparison, hardware adapter or product integration until the prerequisites in
 P19_READINESS_GATE_REVIEW.md are genuinely satisfied.
+```
+
+---
+
+# 112. P19-B Synthetic Quantum Experiment Planning Foundation
+
+```text
+Status: PARTIAL - BOUNDED DETACHED ENGINEERING-SYNTHETIC NO-RUN P19-B FOUNDATION ONLY; P19 remains
+PARTIAL and all live AC-P19 acceptance remains unverified.
+Baseline: exact merged origin/main @ cda5e5c3a79bdce7dee2900684e4cdd258ab1ded. Work was performed
+on phase/p19-b-synthetic-quantum-experiment-planning in an isolated worktree.
+Implementation: immutable non-executable plans bind an exact P19-A request and its P18 synthetic
+candidate/card/dataset/split/preprocessing fingerprints to build, dependency-lock, configuration,
+LOCAL/TEST environment and UTC chronology metadata. Encoding, circuit, optimizer, shots, backend and
+framework remain explicitly NOT_SELECTED/NOT_DESIGNED; execution remains NOT_EXECUTED, approval
+TEST_ONLY_UNAPPROVED and claim state NO_COMPARATIVE_CLAIM.
+Verification boundary: adversarial tests cover exact upstream binding, deterministic fingerprints,
+direct-constructor and forced-mutation drift, UTC chronology, environment replay, protected
+short-circuiting, caller mutation, hostile values and absent payload/execution/claim surfaces.
+Scope: no encoding value, clinical/real data, feature/label, qubit/gate/ansatz/depth/circuit,
+parameter/optimizer setting, shot/noise/transpilation setting, quantum dependency, simulator,
+statevector, QPU/provider/credential/network, training/inference/prediction, metric/result/comparison,
+artifact, persistence/migration, API/UI/worker, backend runtime, P19-C/D/E, pilot or production.
+Acceptance truth: planning integrity is not VQC implementation, simulator execution, scientific
+evidence or quantum advantage. AC-P19-001..009 and FR-QML-001..018 remain LIVE NOT VERIFIED. P18
+still has no approved real benchmark, and all accountable scientific, data, privacy/ethics,
+security, dependency, model-governance and release decisions remain outstanding.
+Next action: independently review P19-A/B. Do not select or execute an encoding, circuit, framework,
+simulator, metric or comparison until P19_READINESS_GATE_REVIEW.md prerequisites genuinely exist.
 ```
