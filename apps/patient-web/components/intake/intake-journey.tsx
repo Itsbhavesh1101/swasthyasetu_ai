@@ -206,6 +206,11 @@ export function IntakeJourney({
             This is a patient-provided draft. It is not a diagnosis, treatment plan, urgency
             assessment, or clinician confirmation.
           </p>
+          {intake.status === "COMPLETED" ? (
+            <Link className="action-link action-link--primary" href={`/results/${intakeId}`}>
+              Open offline synthetic preview
+            </Link>
+          ) : null}
         </header>
         {error ? (
           <p className="form-error" role="alert">
@@ -297,6 +302,12 @@ export function IntakeJourney({
       ) : question ? (
         <form className="content-card intake-form" onSubmit={(event) => void submit(event)}>
           {question.help_text ? <p id="question-help">{question.help_text}</p> : null}
+          {question.answer_type === "TEXT" ? (
+            <p>
+              College demo fixture: enter exactly <code>I report synthetic pain</code>. Other text
+              is saved normally and the preview safely abstains.
+            </p>
+          ) : null}
           <label className="visually-hidden" htmlFor="answer-value">
             {question.prompt}
           </label>

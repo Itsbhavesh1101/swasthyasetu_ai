@@ -374,11 +374,47 @@ test("keyboard-only structured intake saves, reviews, completes, and exits priva
   await expect(page.getByText(/not a diagnosis/i)).toBeVisible();
 
   await page.keyboard.press("Tab");
+  const syntheticPreview = page.getByRole("link", { name: /open offline synthetic preview/i });
+  await expect(syntheticPreview).toBeFocused();
+  await page.keyboard.press("Tab");
   const endSession = page.getByRole("button", { name: /end private session/i });
   await expect(endSession).toBeFocused();
   await endSession.press("Enter");
   await expect(page).toHaveURL(/\/language$/);
   await expect(page.getByRole("main")).toBeFocused();
+});
+
+test("completed exact fixture runs the offline synthetic P8-P10 preview", async ({ page }) => {
+  test.slow();
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+
+  const answer = page.getByLabel(/what would you like to share/i);
+  await answer.fill("I report synthetic pain");
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+\/review$/, { timeout: 15_000 });
+  await page.getByRole("button", { name: /complete draft/i }).click();
+  await expect(
+    page.getByRole("heading", { name: /your intake draft has been saved/i }),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: /open offline synthetic preview/i }).click();
+  await expect(page).toHaveURL(/\/results\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { name: "Synthetic result preview" })).toBeVisible();
+  await expect(page.getByText(/engineering test data only/i)).toBeVisible();
+  await expect(page.getByText("Synthetic pain", { exact: true })).toBeVisible();
+  await expect(page.getByText("AI extracted, unconfirmed", { exact: true })).toBeVisible();
+  await expect(page.getByText("ROUTINE_CARE", { exact: true })).toBeVisible();
+  await expect(page.getByText(/clinician review required/i)).toBeVisible();
+
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
 });
 
 test("a failed intake save keeps unsent input and succeeds only after an explicit retry", async ({
@@ -815,6 +851,22 @@ test("a second private session cannot discover or read another session intake", 
       const body = await response.text();
       expect(response.status()).toBe(401);
       expect(JSON.parse(body)).toMatchObject({ error: { code: "AUTHENTICATION_REQUIRED" } });
+      expect(body).not.toContain(protectedDraft);
+      expect(body).not.toContain(intakeId ?? "unreachable");
+    }
+
+    const existingDemo = await secondPage.request.get(
+      `/api/engineering-demo/intakes/${intakeId}/result`,
+    );
+    const unknownDemo = await secondPage.request.get(
+      `/api/engineering-demo/intakes/${unknownIntakeId}/result`,
+    );
+    for (const response of [existingDemo, unknownDemo]) {
+      const body = await response.text();
+      expect(response.status()).toBe(401);
+      expect(JSON.parse(body)).toEqual({
+        error: { code: "RESULT_UNAVAILABLE", message: "The synthetic preview is unavailable." },
+      });
       expect(body).not.toContain(protectedDraft);
       expect(body).not.toContain(intakeId ?? "unreachable");
     }
