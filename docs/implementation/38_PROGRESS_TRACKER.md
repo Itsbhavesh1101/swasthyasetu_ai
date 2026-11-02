@@ -3702,3 +3702,28 @@ regression suites, production builds, real browser presentation and security che
 Next: retain the fully working synthetic demonstration path while choosing another bounded offline
 composition; do not activate live clinician identity, assignment, source access or review actions.
 ```
+
+---
+
+# 127. College Demo Wave 4 — Synthetic Referral Discovery Preview
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P13
+live acceptance remains PARTIAL/BLOCKED and no referral or directory authority is created.
+Implementation: the patient referral route composes the reviewed P13-A synthetic provider/resource
+records, P13-B exact symbolic routing decision, and P13-C detached OFFERED state vocabulary. The UI
+shows one nonmedical service token plus detached provider/resource fixtures with explicit UNVERIFIED
+source state and missing contact data.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_referral_demo_wave4 feature flag. Staging, pilot and production cannot register it.
+The result structurally records no provider selection, referral creation, sharing consent, external
+delivery or notification delivery. It exposes no identifiers, contacts, URLs, destination or action.
+Scope: no clinical mapping, provider lookup/ranking, real directory/resource data, consent change,
+referral mutation, persistence, migration, outbox/job, notification adapter, dependency or browser
+storage. Alembic remains p7a_0007 and all live P13 gates and upstream restrictions remain unchanged.
+Verification: deterministic domain composition, strict backend/BFF schemas, hostile verification/
+selection/consent/delivery mutations, protected-environment gating, accessible no-action UI, full
+regression/build suites, real Chromium presentation, PostgreSQL/Docker and security CI cover it.
+Next: preserve the working synthetic demo and choose another bounded offline composition; do not
+activate real provider discovery, clinical routing, referral sharing, contact or delivery.
+```

@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
 
 import { RouteUnavailable } from "../../components/route-unavailable";
+import { ReferralDiscoveryPreview } from "../../components/referral-discovery-preview";
+import { loadEngineeringReferralDiscovery } from "../../lib/referral-demo/server";
 
 export const metadata: Metadata = { title: "Referrals" };
 
-export default function ReferralsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function ReferralsPage() {
+  const outcome = await loadEngineeringReferralDiscovery();
+  if (outcome.ok) return <ReferralDiscoveryPreview result={outcome.result} />;
   return (
     <RouteUnavailable
       availableIn="the governed referral phase"

@@ -178,6 +178,32 @@ test("all patient routes preserve landmarks, one h1, urgent help, and narrow ref
   }
 });
 
+test("synthetic referral discovery remains unverified and non-actionable", async ({ page }) => {
+  await page.goto("/referrals");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Synthetic referral discovery" }),
+  ).toBeVisible();
+  await expect(page.getByText(/no referral or sharing occurred/i)).toBeVisible();
+  await expect(
+    page.getByText(/not selected, verified, contactable, ranked, or recommended/i),
+  ).toBeVisible();
+  await expect(page.getByText(/no provider-selection.*controls are enabled/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /provider|resource|select|referral|consent|share|send|deliver|notify|book|contact/i,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator("form, input, [href^='http']")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
+});
+
 test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
