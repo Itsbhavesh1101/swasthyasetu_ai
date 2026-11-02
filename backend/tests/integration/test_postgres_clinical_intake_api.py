@@ -7,7 +7,7 @@ from asyncio import gather
 from collections.abc import AsyncIterator
 from typing import cast
 from unittest.mock import AsyncMock
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from fastapi import FastAPI
@@ -98,6 +98,32 @@ async def _start(client: AsyncClient, token: str, encounter_id: str) -> dict[str
     )
     assert response.status_code in {200, 201}, response.text
     return cast(dict[str, object], response.json())
+
+
+async def test_intake_reads_do_not_reveal_resource_existence_across_sessions(
+    intake_client: tuple[AsyncClient, DatabaseRuntime, FastAPI],
+) -> None:
+    client, _, _ = intake_client
+    _, owner_token, owner_encounter = await _onboard(client)
+    _, attacker_token, _ = await _onboard(client)
+    intake = await _start(client, owner_token, owner_encounter)
+    attacker_headers = {"Authorization": f"Bearer {attacker_token}"}
+
+    existing = await client.get(f"/api/v1/intakes/{intake['intake_id']}", headers=attacker_headers)
+    missing = await client.get(f"/api/v1/intakes/{uuid4()}", headers=attacker_headers)
+
+    for denied in (existing, missing):
+        assert denied.status_code == 401
+        assert denied.headers["cache-control"] == "no-store"
+        assert set(denied.json()) == {"error"}
+        assert denied.json()["error"]["code"] == "AUTHENTICATION_REQUIRED"
+        assert str(intake["intake_id"]) not in denied.text
+
+    owner = await client.get(
+        f"/api/v1/intakes/{intake['intake_id']}",
+        headers={"Authorization": f"Bearer {owner_token}"},
+    )
+    assert owner.status_code == 200
 
 
 async def test_cross_session_cannot_start_read_or_transition_another_encounter(
