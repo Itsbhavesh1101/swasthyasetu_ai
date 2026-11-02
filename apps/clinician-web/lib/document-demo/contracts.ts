@@ -1,0 +1,22 @@
+export type EngineeringDocumentResult = {
+  status: "NEEDS_REVIEW";
+  classification: "ENGINEERING_ONLY";
+  ingestion_disposition: "SYNTHETIC_COMPATIBLE";
+  lifecycle: ["UPLOADED", "VALIDATING", "ACCEPTED", "QUEUED", "PROCESSING", "NEEDS_REVIEW"];
+  processing_status: "SUCCEEDED";
+  processed_pages: 1;
+  provider: "engineering.fixture";
+  external_egress: false;
+  document_type: "LAB_REPORT";
+  classification_disposition: "SELECTED";
+  classification_reason: "EXACT_SYNTHETIC_LABEL";
+  processor_id: "LabReportProcessor";
+  processor_version: "v1";
+  processor_disposition: "NOOP_ABSTAIN";
+  candidate_disposition: "UNCONFIRMED";
+  evidence_references: 1;
+  structural_match: "STRUCTURALLY_MATCHED_UNCONFIRMED";
+  source_access: "NOT_VERIFIED";
+  confidence: "UNKNOWN";
+  notice: string;
+};

@@ -28,6 +28,10 @@ from app.modules.engineering_demo.public import (
     ENGINEERING_DEMO_FEATURE,
     build_engineering_demo_registration,
 )
+from app.modules.engineering_document_demo.public import (
+    ENGINEERING_DOCUMENT_DEMO_FEATURE,
+    build_engineering_document_demo_registration,
+)
 from app.modules.identity.public import build_identity_registration
 from app.modules.patients.public import build_patient_service, build_patients_registration
 from app.modules.provenance.public import build_provenance_registration, build_provenance_service
@@ -109,6 +113,10 @@ def create_app(
             Environment.LOCAL,
             Environment.TEST,
         } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_DEMO_FEATURE))
+        engineering_document_demo_enabled = resolved_settings.environment in {
+            Environment.LOCAL,
+            Environment.TEST,
+        } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_DOCUMENT_DEMO_FEATURE))
         intake_service = build_clinical_intake_service(
             database=resolved_database,
             engineering_content_enabled=engineering_content_enabled,
@@ -137,6 +145,8 @@ def create_app(
         ]
         if engineering_demo_enabled:
             registrations.append(build_engineering_demo_registration(intake_reader=intake_service))
+        if engineering_document_demo_enabled:
+            registrations.append(build_engineering_document_demo_registration())
         resolved_module_registrations = tuple(registrations)
     else:
         resolved_module_registrations = module_registrations

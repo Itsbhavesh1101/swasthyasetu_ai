@@ -3651,3 +3651,29 @@ Verification: strict backend/frontend unit gates, real PostgreSQL integration, p
 all 22 Playwright journeys and privacy/security boundary tests pass. P11 document processing and
 the clinician review workspace remain the next synthetic demo unit.
 ```
+
+---
+
+# 125. College Demo Wave 2 — Synthetic Document Review Receipt
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P11
+live acceptance remains PARTIAL/BLOCKED and P10 clinician authority remains unchanged.
+Implementation: the clinician engineering workspace composes the existing reviewed P11-A lifecycle
+and ingestion guards, P11-B processing result and attempt contracts, P11-C deterministic
+classification and pinned no-op processor registry, and P11-D detached structural evidence verifier.
+It produces one minimized synthetic receipt ending in NEEDS_REVIEW with UNCONFIRMED candidate state,
+UNKNOWN confidence and NOT_VERIFIED source access.
+Safety boundary: the backend module is default-off and registered only in LOCAL/TEST under the
+engineering_document_demo_wave2 feature flag. Staging, pilot and production cannot register it. The
+path accepts no upload, filename, file bytes, OCR text, patient or encounter identifier, browser
+credential or clinician mutation. It performs no filesystem, object-storage, database, external
+network/model, parser or OCR-provider operation and exposes no review/confirm control.
+Scope: no dependency, migration, schema, real OCR adapter, patient data, persistence, upload API,
+source viewer, clinical extraction or browser persistence. Alembic head remains p7a_0007.
+Verification: strict backend/frontend contracts, hostile authority mutations, default/protected-
+environment gating, regression suites, production builds, real browser presentation and security
+checks cover the bounded engineering path. All live P11 and P10 approval gates remain unclaimed.
+Next: a synthetic-only P10 clinician summary review composition may reuse the already implemented
+source-backed summary contracts without enabling identity, assignment, confirmation or persistence.
+```
