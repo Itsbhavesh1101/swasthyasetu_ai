@@ -433,6 +433,65 @@ test("an ambiguous intake response refetches saved state without replaying the m
   expect(attemptedSaves).toBe(1);
 });
 
+test("a stale intake version refetches authoritative state and requires review", async ({
+  page,
+}) => {
+  test.slow();
+  const acceptedAnswer = "Synthetic concurrently accepted concern";
+  const staleAnswer = "Synthetic stale concern that must not be replayed";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  const stalePage = await page.context().newPage();
+
+  try {
+    await stalePage.goto(intakePath);
+    await stalePage.getByLabel(/what would you like to share/i).fill(staleAnswer);
+
+    await page.getByLabel(/what would you like to share/i).fill(acceptedAnswer);
+    await page.getByRole("button", { name: /save and continue/i }).click();
+    await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+    await expect(page.getByText(acceptedAnswer)).toBeVisible();
+
+    const conflictPromise = stalePage.waitForResponse(
+      (response) => response.url().endsWith("/answers") && response.request().method() === "POST",
+    );
+    await stalePage.getByRole("button", { name: /save and continue/i }).click();
+    const conflict = await conflictPromise;
+    const conflictBody = await conflict.text();
+    expect(conflict.status()).toBe(409);
+    expect(conflict.headers()["cache-control"]).toContain("no-store");
+    expect(JSON.parse(conflictBody)).toMatchObject({ error: { code: "RESOURCE_CONFLICT" } });
+    expect(conflictBody).not.toContain(acceptedAnswer);
+    expect(conflictBody).not.toContain(staleAnswer);
+
+    await expect(stalePage.locator("#answer-error")).toHaveText(
+      "This intake changed. Refresh and review the latest saved draft.",
+    );
+    await expect(
+      stalePage.getByRole("heading", { level: 2, name: "Review the latest saved draft" }),
+    ).toBeVisible();
+    await expect(stalePage.locator("textarea")).toHaveCount(0);
+    await expect(stalePage.getByRole("button", { name: /save and continue/i })).toHaveCount(0);
+
+    const authoritative = await stalePage.request.get(`/api${intakePath}`);
+    expect(authoritative.ok(), await authoritative.text()).toBe(true);
+    const authoritativeState = await authoritative.json();
+    expect(authoritativeState.version).toBe(2);
+    expect(authoritativeState.answers).toHaveLength(1);
+    expect(authoritativeState.answers[0].value).toBe(acceptedAnswer);
+    expect(JSON.stringify(authoritativeState)).not.toContain(staleAnswer);
+
+    await stalePage.getByRole("link", { name: "Review latest draft" }).click();
+    await expect(stalePage).toHaveURL(/\/review$/);
+    await expect(stalePage.getByText(acceptedAnswer)).toBeVisible();
+    await expect(stalePage.getByText(staleAnswer)).toHaveCount(0);
+  } finally {
+    await stalePage.close();
+  }
+});
+
 test("withdrawing consent blocks an active intake without ending the session", async ({ page }) => {
   test.slow();
   const protectedDraft = "Synthetic consent-withdrawal draft";

@@ -3468,3 +3468,31 @@ restrictions remain.
 Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
 recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
 ```
+
+---
+
+# 118. P23-A Intake Conflict-Recovery E2E Evidence
+
+```text
+Status: PARTIAL - BOUNDED SYNTHETIC FULL-STACK CONFLICT-RECOVERY EVIDENCE FOR THE EXISTING P7 PATH
+ONLY; P23 remains PARTIAL and all live AC-P23/product acceptance remains unverified.
+Baseline: exact merged origin/main @ aa276cc35940f523646480ff2ac9b3ac85820b49. Work was performed
+on phase/p23-a-intake-conflict-recovery-e2e in an isolated worktree.
+Evidence: two pages in one authorized private session load the same intake version. The first
+commits one synthetic answer; the second receives RESOURCE_CONFLICT for a distinct stale answer.
+The conflict response is content-free and no-store, authoritative state is refetched, the stale
+control is removed, further stale submission is unavailable, and explicit review is required. A
+real BFF read proves exactly the accepted value at version 2 and no stale value.
+Correction: conflict handling now distinguishes an authoritative stale-version rejection from a
+retryable pre-write failure. Ordinary dependency failures still preserve memory-only input for an
+explicit retry; stale input is never replayed against a new version.
+Scope: no API/backend/schema/migration, dependency/lockfile, feature flag, service worker,
+infrastructure, clinical policy or blocked P8+ module changed.
+Acceptance truth: this closes the stale-version negative-oracle gap for the existing P7 technical
+journey only. It is not broader journey validation, clinical validation, accessibility
+certification, performance/recovery evidence, pilot authorization or release evidence.
+AC-P23-001..012 and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; all governance
+restrictions remain.
+Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
+recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
+```
