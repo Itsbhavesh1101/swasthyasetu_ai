@@ -1,12 +1,22 @@
-import { AppShell, EmptyState } from "@swasthyasetu/ui";
+import { AppShell } from "@swasthyasetu/ui";
 
-export default function ClinicianFoundationPage() {
+import { EngineeringDocumentReview } from "../components/engineering-document-review";
+import { loadEngineeringDocumentResult } from "../lib/document-demo/server";
+
+export const dynamic = "force-dynamic";
+
+export default async function ClinicianFoundationPage() {
+  const outcome = await loadEngineeringDocumentResult();
   return (
     <AppShell title="SwasthyaSetu Clinician">
-      <EmptyState
-        description="This workspace contains the clinician application foundation. Clinical workflows will be added only in their governed phases."
-        title="Foundation ready"
-      />
+      <header className="page-header">
+        <p className="eyebrow">College demonstration</p>
+        <h2>Clinician engineering workspace</h2>
+        <p>
+          Only offline synthetic contract evidence is shown. Live clinical workflows remain off.
+        </p>
+      </header>
+      <EngineeringDocumentReview result={outcome.ok ? outcome.result : null} />
     </AppShell>
   );
 }
