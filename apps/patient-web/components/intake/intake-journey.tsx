@@ -63,15 +63,18 @@ export function IntakeJourney({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const load = useCallback(async () => {
-    const result = await intakeRequest(`/api/intake/${encodeURIComponent(intakeId)}`);
-    if (result.ok) {
-      setIntake(result.value);
-      setError(null);
-    } else {
-      setError(result.error.message);
-    }
-  }, [intakeId]);
+  const load = useCallback(
+    async (preserveError = false) => {
+      const result = await intakeRequest(`/api/intake/${encodeURIComponent(intakeId)}`);
+      if (result.ok) {
+        setIntake(result.value);
+        if (!preserveError) setError(null);
+      } else {
+        setError(result.error.message);
+      }
+    },
+    [intakeId],
+  );
 
   useEffect(() => {
     let active = true;
@@ -108,7 +111,7 @@ export function IntakeJourney({
     setBusy(false);
     if (!result.ok) {
       setError(result.error.message);
-      await load();
+      await load(true);
       return;
     }
     setIntake(result.value);
@@ -129,7 +132,7 @@ export function IntakeJourney({
       setError(null);
     } else {
       setError(result.error.message);
-      await load();
+      await load(true);
     }
   }
 
