@@ -549,6 +549,73 @@ test("concurrent session closure removes loaded intake state and browser credent
   expect(backendDeniedBody).not.toContain(unsentAnswer);
 });
 
+test("concurrent consent withdrawal removes loaded intake state but preserves the session", async ({
+  context,
+  page,
+  request,
+}) => {
+  test.slow();
+  const unsentAnswer = "Synthetic unsent value removed after consent withdrawal";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  const intakeId = intakePath.split("/").at(-1);
+  await page.getByLabel(/what would you like to share/i).fill(unsentAnswer);
+
+  const cookies = await context.cookies();
+  const sessionId = cookies.find(({ name }) => name === sessionIdCookie)?.value;
+  const sessionToken = cookies.find(({ name }) => name === sessionTokenCookie)?.value;
+  expect(sessionId).toBeTruthy();
+  expect(sessionToken).toBeTruthy();
+
+  const consentPage = await context.newPage();
+  await consentPage.goto("/consent");
+  await consentPage.getByRole("button", { name: /withdraw this consent/i }).click();
+  await expect(consentPage.getByText(/consent has been withdrawn/i)).toBeVisible();
+  await consentPage.close();
+
+  const deniedPromise = page.waitForResponse(
+    (response) => response.url().endsWith("/answers") && response.request().method() === "POST",
+  );
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  const denied = await deniedPromise;
+  const deniedBody = await denied.text();
+  expect(denied.status()).toBe(403);
+  expect(denied.headers()["cache-control"]).toContain("no-store");
+  expect(JSON.parse(deniedBody)).toEqual({
+    error: {
+      code: "CONSENT_REQUIRED",
+      message: "Consent is required before continuing this intake.",
+    },
+  });
+  expect(deniedBody).not.toContain(unsentAnswer);
+
+  await expect(page).toHaveURL(/\/consent$/);
+  await expect(page.getByText(unsentAnswer)).toHaveCount(0);
+  await expect(page.getByText(/consent has been withdrawn/i)).toBeVisible();
+  const remainingCookies = await context.cookies();
+  expect(remainingCookies.some(({ name }) => name === sessionIdCookie)).toBe(true);
+  expect(remainingCookies.some(({ name }) => name === sessionTokenCookie)).toBe(true);
+  expect(
+    await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+  ).toEqual({ local: 0, session: 0 });
+
+  const sessionResponse = await request.get(`${backendUrl}/api/v1/sessions/${sessionId}`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  });
+  expect(sessionResponse.ok(), await sessionResponse.text()).toBe(true);
+  expect((await sessionResponse.json()).status).toBe("ACTIVE");
+
+  const backendDenied = await request.get(`${backendUrl}/api/v1/intakes/${intakeId}`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  });
+  const backendDeniedBody = await backendDenied.text();
+  expect(backendDenied.status()).toBe(403);
+  expect(JSON.parse(backendDeniedBody)).toMatchObject({ error: { code: "CONSENT_REQUIRED" } });
+  expect(backendDeniedBody).not.toContain(unsentAnswer);
+});
+
 test("withdrawing consent blocks an active intake without ending the session", async ({ page }) => {
   test.slow();
   const protectedDraft = "Synthetic consent-withdrawal draft";
@@ -572,8 +639,9 @@ test("withdrawing consent blocks an active intake without ending the session", a
   expect(deniedBody).not.toContain(protectedDraft);
 
   await page.goto(intakePath);
-  await expect(page.getByRole("heading", { level: 1, name: "Intake unavailable" })).toBeVisible();
-  await expect(page.getByText(/consent is required before continuing this intake/i)).toBeVisible();
+  await expect(page).toHaveURL(/\/consent$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Review consent" })).toBeVisible();
+  await expect(page.getByText(/consent has been withdrawn/i)).toBeVisible();
   await expect(page.getByText(protectedDraft)).toHaveCount(0);
 
   await page.goto("/encounter");
