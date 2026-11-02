@@ -342,11 +342,16 @@ test("a failed intake save keeps unsent input and succeeds only after an explici
   test.slow();
   const unsentAnswer = "Synthetic retryable save concern";
   const answerRoute = "**/api/intake/*/answers";
+  await page.setViewportSize({ width: 320, height: 800 });
   await completeOnboarding(page);
-  await page.getByRole("button", { name: /start intake/i }).click();
+  const startIntake = page.getByRole("button", { name: /start intake/i });
+  await startIntake.focus();
+  await startIntake.press("Enter");
   await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
   const intakePath = new URL(page.url()).pathname;
-  await page.getByLabel(/what would you like to share/i).fill(unsentAnswer);
+  const answer = page.getByLabel(/what would you like to share/i);
+  await answer.focus();
+  await page.keyboard.type(unsentAnswer);
 
   let attemptedSaves = 0;
   await page.route(answerRoute, async (route) => {
@@ -363,19 +368,30 @@ test("a failed intake save keeps unsent input and succeeds only after an explici
       }),
     });
   });
-  await page.getByRole("button", { name: /save and continue/i }).click();
+  const save = page.getByRole("button", { name: /save and continue/i });
+  await save.focus();
+  await save.press("Enter");
 
-  await expect(page.locator("#answer-error")).toHaveText(
-    "The intake request could not be completed.",
-  );
-  await expect(page.getByLabel(/what would you like to share/i)).toHaveValue(unsentAnswer);
+  const answerError = page.locator("#answer-error");
+  await expect(answerError).toHaveAttribute("role", "alert");
+  await expect(answerError).toHaveText("The intake request could not be completed.");
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await expect(answer).toHaveAttribute("aria-invalid", "true");
+  await expect(answer).toHaveAttribute("aria-describedby", "question-help answer-error");
+  await expect(answer).toHaveValue(unsentAnswer);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    ),
+  ).toBe(false);
   expect(attemptedSaves).toBe(1);
   const unchanged = await page.request.get(`/api${intakePath}`);
   expect(unchanged.ok(), await unchanged.text()).toBe(true);
   expect((await unchanged.json()).answers).toHaveLength(0);
 
   await page.unroute(answerRoute);
-  await page.getByRole("button", { name: /save and continue/i }).click();
+  await save.focus();
+  await save.press("Enter");
   await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
   await expect(page.getByText(unsentAnswer)).toBeVisible();
   const saved = await page.request.get(`/api${intakePath}`);

@@ -300,7 +300,11 @@ export function IntakeJourney({
           <label className="visually-hidden" htmlFor="answer-value">
             {question.prompt}
           </label>
-          <AnswerControl disabled={busy} question={question} />
+          <AnswerControl
+            disabled={busy}
+            {...(error ? { errorId: "answer-error" } : {})}
+            question={question}
+          />
           <div className="inline-actions">
             <button className="button button--primary" disabled={busy} type="submit">
               {busy ? "Saving…" : "Save and continue"}

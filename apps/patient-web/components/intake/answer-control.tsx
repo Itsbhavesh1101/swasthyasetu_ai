@@ -3,6 +3,7 @@ import type { IntakeQuestion } from "../../lib/intake/contracts";
 type Props = {
   question: IntakeQuestion;
   disabled: boolean;
+  errorId?: string;
 };
 
 function numberConstraint(value: unknown): number | undefined {
@@ -11,9 +12,15 @@ function numberConstraint(value: unknown): number | undefined {
   return Number.isFinite(parsed) ? parsed : undefined;
 }
 
-export function AnswerControl({ question, disabled }: Props) {
-  const describedBy = question.help_text ? "question-help" : undefined;
-  const common = { disabled, "aria-describedby": describedBy };
+export function AnswerControl({ question, disabled, errorId }: Props) {
+  const describedBy = [question.help_text ? "question-help" : null, errorId]
+    .filter(Boolean)
+    .join(" ");
+  const accessibility = {
+    "aria-describedby": describedBy || undefined,
+    "aria-invalid": errorId ? true : undefined,
+  };
+  const common = { disabled, ...accessibility };
   switch (question.answer_type) {
     case "TEXT":
       return (
@@ -30,7 +37,7 @@ export function AnswerControl({ question, disabled }: Props) {
       );
     case "SINGLE_CHOICE":
       return (
-        <fieldset disabled={disabled}>
+        <fieldset {...accessibility} disabled={disabled}>
           <legend className="visually-hidden">{question.prompt}</legend>
           {question.options.map((option) => (
             <label className="choice-control" key={option.id}>
@@ -42,7 +49,7 @@ export function AnswerControl({ question, disabled }: Props) {
       );
     case "MULTI_CHOICE":
       return (
-        <fieldset disabled={disabled}>
+        <fieldset {...accessibility} disabled={disabled}>
           <legend className="visually-hidden">{question.prompt}</legend>
           {question.options.map((option) => (
             <label className="choice-control" key={option.id}>
@@ -54,7 +61,7 @@ export function AnswerControl({ question, disabled }: Props) {
       );
     case "BOOLEAN":
       return (
-        <fieldset disabled={disabled}>
+        <fieldset {...accessibility} disabled={disabled}>
           <legend className="visually-hidden">{question.prompt}</legend>
           {[
             ["true", "Yes"],
@@ -136,7 +143,7 @@ export function AnswerControl({ question, disabled }: Props) {
       );
     case "SEVERITY_SCALE":
       return (
-        <fieldset disabled={disabled}>
+        <fieldset {...accessibility} disabled={disabled}>
           <legend className="visually-hidden">Configured scale value</legend>
           <div className="scale-controls">
             {Array.isArray(question.constraints.allowed_values)
