@@ -1,0 +1,22 @@
+export type EngineeringReferralDiscovery = {
+  classification: "ENGINEERING_SYNTHETIC";
+  authority: "ENGINEERING_ONLY";
+  route_disposition: "SYMBOLIC_MATCH";
+  route_reason: "EXACT_SYMBOLIC_MATCH";
+  service_code: "syn_service_college_demo";
+  provider_display_name: "Synthetic College Demo Provider";
+  provider_service_code: "syn_service_college_demo";
+  provider_verification: "UNVERIFIED";
+  resource_display_name: "Synthetic College Demo Resource";
+  resource_code: "syn_resource_type_college_demo";
+  resource_verification: "UNVERIFIED";
+  source_verification: "UNVERIFIED";
+  contacts_available: false;
+  provider_selected: false;
+  referral_state_model: "OFFERED";
+  referral_created: false;
+  sharing_consent: "NOT_REQUESTED";
+  external_delivery: false;
+  notification_delivery: false;
+  notice: string;
+};
