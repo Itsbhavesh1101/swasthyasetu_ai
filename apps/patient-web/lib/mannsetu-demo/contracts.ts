@@ -1,0 +1,20 @@
+export type EngineeringMannSetuPreview = {
+  classification: "ENGINEERING_SYNTHETIC";
+  authority: "ENGINEERING_ONLY";
+  verification: "UNVERIFIED";
+  extraction_status: "SYNTHETIC_PARSED";
+  extractor_signal: "SYN_MH_SIGNAL_ALPHA";
+  backstop_outcome: "SYNTHETIC_MATCHED";
+  backstop_signal: "SYN_MH_SIGNAL_DELTA";
+  precedence: "SYNTHETIC_OVERRIDE";
+  route: "SYNTHETIC_ROUTE_GAMMA";
+  reason_code: "SYN_MH_POLICY_REASON_DELTA";
+  policy_state: "TEST_ONLY_ENABLED";
+  clinical_meaning_assigned: false;
+  mental_health_assessment_performed: false;
+  patient_data_processed: false;
+  resource_contacts_available: false;
+  referral_created: false;
+  external_delivery: false;
+  notice: string;
+};

@@ -3727,3 +3727,30 @@ regression/build suites, real Chromium presentation, PostgreSQL/Docker and secur
 Next: preserve the working synthetic demo and choose another bounded offline composition; do not
 activate real provider discovery, clinical routing, referral sharing, contact or delivery.
 ```
+
+---
+
+# 128. College Demo Wave 5 — Synthetic MannSetu Policy Preview
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P14
+live acceptance remains PARTIAL/BLOCKED and no mental-health or clinical authority is created.
+Implementation: the patient MannSetu route composes the reviewed P14-A strict synthetic extraction
+contract, P14-B independent synthetic backstop contract, and P14-C deterministic policy engine. A
+fixed ALPHA standard symbol and independent DELTA toy override demonstrate precedence, producing
+only the nonmedical SYNTHETIC_ROUTE_GAMMA and SYN_MH_POLICY_REASON_DELTA machine tokens.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_mannsetu_demo_wave5 feature flag. Staging, pilot and production cannot register it.
+The result explicitly assigns no clinical meaning and performs no mental-health assessment or
+patient-data processing. It exposes no conversation, questionnaire, score, diagnosis, treatment,
+contact, verified resource, referral, sharing, notification or external delivery.
+Scope: no clinical or language policy, crisis classification or copy, patient input, consent change,
+resource registry, referral workflow, provider/model, persistence, migration, event/job, dependency,
+network operation or browser storage. Alembic remains p7a_0007 and every live P14 gate and upstream
+restriction remains unchanged.
+Verification: deterministic P14 composition, strict backend/BFF schemas, hostile authority/effect
+mutations, protected-environment gating, accessible no-action UI, regression/build suites, real
+Chromium presentation, PostgreSQL/Docker and security CI cover the bounded engineering path.
+Next: preserve the working synthetic demonstration path; do not activate mental-health assessment,
+clinical rules, crisis guidance, verified resources, referrals or real patient processing.
+```

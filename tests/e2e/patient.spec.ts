@@ -204,6 +204,32 @@ test("synthetic referral discovery remains unverified and non-actionable", async
   ).toEqual({ local: 0, session: 0, visibleCookies: "" });
 });
 
+test("synthetic MannSetu preview remains symbolic and non-actionable", async ({ page }) => {
+  await page.goto("/mannsetu");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "MannSetu synthetic policy preview" }),
+  ).toBeVisible();
+  await expect(page.getByText(/no mental-health assessment was performed/i)).toBeVisible();
+  await expect(page.getByText(/toy override wins mechanically/i)).toBeVisible();
+  await expect(
+    page.getByText(/no patient data, clinical meaning, verified resource/i),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /assess|screen|message|diagnose|treat|resource|contact|refer|share|send|deliver/i,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator("form, input, textarea, select, [href^='http']")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
+});
+
 test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
