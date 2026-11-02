@@ -215,4 +215,109 @@ describe("clinical intake BFF", () => {
     });
     expect(backendFetch).not.toHaveBeenCalled();
   });
+
+  it("clears cookies when the backend explicitly proves the session expired", async () => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    const backendFetch = vi
+      .fn()
+      .mockResolvedValue(
+        Response.json(
+          { error: { code: "SESSION_EXPIRED", message: "raw", request_id: "r" } },
+          { status: 401 },
+        ),
+      );
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await read(request(`/api/intake/${intakeId}`), {
+      params: Promise.resolve({ intakeId }),
+    });
+
+    expect(response.status).toBe(401);
+    expect((await response.json()).error.code).toBe("SESSION_UNAVAILABLE");
+    expect(response.headers.getSetCookie().join(";")).toContain("Max-Age=0");
+    expect(backendFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears cookies only after a read-only recheck proves the session is closed", async () => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    const closed = {
+      error: { code: "INVALID_STATE_TRANSITION", message: "raw", request_id: "r" },
+    };
+    const backendFetch = vi
+      .fn()
+      .mockResolvedValueOnce(Response.json(closed, { status: 409 }))
+      .mockResolvedValueOnce(Response.json(closed, { status: 409 }));
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await answer(
+      request(`/api/intake/${intakeId}/answers`, {
+        method: "POST",
+        headers: { origin: "http://localhost:3000", "content-type": "application/json" },
+        body: JSON.stringify({ expected_version: 1 }),
+      }),
+      { params: Promise.resolve({ intakeId }) },
+    );
+
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({
+      error: { code: "SESSION_UNAVAILABLE", message: "Start a private session first." },
+    });
+    expect(response.headers.getSetCookie().join(";")).toContain("Max-Age=0");
+    expect(backendFetch).toHaveBeenNthCalledWith(
+      2,
+      `http://127.0.0.1:8000/api/v1/sessions/${sessionId}`,
+      expect.objectContaining({ method: "GET" }),
+    );
+  });
+
+  it("preserves valid session cookies when an intake transition alone is invalid", async () => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    const backendFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json(
+          { error: { code: "INVALID_STATE_TRANSITION", message: "raw", request_id: "r" } },
+          { status: 409 },
+        ),
+      )
+      .mockResolvedValueOnce(Response.json({ status: "ACTIVE" }));
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await answer(
+      request(`/api/intake/${intakeId}/answers`, {
+        method: "POST",
+        headers: { origin: "http://localhost:3000", "content-type": "application/json" },
+        body: JSON.stringify({ expected_version: 1 }),
+      }),
+      { params: Promise.resolve({ intakeId }) },
+    );
+
+    expect(response.status).toBe(409);
+    expect((await response.json()).error.code).toBe("INVALID_STATE_TRANSITION");
+    expect(response.cookies.getAll()).toHaveLength(0);
+    expect(backendFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("preserves a valid session when a cross-subject intake denial uses an auth error", async () => {
+    vi.stubEnv("SWASTHYASETU_BACKEND_URL", "http://127.0.0.1:8000/");
+    const backendFetch = vi
+      .fn()
+      .mockResolvedValueOnce(
+        Response.json(
+          { error: { code: "AUTHENTICATION_REQUIRED", message: "raw", request_id: "r" } },
+          { status: 401 },
+        ),
+      )
+      .mockResolvedValueOnce(Response.json({ status: "ACTIVE" }));
+    vi.stubGlobal("fetch", backendFetch);
+
+    const response = await read(request(`/api/intake/${intakeId}`), {
+      params: Promise.resolve({ intakeId }),
+    });
+
+    expect(response.status).toBe(401);
+    expect((await response.json()).error.code).toBe("AUTHENTICATION_REQUIRED");
+    expect(response.cookies.getAll()).toHaveLength(0);
+    expect(backendFetch).toHaveBeenCalledTimes(2);
+  });
 });

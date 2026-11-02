@@ -11,6 +11,8 @@ import { LoadingState } from "../ui-primitives";
 import { UrgentHelpLink } from "../urgent-help-link";
 import { AnswerControl } from "./answer-control";
 
+const INVALID_SESSION_CODES = new Set(["SESSION_UNAVAILABLE"]);
+
 export function answerBody(question: IntakeQuestion, form: FormData, version: number) {
   const requestedDisposition = String(form.get("response_disposition") ?? "ANSWERED");
   const allowedDisposition =
@@ -64,6 +66,18 @@ export function IntakeJourney({
   const [busy, setBusy] = useState(false);
   const [reviewRequired, setReviewRequired] = useState(false);
 
+  const redirectInvalidSession = useCallback(
+    (code: string) => {
+      if (!INVALID_SESSION_CODES.has(code)) return false;
+      setIntake(null);
+      setError(null);
+      setReviewRequired(false);
+      router.replace("/language");
+      return true;
+    },
+    [router],
+  );
+
   const load = useCallback(
     async (preserveError = false) => {
       const result = await intakeRequest(`/api/intake/${encodeURIComponent(intakeId)}`);
@@ -71,10 +85,11 @@ export function IntakeJourney({
         setIntake(result.value);
         if (!preserveError) setError(null);
       } else {
+        if (redirectInvalidSession(result.error.code)) return;
         setError(result.error.message);
       }
     },
-    [intakeId],
+    [intakeId, redirectInvalidSession],
   );
 
   useEffect(() => {
@@ -85,13 +100,14 @@ export function IntakeJourney({
         setIntake(result.value);
         setError(null);
       } else {
+        if (redirectInvalidSession(result.error.code)) return;
         setError(result.error.message);
       }
     });
     return () => {
       active = false;
     };
-  }, [intakeId]);
+  }, [intakeId, redirectInvalidSession]);
 
   useEffect(() => {
     if (intake || error) heading.current?.focus();
@@ -111,6 +127,7 @@ export function IntakeJourney({
     });
     setBusy(false);
     if (!result.ok) {
+      if (redirectInvalidSession(result.error.code)) return;
       setError(result.error.message);
       if (result.error.code === "RESOURCE_CONFLICT") setReviewRequired(true);
       await load(true);
@@ -133,6 +150,7 @@ export function IntakeJourney({
       setIntake(result.value);
       setError(null);
     } else {
+      if (redirectInvalidSession(result.error.code)) return;
       setError(result.error.message);
       await load(true);
     }

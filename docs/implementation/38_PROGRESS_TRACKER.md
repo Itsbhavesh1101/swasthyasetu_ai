@@ -3496,3 +3496,31 @@ restrictions remain.
 Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
 recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
 ```
+
+---
+
+# 119. P23-A Session-Invalidation Recovery E2E Evidence
+
+```text
+Status: PARTIAL - BOUNDED SYNTHETIC FULL-STACK SESSION-INVALIDATION EVIDENCE FOR THE EXISTING P7
+PATH ONLY; P23 remains PARTIAL and all live AC-P23/product acceptance remains unverified.
+Baseline: exact merged origin/main @ a4dea98a045fb16559c92d0b13ac120567b472f3. Work was performed
+on phase/p23-a-session-invalidation-recovery-e2e in an isolated worktree.
+Evidence: a real backend session closure occurs while Chromium holds a loaded synthetic intake and
+an unsent memory-only answer. The rejected mutation triggers a bounded read-only session recheck;
+only proven closure becomes minimized SESSION_UNAVAILABLE, clears both opaque cookies, removes the
+loaded intake and unsent value, and replaces the route with /language without replay.
+Regression boundary: component and BFF tests prove direct invalid-session recovery, closed-session
+cookie deletion, and preservation of valid credentials when only the intake lifecycle returns
+INVALID_STATE_TRANSITION or a cross-subject denial returns AUTHENTICATION_REQUIRED. Ordinary
+version conflicts are not treated as session invalidation.
+Scope: no backend/API contract/schema/migration, dependency/lockfile, feature flag, service worker,
+infrastructure, clinical policy or blocked P8+ module changed.
+Acceptance truth: this closes one session-invalidation recovery gap for the existing P7 technical
+journey only. It is not broader journey validation, clinical validation, accessibility
+certification, performance/recovery evidence, pilot authorization or release evidence.
+AC-P23-001..012 and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; all governance
+restrictions remain.
+Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
+recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
+```

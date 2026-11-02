@@ -453,22 +453,54 @@ function clearInvalidSession(request: NextRequest, response: NextResponse): Next
   return response;
 }
 
-function backendError(request: NextRequest, result: BackendResult): NextResponse {
+async function provenInvalidSession(current: Credentials, result: BackendResult): Promise<boolean> {
   const code = result.errorCode ?? "BACKEND_REQUEST_FAILED";
-  const invalidSession =
-    result.status === 401 || ["SESSION_EXPIRED", "AUTHENTICATION_REQUIRED"].includes(code);
+  if (code === "SESSION_EXPIRED") return true;
+  const mayBeInvalid =
+    result.status === 401 ||
+    code === "AUTHENTICATION_REQUIRED" ||
+    (result.status === 409 && code === "INVALID_STATE_TRANSITION");
+  if (!mayBeInvalid) return false;
+  const session = await backend(
+    `/api/v1/sessions/${encodeURIComponent(current.sessionId)}`,
+    current.token,
+    "GET",
+  );
+  return Boolean(
+    session &&
+    !session.ok &&
+    (session.status === 401 ||
+      (session.status === 409 && session.errorCode === "INVALID_STATE_TRANSITION") ||
+      ["SESSION_EXPIRED", "AUTHENTICATION_REQUIRED"].includes(session.errorCode ?? "")),
+  );
+}
+
+function backendError(
+  request: NextRequest,
+  result: BackendResult,
+  invalidSession: boolean,
+): NextResponse {
+  const code = result.errorCode ?? "BACKEND_REQUEST_FAILED";
+  if (invalidSession) {
+    return clearInvalidSession(
+      request,
+      error("SESSION_UNAVAILABLE", "Start a private session first.", 401),
+    );
+  }
   const response = error(
     code,
     code === "RESOURCE_CONFLICT"
       ? "This intake changed. Refresh and review the latest saved draft."
-      : code === "CONSENT_REQUIRED"
-        ? "Consent is required before continuing this intake."
-        : code === "POLICY_UNAVAILABLE" || code === "FEATURE_DISABLED"
-          ? "Intake content is not available for this session."
-          : "The intake request could not be completed.",
+      : code === "AUTHENTICATION_REQUIRED"
+        ? "Start a private session first."
+        : code === "CONSENT_REQUIRED"
+          ? "Consent is required before continuing this intake."
+          : code === "POLICY_UNAVAILABLE" || code === "FEATURE_DISABLED"
+            ? "Intake content is not available for this session."
+            : "The intake request could not be completed.",
     result.status >= 400 && result.status < 600 ? result.status : 502,
   );
-  return invalidSession ? clearInvalidSession(request, response) : response;
+  return response;
 }
 
 async function relay(
@@ -481,7 +513,7 @@ async function relay(
   if (!current) return error("SESSION_UNAVAILABLE", "Start a private session first.", 401);
   const result = await backend(path, current.token, method, payload);
   if (!result) return error("BACKEND_UNAVAILABLE", "The intake service is unavailable.", 503);
-  if (!result.ok) return backendError(request, result);
+  if (!result.ok) return backendError(request, result, await provenInvalidSession(current, result));
   return validIntake(result.data)
     ? json(result.data, result.status)
     : error("INVALID_BACKEND_RESPONSE", "The intake response could not be verified.", 502);
@@ -509,10 +541,10 @@ export async function createEncounterAndIntake(request: NextRequest): Promise<Ne
     session_id: current.sessionId,
   });
   if (!created) return error("BACKEND_UNAVAILABLE", "The intake service is unavailable.", 503);
-  if (!created.ok || !record(created.data) || typeof created.data.encounter_id !== "string")
-    return created.ok
-      ? error("INVALID_BACKEND_RESPONSE", "The encounter response could not be verified.", 502)
-      : backendError(request, created);
+  if (!created.ok)
+    return backendError(request, created, await provenInvalidSession(current, created));
+  if (!record(created.data) || typeof created.data.encounter_id !== "string")
+    return error("INVALID_BACKEND_RESPONSE", "The encounter response could not be verified.", 502);
   return relay(
     request,
     `/api/v1/encounters/${encodeURIComponent(created.data.encounter_id)}/intake`,
