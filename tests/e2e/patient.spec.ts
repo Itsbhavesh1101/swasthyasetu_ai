@@ -336,6 +336,103 @@ test("real structured intake saves, resumes, reviews, and completes a non-diagno
   await expect(page.getByText(/not a diagnosis/i)).toBeVisible();
 });
 
+test("a failed intake save keeps unsent input and succeeds only after an explicit retry", async ({
+  page,
+}) => {
+  test.slow();
+  const unsentAnswer = "Synthetic retryable save concern";
+  const answerRoute = "**/api/intake/*/answers";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  await page.getByLabel(/what would you like to share/i).fill(unsentAnswer);
+
+  let attemptedSaves = 0;
+  await page.route(answerRoute, async (route) => {
+    attemptedSaves += 1;
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      headers: { "Cache-Control": "no-store" },
+      body: JSON.stringify({
+        error: {
+          code: "BACKEND_UNAVAILABLE",
+          message: "The intake request could not be completed.",
+        },
+      }),
+    });
+  });
+  await page.getByRole("button", { name: /save and continue/i }).click();
+
+  await expect(page.locator("#answer-error")).toHaveText(
+    "The intake request could not be completed.",
+  );
+  await expect(page.getByLabel(/what would you like to share/i)).toHaveValue(unsentAnswer);
+  expect(attemptedSaves).toBe(1);
+  const unchanged = await page.request.get(`/api${intakePath}`);
+  expect(unchanged.ok(), await unchanged.text()).toBe(true);
+  expect((await unchanged.json()).answers).toHaveLength(0);
+
+  await page.unroute(answerRoute);
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+  await expect(page.getByText(unsentAnswer)).toBeVisible();
+  const saved = await page.request.get(`/api${intakePath}`);
+  expect(saved.ok(), await saved.text()).toBe(true);
+  const savedState = await saved.json();
+  expect(savedState.answers).toHaveLength(1);
+  expect(savedState.answers[0].value).toBe(unsentAnswer);
+});
+
+test("an ambiguous intake response refetches saved state without replaying the mutation", async ({
+  page,
+}) => {
+  test.slow();
+  const savedAnswer = "Synthetic ambiguous-response concern";
+  const answerRoute = "**/api/intake/*/answers";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  await page.getByLabel(/what would you like to share/i).fill(savedAnswer);
+
+  let attemptedSaves = 0;
+  await page.route(answerRoute, async (route) => {
+    attemptedSaves += 1;
+    const backendResponse = await route.fetch();
+    expect(backendResponse.ok(), await backendResponse.text()).toBe(true);
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      headers: { "Cache-Control": "no-store" },
+      body: JSON.stringify({
+        error: {
+          code: "REQUEST_FAILED",
+          message: "The request could not be confirmed. Refresh before trying again.",
+        },
+      }),
+    });
+  });
+  await page.getByRole("button", { name: /save and continue/i }).click();
+
+  await expect(page.locator("#answer-error")).toHaveText(
+    "The request could not be confirmed. Refresh before trying again.",
+  );
+  expect(attemptedSaves).toBe(1);
+  const saved = await page.request.get(`/api${intakePath}`);
+  expect(saved.ok(), await saved.text()).toBe(true);
+  const savedState = await saved.json();
+  expect(savedState.answers).toHaveLength(1);
+  expect(savedState.answers[0].value).toBe(savedAnswer);
+
+  await page.unroute(answerRoute);
+  await page.getByRole("link", { name: /review draft/i }).click();
+  await expect(page).toHaveURL(/\/review$/);
+  await expect(page.getByText(savedAnswer)).toBeVisible();
+  expect(attemptedSaves).toBe(1);
+});
+
 test("withdrawing consent blocks an active intake without ending the session", async ({ page }) => {
   test.slow();
   const protectedDraft = "Synthetic consent-withdrawal draft";

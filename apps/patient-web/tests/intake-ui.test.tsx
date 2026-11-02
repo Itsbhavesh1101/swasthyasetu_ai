@@ -1,9 +1,16 @@
-import { render } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AnswerControl } from "../components/intake/answer-control";
-import { answerBody } from "../components/intake/intake-journey";
-import type { AnswerType, IntakeQuestion } from "../lib/intake/contracts";
+import { answerBody, IntakeJourney } from "../components/intake/intake-journey";
+import { intakeRequest } from "../lib/intake/client";
+import type { AnswerType, IntakeQuestion, IntakeView } from "../lib/intake/contracts";
+
+const push = vi.fn();
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("../lib/intake/client", () => ({ intakeRequest: vi.fn() }));
 
 function question(answerType: AnswerType): IntakeQuestion {
   const constraints: Record<string, unknown> = {
@@ -37,7 +44,28 @@ function question(answerType: AnswerType): IntakeQuestion {
   };
 }
 
+function intakeView(): IntakeView {
+  return {
+    intake_id: "11111111-1111-4111-8111-111111111111",
+    encounter_id: "22222222-2222-4222-8222-222222222222",
+    status: "IN_PROGRESS",
+    version: 1,
+    started_at: "2026-11-02T00:00:00Z",
+    completed_at: null,
+    pack_versions: [{ pack_id: "synthetic.pack", pack_version: "1" }],
+    completion_ready: false,
+    current_question: question("TEXT"),
+    engine_state: "NEXT_QUESTION",
+    answers: [],
+    missing_information: [],
+  };
+}
+
 describe("P7-C answer controls", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it.each<AnswerType>([
     "TEXT",
     "SINGLE_CHOICE",
@@ -123,5 +151,83 @@ describe("P7-C answer controls", () => {
       original_text: null,
       response_disposition: disposition,
     });
+  });
+
+  it("keeps a failed-save message and unsent input after authoritative state refetch", async () => {
+    const request = vi.mocked(intakeRequest);
+    const current = intakeView();
+    request
+      .mockResolvedValueOnce({ ok: true, value: current })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          code: "BACKEND_UNAVAILABLE",
+          message: "The intake request could not be completed.",
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, value: current });
+
+    const user = userEvent.setup();
+    render(<IntakeJourney intakeId={current.intake_id} />);
+    const answer = await screen.findByLabelText(/synthetic text question/i);
+    await user.type(answer, "Synthetic unsent");
+    await user.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The intake request could not be completed.",
+    );
+    expect(answer).toHaveValue("Synthetic unsent");
+    await waitFor(() => expect(request).toHaveBeenCalledTimes(3));
+    expect(request.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("renders refetched saved state without replaying an ambiguously acknowledged mutation", async () => {
+    const request = vi.mocked(intakeRequest);
+    const current = intakeView();
+    const saved: IntakeView = {
+      ...current,
+      version: 2,
+      completion_ready: true,
+      current_question: null,
+      engine_state: "COMPLETION_READY",
+      answers: [
+        {
+          answer_id: "33333333-3333-4333-8333-333333333333",
+          question_id: current.current_question?.question_id ?? "synthetic.text",
+          question_version: "1",
+          answer_type: "TEXT",
+          value: "Synthetic saved",
+          selected_option_ids: null,
+          unit: null,
+          response_disposition: "ANSWERED",
+          source_label: "Patient-provided text",
+        },
+      ],
+    };
+    request
+      .mockResolvedValueOnce({ ok: true, value: current })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          code: "REQUEST_FAILED",
+          message: "The request could not be confirmed. Refresh before trying again.",
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, value: saved });
+
+    const user = userEvent.setup();
+    render(<IntakeJourney intakeId={current.intake_id} />);
+    await user.type(await screen.findByLabelText(/synthetic text question/i), "Synthetic saved");
+    await user.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Review is needed" }),
+    ).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The request could not be confirmed. Refresh before trying again.",
+    );
+    expect(request.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(push).not.toHaveBeenCalled();
   });
 });
