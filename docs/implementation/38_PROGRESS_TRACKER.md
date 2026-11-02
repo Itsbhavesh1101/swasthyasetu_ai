@@ -3551,3 +3551,31 @@ restrictions remain.
 Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
 recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
 ```
+
+---
+
+# 121. P23-A Offline Mutation-Recovery E2E Evidence
+
+```text
+Status: PARTIAL - BOUNDED SYNTHETIC FULL-STACK OFFLINE-MUTATION EVIDENCE FOR THE EXISTING P7 PATH
+ONLY; P23 remains PARTIAL and all live AC-P23/product acceptance remains unverified.
+Baseline: exact merged origin/main @ 4dd670650909a61d5b527759cab8ee79ca015501. Work was performed
+on phase/p23-a-offline-mutation-recovery-e2e in an isolated worktree.
+Evidence: Chromium loads a real authorized synthetic intake, enters an unsent memory-only answer,
+goes offline and attempts the mutation. The UI reports an unconfirmed request; the service worker
+does not intercept, cache, queue, acknowledge or replay /api/**. After reconnect, authoritative
+inspection proves zero answers, no background-sync tag and no additional POST until
+one explicit user retry writes exactly one answer.
+Privacy boundary: the unsent value remains absent from localStorage, sessionStorage, IndexedDB and
+Cache Storage; the cache remains the exact approved public-shell allowlist. No background sync or
+offline clinical behavior is introduced.
+Scope: no runtime/backend/API/schema/migration, dependency/lockfile, service worker, feature flag,
+infrastructure, clinical policy or blocked P8+ module changed.
+Acceptance truth: this closes one offline mutation/replay evidence gap for the existing P7 technical
+journey only. It is not encrypted offline intake, broader journey validation, clinical validation,
+accessibility certification, performance/recovery evidence, pilot authorization or release
+evidence. AC-P23-001..012 and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; all
+governance restrictions remain.
+Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
+recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
+```
