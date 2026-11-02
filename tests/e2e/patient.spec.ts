@@ -307,33 +307,78 @@ test("keyboard onboarding uses real session and consent services without browser
   });
 });
 
-test("real structured intake saves, resumes, reviews, and completes a non-diagnostic draft", async ({
+test("keyboard-only structured intake saves, reviews, completes, and exits privately", async ({
   page,
 }) => {
+  test.slow();
   await completeOnboarding(page);
   const start = page.getByRole("button", { name: /start intake/i });
   await start.focus();
   await expect(start).toBeFocused();
   await start.press("Enter");
   await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(
-    /what would you like to share/i,
-  );
-  await page.getByLabel(/what would you like to share/i).fill("Synthetic browser journey concern");
-  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveTitle("Structured intake | SwasthyaSetu");
+  const questionHeading = page.getByRole("heading", { level: 1 });
+  await expect(questionHeading).toContainText(/what would you like to share/i);
+  await expect(questionHeading).toBeFocused();
+
+  await page.keyboard.press("Tab");
+  const answer = page.getByLabel(/what would you like to share/i);
+  await expect(answer).toBeFocused();
+  await page.keyboard.type("Synthetic browser journey concern");
+  await page.keyboard.press("Tab");
+  const save = page.getByRole("button", { name: /save and continue/i });
+  await expect(save).toBeFocused();
+  await save.press("Enter");
+
   await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+  await expect(page).toHaveTitle("Review intake draft | SwasthyaSetu");
+  const reviewHeading = page.getByRole("heading", { level: 1 });
+  await expect(reviewHeading).toBeFocused();
   await expect(page.getByText("Synthetic browser journey concern")).toBeVisible();
   await expect(
     page.getByText(/not a diagnosis, treatment plan, urgency assessment/i),
   ).toBeVisible();
 
   await page.reload();
+  await expect(reviewHeading).toBeFocused();
   await expect(page.getByText("Synthetic browser journey concern")).toBeVisible();
-  await page.getByRole("button", { name: /complete draft/i }).click();
-  await expect(
-    page.getByRole("heading", { level: 1, name: /your intake draft has been saved/i }),
-  ).toBeVisible();
+  await page.keyboard.press("Tab");
+  const reviewOrChange = page.getByRole("link", { name: /review or change/i });
+  await expect(reviewOrChange).toBeFocused();
+  await reviewOrChange.press("Enter");
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  await expect(page).toHaveTitle("Structured intake | SwasthyaSetu");
+  await expect(page.getByRole("heading", { level: 1 })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(answer).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(save).toBeFocused();
+  await page.keyboard.press("Tab");
+  const returnToReview = page.getByRole("link", { name: /review draft/i });
+  await expect(returnToReview).toBeFocused();
+  await returnToReview.press("Enter");
+  await expect(page).toHaveURL(/\/review$/);
+  await expect(reviewHeading).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(reviewOrChange).toBeFocused();
+  await page.keyboard.press("Tab");
+  const complete = page.getByRole("button", { name: /complete draft/i });
+  await expect(complete).toBeFocused();
+  await complete.press("Enter");
+  const completedHeading = page.getByRole("heading", {
+    level: 1,
+    name: /your intake draft has been saved/i,
+  });
+  await expect(completedHeading).toBeFocused();
   await expect(page.getByText(/not a diagnosis/i)).toBeVisible();
+
+  await page.keyboard.press("Tab");
+  const endSession = page.getByRole("button", { name: /end private session/i });
+  await expect(endSession).toBeFocused();
+  await endSession.press("Enter");
+  await expect(page).toHaveURL(/\/language$/);
+  await expect(page.getByRole("main")).toBeFocused();
 });
 
 test("a failed intake save keeps unsent input and succeeds only after an explicit retry", async ({

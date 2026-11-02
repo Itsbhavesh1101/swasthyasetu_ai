@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | PARTIAL | P20-A/B/C/D provide detached engineering-synthetic composition contracts, a content-free structural source-port preflight, exact synthetic receipt reconciliation, and offline deterministic composition replay. No patient integration, clinical precedence, data access/retrieval, live module adapter, route, UI, persistence or runtime activation exists; live P20-B/C/D and all AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
-| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded foundations plus P23-C no-run performance and P23-D no-drill recovery planning are delivered. Synthetic full-stack evidence now covers the existing P7 path's denial, save/conflict, session/consent, offline replay, and accessible save-failure boundaries. Broader live journeys, human accessibility audit, performance run, and recovery drill remain unperformed. AC-P23-001..012 remain LIVE NOT VERIFIED and upstream/human approvals remain pending. |
+| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded foundations plus P23-C no-run performance and P23-D no-drill recovery planning are delivered. Synthetic full-stack evidence now covers the existing P7 path's denial, save/conflict, session/consent, offline replay, accessible save-failure, and keyboard completion boundaries. Broader live journeys, human accessibility audit, performance run, and recovery drill remain unperformed. AC-P23-001..012 remain LIVE NOT VERIFIED and upstream/human approvals remain pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
@@ -3597,6 +3597,31 @@ alert semantics, preserved unsent input, exact error association, and no 320px p
 Scope: no backend/API/schema/migration, dependency/lockfile, service worker, feature flag,
 infrastructure, clinical policy or blocked P8+ module changed.
 Acceptance truth: this closes one automated accessibility gap for the existing P7 technical journey
+only. It is not a human keyboard or assistive-technology audit, language/kiosk review, WCAG
+certification, pilot authorization or release evidence. AC-P23-008/009, all other AC-P23 criteria,
+and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; qualified review remains outstanding.
+Next action: independently review this bounded evidence. Broader P23-B execution remains gated by
+the approved critical-flow inventory, AT/browser matrix, language/kiosk scope and qualified review.
+```
+
+---
+
+# 123. P23-B Keyboard Intake Completion E2E Evidence
+
+```text
+Status: PARTIAL - BOUNDED AUTOMATED KEYBOARD/FOCUS EVIDENCE FOR THE EXISTING P7 INTAKE JOURNEY ONLY;
+P23 remains PARTIAL and all live AC-P23/product acceptance remains unverified.
+Baseline: exact merged origin/main @ e3d607b23eb8addf744b0dfe4a8c3c28f664e154. Work was performed
+on phase/p23-b-intake-keyboard-completion-e2e in an isolated worktree.
+Evidence: the real Chromium/BFF/FastAPI/PostgreSQL intake journey now uses keyboard input from start
+through answer/save, review/change, return-to-review, completion and private-session exit. It proves
+the existing non-sensitive route titles and deterministic focus transfers at question, review,
+completed and language-route states, including after authoritative reload.
+Harness: Playwright dev-server ports are overrideable for isolated local execution while existing CI
+defaults remain unchanged.
+Scope: test/evidence only. No product runtime component, backend/API/schema/migration, dependency/
+lockfile, service worker, feature flag, infrastructure, clinical policy or blocked P8+ module changed.
+Acceptance truth: this closes one automated keyboard-path gap for the existing P7 technical journey
 only. It is not a human keyboard or assistive-technology audit, language/kiosk review, WCAG
 certification, pilot authorization or release evidence. AC-P23-008/009, all other AC-P23 criteria,
 and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; qualified review remains outstanding.
