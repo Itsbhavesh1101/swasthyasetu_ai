@@ -254,6 +254,30 @@ test("synthetic self-care preview preserves safety blocking without guidance", a
   ).toEqual({ local: 0, session: 0, visibleCookies: "" });
 });
 
+test("synthetic FHIR preview fails closed without payload or exchange", async ({ page }) => {
+  await page.goto("/fhir");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Synthetic FHIR boundary preview" }),
+  ).toBeVisible();
+  await expect(page.getByText(/no fhir exchange or conformance claim occurred/i)).toBeVisible();
+  await expect(page.getByText(/profile validation fails closed/i)).toBeVisible();
+  await expect(page.getByText(/no resource fields, identifiers, clinical values/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /upload|map|validate|export|import|consent|exchange|send|deliver|abdm/i,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator("form, input, textarea, select, [href^='http']")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
+});
+
 test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
