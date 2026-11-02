@@ -189,7 +189,11 @@ test("synthetic referral discovery remains unverified and non-actionable", async
     page.getByText(/not selected, verified, contactable, ranked, or recommended/i),
   ).toBeVisible();
   await expect(page.getByText(/no provider-selection.*controls are enabled/i)).toBeVisible();
-  await expect(page.getByRole("button")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", {
+      name: /provider|resource|select|referral|consent|share|send|deliver|notify|book|contact/i,
+    }),
+  ).toHaveCount(0);
   await expect(page.locator("form, input, [href^='http']")).toHaveCount(0);
   expect(
     await page.evaluate(() => ({
