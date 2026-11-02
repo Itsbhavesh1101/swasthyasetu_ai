@@ -62,6 +62,7 @@ export function IntakeJourney({
   const [intake, setIntake] = useState<IntakeView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [reviewRequired, setReviewRequired] = useState(false);
 
   const load = useCallback(
     async (preserveError = false) => {
@@ -111,6 +112,7 @@ export function IntakeJourney({
     setBusy(false);
     if (!result.ok) {
       setError(result.error.message);
+      if (result.error.code === "RESOURCE_CONFLICT") setReviewRequired(true);
       await load(true);
       return;
     }
@@ -257,7 +259,20 @@ export function IntakeJourney({
           {error}
         </p>
       ) : null}
-      {question ? (
+      {reviewRequired ? (
+        <section className="state-panel" aria-labelledby="conflict-review-heading">
+          <div>
+            <h2 id="conflict-review-heading">Review the latest saved draft</h2>
+            <p>
+              The saved draft changed before this answer could be accepted. Your unconfirmed answer
+              was not submitted again.
+            </p>
+            <Link className="action-link action-link--primary" href={`/intake/${intakeId}/review`}>
+              Review latest draft
+            </Link>
+          </div>
+        </section>
+      ) : question ? (
         <form className="content-card intake-form" onSubmit={(event) => void submit(event)}>
           {question.help_text ? <p id="question-help">{question.help_text}</p> : null}
           <label className="visually-hidden" htmlFor="answer-value">

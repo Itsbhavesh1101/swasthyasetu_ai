@@ -230,4 +230,62 @@ describe("P7-C answer controls", () => {
     expect(request.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("discards stale input and requires review after an authoritative version conflict", async () => {
+    const request = vi.mocked(intakeRequest);
+    const current = intakeView();
+    const authoritative: IntakeView = {
+      ...current,
+      version: 2,
+      completion_ready: true,
+      current_question: null,
+      engine_state: "COMPLETION_READY",
+      answers: [
+        {
+          answer_id: "44444444-4444-4444-8444-444444444444",
+          question_id: current.current_question?.question_id ?? "synthetic.text",
+          question_version: "1",
+          answer_type: "TEXT",
+          value: "Synthetic authoritative answer",
+          selected_option_ids: null,
+          unit: null,
+          response_disposition: "ANSWERED",
+          source_label: "Patient-provided text",
+        },
+      ],
+    };
+    request
+      .mockResolvedValueOnce({ ok: true, value: current })
+      .mockResolvedValueOnce({
+        ok: false,
+        error: {
+          code: "RESOURCE_CONFLICT",
+          message: "This intake changed. Refresh and review the latest saved draft.",
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, value: authoritative });
+
+    const user = userEvent.setup();
+    render(<IntakeJourney intakeId={current.intake_id} />);
+    await user.type(
+      await screen.findByLabelText(/synthetic text question/i),
+      "Synthetic stale answer",
+    );
+    await user.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "Review the latest saved draft" }),
+    ).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "This intake changed. Refresh and review the latest saved draft.",
+    );
+    expect(screen.queryByDisplayValue("Synthetic stale answer")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /save and continue/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review latest draft" })).toHaveAttribute(
+      "href",
+      `/intake/${current.intake_id}/review`,
+    );
+    expect(request.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(push).not.toHaveBeenCalled();
+  });
 });
