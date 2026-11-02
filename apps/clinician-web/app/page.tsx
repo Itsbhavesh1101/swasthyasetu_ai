@@ -1,12 +1,17 @@
 import { AppShell } from "@swasthyasetu/ui";
 
 import { EngineeringDocumentReview } from "../components/engineering-document-review";
+import { EngineeringSummaryReview } from "../components/engineering-summary-review";
 import { loadEngineeringDocumentResult } from "../lib/document-demo/server";
+import { loadEngineeringSummaryResult } from "../lib/summary-demo/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function ClinicianFoundationPage() {
-  const outcome = await loadEngineeringDocumentResult();
+  const [documentOutcome, summaryOutcome] = await Promise.all([
+    loadEngineeringDocumentResult(),
+    loadEngineeringSummaryResult(),
+  ]);
   return (
     <AppShell title="SwasthyaSetu Clinician">
       <header className="page-header">
@@ -16,7 +21,8 @@ export default async function ClinicianFoundationPage() {
           Only offline synthetic contract evidence is shown. Live clinical workflows remain off.
         </p>
       </header>
-      <EngineeringDocumentReview result={outcome.ok ? outcome.result : null} />
+      <EngineeringDocumentReview result={documentOutcome.ok ? documentOutcome.result : null} />
+      <EngineeringSummaryReview result={summaryOutcome.ok ? summaryOutcome.result : null} />
     </AppShell>
   );
 }

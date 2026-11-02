@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("clinician synthetic document receipt is reachable and non-authoritative", async ({
+test("clinician synthetic document and summary receipts are non-authoritative", async ({
   page,
 }) => {
   const response = await page.goto("/");
@@ -19,6 +19,14 @@ test("clinician synthetic document receipt is reachable and non-authoritative", 
   await expect(page.getByText("UNCONFIRMED", { exact: true })).toBeVisible();
   await expect(page.getByText("NOT VERIFIED", { exact: true })).toBeVisible();
   await expect(page.getByText(/review controls remain disabled/i)).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Synthetic source-backed summary draft" }),
+  ).toBeVisible();
+  await expect(page.getByText(/not signed clinical documentation/i)).toBeVisible();
+  await expect(page.getByText("STALE", { exact: true })).toBeVisible();
+  await expect(page.getByText("NOT AUTHORIZED", { exact: true })).toBeVisible();
+  await expect(page.getByText(/absence is not a clinical finding/i).first()).toBeVisible();
+  await expect(page.getByText(/controls remain unavailable/i)).toBeVisible();
   await expect(page.getByRole("button")).toHaveCount(0);
 
   expect(
