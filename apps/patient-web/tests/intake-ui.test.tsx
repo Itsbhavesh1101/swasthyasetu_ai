@@ -82,6 +82,24 @@ describe("P7-C answer controls", () => {
     expect(document.querySelector("input, textarea, select")).not.toBeNull();
   });
 
+  it.each<AnswerType>([
+    "TEXT",
+    "SINGLE_CHOICE",
+    "MULTI_CHOICE",
+    "BOOLEAN",
+    "NUMBER",
+    "DATE",
+    "DURATION",
+    "SEVERITY_SCALE",
+  ])("associates an active error with the %s answer control", (answerType) => {
+    const { container } = render(
+      <AnswerControl disabled={false} errorId="answer-error" question={question(answerType)} />,
+    );
+    const control = container.querySelector('[aria-invalid="true"]');
+    expect(control).not.toBeNull();
+    expect(control).toHaveAttribute("aria-describedby", "question-help answer-error");
+  });
+
   it("submits the configured NUMBER unit as server-derived hidden metadata", () => {
     const { container } = render(
       <form>
