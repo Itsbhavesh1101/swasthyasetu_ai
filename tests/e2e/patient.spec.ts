@@ -278,6 +278,32 @@ test("synthetic FHIR preview fails closed without payload or exchange", async ({
   ).toEqual({ local: 0, session: 0, visibleCookies: "" });
 });
 
+test("synthetic ABDM preview remains zero-egress and detached from local intake", async ({
+  page,
+}) => {
+  await page.goto("/abdm");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Synthetic ABDM failure boundary" }),
+  ).toBeVisible();
+  await expect(page.getByText(/no abha identity or abdm exchange occurred/i)).toBeVisible();
+  await expect(page.getByText(/unknown requests fail closed as unavailable/i)).toBeVisible();
+  await expect(page.getByText(/local intake path is not accessed or mutated/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /identity|link|consent|upload|exchange|sandbox|retry|send|deliver/i,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator("form, input, textarea, select, [href^='http']")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
+});
+
 test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
