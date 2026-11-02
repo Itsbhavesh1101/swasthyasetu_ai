@@ -1,0 +1,23 @@
+export type EngineeringSelfCarePreview = {
+  classification: "ENGINEERING_SYNTHETIC";
+  authority: "ENGINEERING_ONLY";
+  verification: "UNVERIFIED";
+  knowledge_pack_state: "TEST_ONLY_UNAPPROVED";
+  knowledge_item_review_state: "TEST_ONLY_UNAPPROVED";
+  source_verification: "UNVERIFIED";
+  placeholder_token: "SYNTHETIC_PLACEHOLDER_ALPHA";
+  candidate_outcome: "SYNTHETIC_ENGINEERING_CANDIDATE";
+  candidate_reason: "SYNTHETIC_RULE_MATCH";
+  candidate_count: 1;
+  blocked_outcome: "SYNTHETIC_BLOCKED";
+  blocked_reason: "SYNTHETIC_SAFETY_BLOCK";
+  blocked_candidate_count: 0;
+  safety_block_preserved: true;
+  clinical_eligibility_established: false;
+  guidance_text_available: false;
+  guidance_display_authorized: false;
+  rag_invoked: false;
+  patient_data_processed: false;
+  external_delivery: false;
+  notice: string;
+};

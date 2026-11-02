@@ -271,7 +271,7 @@ jobs:
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
       SWASTHYASETU_BACKEND_URL: http://127.0.0.1:8000
-      SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake","engineering_demo_wave1","engineering_document_demo_wave2","engineering_summary_demo_wave3","engineering_referral_demo_wave4","engineering_mannsetu_demo_wave5"]'
+      SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake","engineering_demo_wave1","engineering_document_demo_wave2","engineering_summary_demo_wave3","engineering_referral_demo_wave4","engineering_mannsetu_demo_wave5","engineering_self_care_demo_wave6"]'
     steps:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
