@@ -3628,3 +3628,26 @@ and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; qualified review re
 Next action: independently review this bounded evidence. Broader P23-B execution remains gated by
 the approved critical-flow inventory, AT/browser matrix, language/kiosk scope and qualified review.
 ```
+
+---
+
+# 124. College Demo Wave 1 — Offline Synthetic AI Result Path
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P8,
+P9 and P10 production/clinical acceptance remains PARTIAL and P11 is unchanged.
+Implementation: a completed P7 intake can invoke one authorized, same-session, consent-protected
+engineering endpoint. The exact phrase "I report synthetic pain" crosses the existing P8 structured
+extraction, P9 deterministic safety-policy registry and P10 source-backed summary contracts through
+a network-free fixture. Any other phrase abstains without a safety decision or summary assertion.
+Safety boundary: the module is default-off, registered only in LOCAL/TEST when the explicit
+engineering_demo_wave1 flag is enabled, and unavailable in staging, pilot and production. Results
+remain ENGINEERING_ONLY, AI_EXTRACTED_UNCONFIRMED and visibly non-diagnostic. Bearers stay in the
+server-only BFF, responses are no-store, cross-session access uses the existing non-enumerating
+authorization boundary, and no patient-facing clinical authority is created.
+Scope: no dependency, migration, schema, external provider, network egress, model inference,
+clinical rule, document/OCR activation or browser persistence. Alembic head remains p7a_0007.
+Verification: strict backend/frontend unit gates, real PostgreSQL integration, production builds,
+all 22 Playwright journeys and privacy/security boundary tests pass. P11 document processing and
+the clinician review workspace remain the next synthetic demo unit.
+```

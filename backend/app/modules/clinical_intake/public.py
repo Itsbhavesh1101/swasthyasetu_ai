@@ -2,6 +2,7 @@
 
 from collections.abc import Callable
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter
 
@@ -33,6 +34,9 @@ from app.modules.sessions.public import SESSIONS_VALIDATE
 from app.shared.capabilities import CapabilityIdentifier, CapabilityKey
 from app.shared.modules import ModuleId, ModuleManifest, ModuleRegistration
 from app.shared.persistence import DatabaseRuntime
+
+if TYPE_CHECKING:
+    from app.modules.clinical_intake.application import ClinicalIntakeService
 
 INTAKE_START = CapabilityKey[StartIntakeCapability](CapabilityIdentifier("intake.start"))
 INTAKE_READ = CapabilityKey[ReadIntakeCapability](CapabilityIdentifier("intake.read"))
@@ -73,9 +77,36 @@ def build_clinical_intake_registration(
     database: DatabaseRuntime | None,
     engineering_content_enabled: bool,
     clock: Callable[[], datetime] | None = None,
+    service: "ClinicalIntakeService | None" = None,
 ) -> ModuleRegistration[APIRouter]:
     """Build isolated runtime dependencies from explicit compile-time content."""
     from app.modules.clinical_intake.api import build_clinical_intake_router
+
+    resolved_service = service or build_clinical_intake_service(
+        database=database,
+        engineering_content_enabled=engineering_content_enabled,
+        clock=clock,
+    )
+    return ModuleRegistration(
+        manifest=CLINICAL_INTAKE_MANIFEST,
+        routers=(build_clinical_intake_router(service=resolved_service),),
+        capability_bindings=(
+            INTAKE_START.bind(resolved_service),
+            INTAKE_READ.bind(resolved_service),
+            INTAKE_ANSWER.bind(resolved_service),
+            INTAKE_COMPLETE.bind(resolved_service),
+            INTAKE_NEXT_QUESTION.bind(resolved_service),
+        ),
+    )
+
+
+def build_clinical_intake_service(
+    *,
+    database: DatabaseRuntime | None,
+    engineering_content_enabled: bool,
+    clock: Callable[[], datetime] | None = None,
+) -> "ClinicalIntakeService":
+    """Build the service for explicit composition by adjacent local/test modules."""
     from app.modules.clinical_intake.application import ClinicalIntakeService
     from app.modules.clinical_intake.content import engineering_packs
 
@@ -83,22 +114,11 @@ def build_clinical_intake_registration(
     registry = PackRegistry(packs)
     allowed = {pack.pack_id: pack.version for pack in packs}
     kwargs = {} if clock is None else {"clock": clock}
-    service = ClinicalIntakeService(
+    return ClinicalIntakeService(
         database=database,
         registry=registry,
         allowed_pack_versions=allowed,
         **kwargs,
-    )
-    return ModuleRegistration(
-        manifest=CLINICAL_INTAKE_MANIFEST,
-        routers=(build_clinical_intake_router(service=service),),
-        capability_bindings=(
-            INTAKE_START.bind(service),
-            INTAKE_READ.bind(service),
-            INTAKE_ANSWER.bind(service),
-            INTAKE_COMPLETE.bind(service),
-            INTAKE_NEXT_QUESTION.bind(service),
-        ),
     )
 
 
@@ -123,4 +143,5 @@ __all__ = [
     "NextQuestion",
     "PackRegistry",
     "build_clinical_intake_registration",
+    "build_clinical_intake_service",
 ]

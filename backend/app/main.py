@@ -18,9 +18,16 @@ from app.config.settings import Environment
 from app.modules.ai_orchestration.providers import LLMProvider
 from app.modules.ai_orchestration.public import build_ai_orchestration_registration
 from app.modules.clinical_intake.content import ENGINEERING_CONTENT_FEATURE
-from app.modules.clinical_intake.public import build_clinical_intake_registration
+from app.modules.clinical_intake.public import (
+    build_clinical_intake_registration,
+    build_clinical_intake_service,
+)
 from app.modules.consent.public import build_consent_registration
 from app.modules.encounters.public import build_encounter_service, build_encounters_registration
+from app.modules.engineering_demo.public import (
+    ENGINEERING_DEMO_FEATURE,
+    build_engineering_demo_registration,
+)
 from app.modules.identity.public import build_identity_registration
 from app.modules.patients.public import build_patient_service, build_patients_registration
 from app.modules.provenance.public import build_provenance_registration, build_provenance_service
@@ -94,7 +101,19 @@ def create_app(
             facts=patient_service,
             encounters=encounter_service,
         )
-        resolved_module_registrations = (
+        engineering_content_enabled = resolved_settings.environment in {
+            Environment.LOCAL,
+            Environment.TEST,
+        } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_CONTENT_FEATURE))
+        engineering_demo_enabled = resolved_settings.environment in {
+            Environment.LOCAL,
+            Environment.TEST,
+        } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_DEMO_FEATURE))
+        intake_service = build_clinical_intake_service(
+            database=resolved_database,
+            engineering_content_enabled=engineering_content_enabled,
+        )
+        registrations: list[ModuleRegistration[APIRouter]] = [
             build_ai_orchestration_registration(
                 environment=resolved_settings.environment,
                 enabled=resolved_settings.llm.enabled,
@@ -112,12 +131,13 @@ def create_app(
             build_provenance_registration(service=provenance_service),
             build_clinical_intake_registration(
                 database=resolved_database,
-                engineering_content_enabled=(
-                    resolved_settings.environment in {Environment.LOCAL, Environment.TEST}
-                    and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_CONTENT_FEATURE))
-                ),
+                engineering_content_enabled=engineering_content_enabled,
+                service=intake_service,
             ),
-        )
+        ]
+        if engineering_demo_enabled:
+            registrations.append(build_engineering_demo_registration(intake_reader=intake_service))
+        resolved_module_registrations = tuple(registrations)
     else:
         resolved_module_registrations = module_registrations
     module_registry = ModuleRegistry[APIRouter]()
