@@ -11,7 +11,10 @@ import { LoadingState } from "../ui-primitives";
 import { UrgentHelpLink } from "../urgent-help-link";
 import { AnswerControl } from "./answer-control";
 
-const INVALID_SESSION_CODES = new Set(["SESSION_UNAVAILABLE"]);
+const CONTROLLED_RECOVERY_ROUTES = new Map([
+  ["SESSION_UNAVAILABLE", "/language"],
+  ["CONSENT_REQUIRED", "/consent"],
+]);
 
 export function answerBody(question: IntakeQuestion, form: FormData, version: number) {
   const requestedDisposition = String(form.get("response_disposition") ?? "ANSWERED");
@@ -66,13 +69,14 @@ export function IntakeJourney({
   const [busy, setBusy] = useState(false);
   const [reviewRequired, setReviewRequired] = useState(false);
 
-  const redirectInvalidSession = useCallback(
+  const redirectControlledRecovery = useCallback(
     (code: string) => {
-      if (!INVALID_SESSION_CODES.has(code)) return false;
+      const route = CONTROLLED_RECOVERY_ROUTES.get(code);
+      if (!route) return false;
       setIntake(null);
       setError(null);
       setReviewRequired(false);
-      router.replace("/language");
+      router.replace(route);
       return true;
     },
     [router],
@@ -85,11 +89,11 @@ export function IntakeJourney({
         setIntake(result.value);
         if (!preserveError) setError(null);
       } else {
-        if (redirectInvalidSession(result.error.code)) return;
+        if (redirectControlledRecovery(result.error.code)) return;
         setError(result.error.message);
       }
     },
-    [intakeId, redirectInvalidSession],
+    [intakeId, redirectControlledRecovery],
   );
 
   useEffect(() => {
@@ -100,14 +104,14 @@ export function IntakeJourney({
         setIntake(result.value);
         setError(null);
       } else {
-        if (redirectInvalidSession(result.error.code)) return;
+        if (redirectControlledRecovery(result.error.code)) return;
         setError(result.error.message);
       }
     });
     return () => {
       active = false;
     };
-  }, [intakeId, redirectInvalidSession]);
+  }, [intakeId, redirectControlledRecovery]);
 
   useEffect(() => {
     if (intake || error) heading.current?.focus();
@@ -127,7 +131,7 @@ export function IntakeJourney({
     });
     setBusy(false);
     if (!result.ok) {
-      if (redirectInvalidSession(result.error.code)) return;
+      if (redirectControlledRecovery(result.error.code)) return;
       setError(result.error.message);
       if (result.error.code === "RESOURCE_CONFLICT") setReviewRequired(true);
       await load(true);
@@ -150,7 +154,7 @@ export function IntakeJourney({
       setIntake(result.value);
       setError(null);
     } else {
-      if (redirectInvalidSession(result.error.code)) return;
+      if (redirectControlledRecovery(result.error.code)) return;
       setError(result.error.message);
       await load(true);
     }

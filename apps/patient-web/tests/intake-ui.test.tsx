@@ -313,4 +313,30 @@ describe("P7-C answer controls", () => {
     expect(request).toHaveBeenCalledTimes(2);
     expect(push).not.toHaveBeenCalled();
   });
+
+  it("removes loaded intake state and returns to consent when consent is withdrawn", async () => {
+    const request = vi.mocked(intakeRequest);
+    const current = intakeView();
+    request.mockResolvedValueOnce({ ok: true, value: current }).mockResolvedValueOnce({
+      ok: false,
+      error: {
+        code: "CONSENT_REQUIRED",
+        message: "Consent is required before continuing this intake.",
+      },
+    });
+
+    const user = userEvent.setup();
+    render(<IntakeJourney intakeId={current.intake_id} />);
+    const answer = await screen.findByLabelText(/synthetic text question/i);
+    await user.type(answer, "Synthetic value removed after consent withdrawal");
+    await user.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/consent"));
+    expect(
+      screen.queryByDisplayValue("Synthetic value removed after consent withdrawal"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /save and continue/i })).not.toBeInTheDocument();
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(push).not.toHaveBeenCalled();
+  });
 });
