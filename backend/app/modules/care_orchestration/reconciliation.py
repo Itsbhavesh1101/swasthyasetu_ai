@@ -50,6 +50,7 @@ class ReconciliationCode(StrEnum):
     DUPLICATE_RECEIPT = "DUPLICATE_RECEIPT"
     RECEIPT_SET_MISMATCH = "RECEIPT_SET_MISMATCH"
     RECEIPT_MISMATCH = "RECEIPT_MISMATCH"
+    RECONCILIATION_DRIFT = "RECONCILIATION_DRIFT"
 
 
 class ReconciliationError(ValueError):
@@ -70,9 +71,16 @@ class SyntheticSnapshotState(StrEnum):
 
 
 def _utc(value: object) -> datetime:
-    if type(value) is not datetime or value.tzinfo is None or value.utcoffset() is None:
+    if type(value) is not datetime:
         raise _error(ReconciliationCode.INVALID_TYPE)
-    return value.astimezone(UTC)
+    try:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise _error(ReconciliationCode.INVALID_TYPE)
+        return value.astimezone(UTC)
+    except ReconciliationError:
+        raise
+    except Exception:
+        raise _error(ReconciliationCode.INVALID_TYPE) from None
 
 
 def _snapshot_receipt(value: object) -> SyntheticEvidenceSourceReceipt:
@@ -230,6 +238,39 @@ class SyntheticSnapshotReconciliation:
         return self._fingerprint
 
 
+def validate_synthetic_snapshot_reconciliation(
+    value: object,
+) -> SyntheticSnapshotReconciliation:
+    if type(value) is not SyntheticSnapshotReconciliation:
+        raise _error(ReconciliationCode.INVALID_TYPE)
+    try:
+        snapshot = SyntheticSnapshotReconciliation(
+            request=value.request,
+            receipts=value.receipts,
+            requested_at=value.requested_at,
+            reconciled_at=value.reconciled_at,
+            authority=value.authority,
+            classification=value.classification,
+            verification=value.verification,
+            reconciliation_version=value.reconciliation_version,
+        )
+    except ReconciliationError:
+        raise
+    except Exception:
+        raise _error(ReconciliationCode.INVALID_TYPE) from None
+    stored_fingerprint = value.fingerprint
+    if (
+        type(stored_fingerprint) is not str
+        or len(stored_fingerprint) != 64
+        or any(character not in "0123456789abcdef" for character in stored_fingerprint)
+        or snapshot.fingerprint != stored_fingerprint
+        or snapshot.state is not value.state
+        or snapshot.unavailable_channels != value.unavailable_channels
+    ):
+        raise _error(ReconciliationCode.RECONCILIATION_DRIFT)
+    return snapshot
+
+
 def reconcile_synthetic_snapshot(
     request: SyntheticCompositionRequest,
     *,
@@ -289,4 +330,5 @@ __all__ = [
     "SyntheticSnapshotReconciliation",
     "SyntheticSnapshotState",
     "reconcile_synthetic_snapshot",
+    "validate_synthetic_snapshot_reconciliation",
 ]

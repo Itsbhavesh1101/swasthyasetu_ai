@@ -28,6 +28,15 @@ from app.modules.care_orchestration.reconciliation import (
     SyntheticSnapshotReconciliation,
     SyntheticSnapshotState,
     reconcile_synthetic_snapshot,
+    validate_synthetic_snapshot_reconciliation,
+)
+from app.modules.care_orchestration.replay import (
+    SYNTHETIC_REPLAY_VERSION,
+    ReplayCode,
+    ReplayError,
+    SyntheticCompositionReplay,
+    replay_synthetic_composition,
+    validate_synthetic_composition_replay,
 )
 from app.modules.care_orchestration.sources import (
     SourceBoundaryCode,
@@ -55,13 +64,17 @@ __all__ = [
     "MAX_EVIDENCE_ITEMS",
     "SYNTHETIC_COMPOSITION_CONTRACT_VERSION",
     "SYNTHETIC_RECONCILIATION_VERSION",
+    "SYNTHETIC_REPLAY_VERSION",
     "ReconciliationCode",
     "ReconciliationError",
+    "ReplayCode",
+    "ReplayError",
     "SourceBoundaryCode",
     "SourceBoundaryError",
     "SyntheticActionCandidate",
     "SyntheticActionCode",
     "SyntheticCompositionDecision",
+    "SyntheticCompositionReplay",
     "SyntheticCompositionRequest",
     "SyntheticEvidenceReference",
     "SyntheticEvidenceSourceDescriptor",
@@ -74,6 +87,9 @@ __all__ = [
     "compose_synthetic_candidates",
     "inspect_synthetic_evidence",
     "reconcile_synthetic_snapshot",
+    "replay_synthetic_composition",
     "synthetic_source_query_fingerprint",
     "validate_synthetic_source_receipt",
+    "validate_synthetic_composition_replay",
+    "validate_synthetic_snapshot_reconciliation",
 ]
