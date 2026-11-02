@@ -1,0 +1,20 @@
+export type EngineeringFHIRPreview = {
+  classification: "ENGINEERING_SYNTHETIC";
+  authority: "ENGINEERING_ONLY";
+  verification: "UNVERIFIED";
+  fhir_version: "4.0.1";
+  mapping_direction: "EXPORT";
+  mapping_state: "SYNTHETIC_EXPORT_PROJECTION";
+  resource_type: "Observation";
+  structural_validation: "SYNTHETIC_STRUCTURAL_PASS";
+  profile_validation: "SYNTHETIC_UNAVAILABLE";
+  profile_issue: "PROFILE_PACKAGE_UNAVAILABLE";
+  fhir_payload_present: false;
+  patient_data_processed: false;
+  profile_conformance_claimed: false;
+  exchange_authorized: false;
+  external_transport: false;
+  abdm_invoked: false;
+  persistence_written: false;
+  notice: string;
+};

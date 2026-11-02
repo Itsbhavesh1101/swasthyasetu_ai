@@ -32,6 +32,10 @@ from app.modules.engineering_document_demo.public import (
     ENGINEERING_DOCUMENT_DEMO_FEATURE,
     build_engineering_document_demo_registration,
 )
+from app.modules.engineering_fhir_demo.public import (
+    ENGINEERING_FHIR_DEMO_FEATURE,
+    build_engineering_fhir_demo_registration,
+)
 from app.modules.engineering_mannsetu_demo.public import (
     ENGINEERING_MANNSETU_DEMO_FEATURE,
     build_engineering_mannsetu_demo_registration,
@@ -133,6 +137,10 @@ def create_app(
             Environment.LOCAL,
             Environment.TEST,
         } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_DOCUMENT_DEMO_FEATURE))
+        engineering_fhir_demo_enabled = resolved_settings.environment in {
+            Environment.LOCAL,
+            Environment.TEST,
+        } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_FHIR_DEMO_FEATURE))
         engineering_mannsetu_demo_enabled = resolved_settings.environment in {
             Environment.LOCAL,
             Environment.TEST,
@@ -179,6 +187,10 @@ def create_app(
             registrations.append(build_engineering_demo_registration(intake_reader=intake_service))
         if engineering_document_demo_enabled:
             registrations.append(build_engineering_document_demo_registration())
+        if engineering_fhir_demo_enabled:
+            registrations.append(
+                build_engineering_fhir_demo_registration(environment=resolved_settings.environment)
+            )
         if engineering_mannsetu_demo_enabled:
             registrations.append(
                 build_engineering_mannsetu_demo_registration(

@@ -3781,3 +3781,30 @@ bounded engineering path.
 Next: preserve the working synthetic demonstration path; do not activate self-care advice, clinical
 eligibility, approved knowledge, RAG, patient processing or real-world delivery.
 ```
+
+---
+
+# 130. College Demo Wave 7 — Synthetic FHIR Mapping and Validation Preview
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P16
+live acceptance remains PARTIAL/BLOCKED and no interoperability or exchange authority is created.
+Implementation: the patient FHIR route composes the reviewed P16-A content-free mapper and P16-B
+validation gateway. One fixed SYNTHETIC_OBSERVATION token produces an R4 4.0.1 symbolic Observation
+export projection. Structural metadata validation passes while unavailable profile validation fails
+closed with the exact PROFILE_PACKAGE_UNAVAILABLE reason.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_fhir_demo_wave7 feature flag. Staging, pilot and production cannot register it. The
+result contains no FHIR JSON, resource fields, identifiers, clinical values, narrative, terminology,
+profile package, patient data, timestamp or hash and cannot grant conformance or exchange authority.
+Scope: no import/export transport, patient mapping, consent evaluation, external validator, network,
+ABDM, persistence, migration, schema, dependency, production feature activation or browser storage. Condition
+remains unrepresentable. Alembic remains p7a_0007 and every live P16 gate and upstream restriction
+remains unchanged.
+Verification: deterministic mapping and validation composition, profile fail-closed behavior, strict
+backend/BFF schemas, hostile conformance/payload/exchange mutations, protected-environment gating,
+accessible no-action UI, regression/build suites, real Chromium presentation, PostgreSQL/Docker and
+security CI cover the bounded engineering path.
+Next: preserve the working synthetic demonstration path; do not activate live FHIR resources,
+profile/terminology claims, patient exchange, transport, ABDM integration or external validation.
+```
