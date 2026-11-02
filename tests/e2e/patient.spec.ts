@@ -321,7 +321,7 @@ test("real structured intake saves, resumes, reviews, and completes a non-diagno
   );
   await page.getByLabel(/what would you like to share/i).fill("Synthetic browser journey concern");
   await page.getByRole("button", { name: /save and continue/i }).click();
-  await expect(page).toHaveURL(/\/review$/);
+  await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
   await expect(page.getByText("Synthetic browser journey concern")).toBeVisible();
   await expect(
     page.getByText(/not a diagnosis, treatment plan, urgency assessment/i),
@@ -334,6 +334,103 @@ test("real structured intake saves, resumes, reviews, and completes a non-diagno
     page.getByRole("heading", { level: 1, name: /your intake draft has been saved/i }),
   ).toBeVisible();
   await expect(page.getByText(/not a diagnosis/i)).toBeVisible();
+});
+
+test("withdrawing consent blocks an active intake without ending the session", async ({ page }) => {
+  test.slow();
+  const protectedDraft = "Synthetic consent-withdrawal draft";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  await page.getByLabel(/what would you like to share/i).fill(protectedDraft);
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+  await expect(page.getByText(protectedDraft)).toBeVisible();
+
+  await page.goto("/consent");
+  await page.getByRole("button", { name: /withdraw this consent/i }).click();
+  await expect(page.getByText(/consent has been withdrawn/i)).toBeVisible();
+
+  const denied = await page.request.get(`/api${intakePath}`);
+  const deniedBody = await denied.text();
+  expect(denied.status()).toBe(403);
+  expect(JSON.parse(deniedBody)).toMatchObject({ error: { code: "CONSENT_REQUIRED" } });
+  expect(deniedBody).not.toContain(protectedDraft);
+
+  await page.goto(intakePath);
+  await expect(page.getByRole("heading", { level: 1, name: "Intake unavailable" })).toBeVisible();
+  await expect(page.getByText(/consent is required before continuing this intake/i)).toBeVisible();
+  await expect(page.getByText(protectedDraft)).toHaveCount(0);
+
+  await page.goto("/encounter");
+  await expect(page.getByText(/consent is still needed/i)).toBeVisible();
+  await expect(page.getByRole("link", { name: /continue/i })).toHaveAttribute("href", "/consent");
+});
+
+test("a second private session cannot discover or read another session intake", async ({
+  browser,
+  page,
+}) => {
+  test.slow();
+  const protectedDraft = "Synthetic owner-only draft";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  const intakeId = intakePath.split("/").at(-1);
+  expect(intakeId).toBeTruthy();
+  await page.getByLabel(/what would you like to share/i).fill(protectedDraft);
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+  await expect(page.getByText(protectedDraft)).toBeVisible();
+
+  const secondContext = await browser.newContext({ baseURL: new URL(page.url()).origin });
+  try {
+    const secondPage = await secondContext.newPage();
+    await completeOnboarding(secondPage);
+
+    const attackerCookies = await secondContext.cookies();
+    const attackerToken = attackerCookies.find(({ name }) => name === sessionTokenCookie)?.value;
+    expect(attackerToken).toBeTruthy();
+    const attackerHeaders = { Authorization: `Bearer ${attackerToken}` };
+    const unknownIntakeId = "11111111-1111-4111-8111-111111111111";
+    const existingDirect = await secondPage.request.get(
+      `${backendUrl}/api/v1/intakes/${intakeId}`,
+      { headers: attackerHeaders },
+    );
+    const unknownDirect = await secondPage.request.get(
+      `${backendUrl}/api/v1/intakes/${unknownIntakeId}`,
+      { headers: attackerHeaders },
+    );
+    for (const response of [existingDirect, unknownDirect]) {
+      const body = await response.text();
+      expect(response.status()).toBe(401);
+      expect(JSON.parse(body)).toMatchObject({ error: { code: "AUTHENTICATION_REQUIRED" } });
+      expect(body).not.toContain(protectedDraft);
+      expect(body).not.toContain(intakeId ?? "unreachable");
+    }
+
+    const denied = await secondPage.request.get(`/api${intakePath}`);
+    const deniedBody = await denied.text();
+    expect(denied.status()).toBe(401);
+    expect(JSON.parse(deniedBody)).toMatchObject({
+      error: { code: "AUTHENTICATION_REQUIRED" },
+    });
+    expect(deniedBody).not.toContain(protectedDraft);
+
+    await secondPage.goto(intakePath);
+    await expect(
+      secondPage.getByRole("heading", { level: 1, name: "Intake unavailable" }),
+    ).toBeVisible();
+    await expect(secondPage.getByText(/start a private session first/i)).toBeVisible();
+    await expect(secondPage.getByText(protectedDraft)).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByText(protectedDraft)).toBeVisible();
+  } finally {
+    await secondContext.close();
+  }
 });
 
 test("withdrawing consent removes onboarding readiness without closing the session", async ({

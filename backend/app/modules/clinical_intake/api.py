@@ -341,7 +341,15 @@ async def _authorize_intake(
     *,
     for_write: bool,
 ) -> tuple[object, Session]:
-    intake = await service.get_intake(intake_id)
+    try:
+        intake = await service.get_intake(intake_id)
+    except ApplicationError as error:
+        if error.code is not ErrorCode.RESOURCE_NOT_FOUND:
+            raise
+        raise ApplicationError(
+            code=ErrorCode.AUTHENTICATION_REQUIRED,
+            message="A valid session bearer token is required.",
+        ) from error
     encounter, session = await _authorize_encounter(
         request, intake.encounter_id, authorization, for_write=for_write
     )

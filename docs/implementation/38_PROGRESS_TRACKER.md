@@ -59,7 +59,7 @@ A phase becomes `COMPLETE` only after the applicable criteria in `35_PHASE_ACCEP
 | P20 | Unified Care Orchestration | PARTIAL | P20-A/B/C/D provide detached engineering-synthetic composition contracts, a content-free structural source-port preflight, exact synthetic receipt reconciliation, and offline deterministic composition replay. No patient integration, clinical precedence, data access/retrieval, live module adapter, route, UI, persistence or runtime activation exists; live P20-B/C/D and all AC-P20/product acceptance remain unverified. |
 | P21 | Admin + Governance + Review | PARTIAL | P21-A provides detached synthetic authorization contracts/preflight; P21-B adds only a test-isolated presentation fixture; P21-C adds immutable content-free synthetic review-item/snapshot contracts; P21-D adds detached exact-revision independence checks and content-free evidence snapshots. No clinical content/action, trusted assignment, production UI, live identity/MFA, approval authority, audit store/viewer, persistence, API/BFF or runtime activation exists; all live acceptance remains unverified. |
 | P22 | Security + Privacy + Resilience | PARTIAL | P22-A audit evidence, bounded P22-B controls, synthetic P22-C/P22-D foundations, and the P22-E cross-boundary regression suite are delivered. Headers, origin enforcement, process-local abuse controls, provider-neutral purge/restore mechanics, safe-off optional dependency switches, bounded execution, privacy-safe telemetry and synthetic composition evidence are implemented; real retention execution, edge/upload controls, distributed resilience and independent live acceptance remain outstanding. AC-P22-001..011 remain LIVE NOT VERIFIED. |
-| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded metadata foundations plus P23-C no-run performance and P23-D no-drill recovery planning foundations are delivered. No live journey, accessibility audit, performance run, or recovery drill has occurred; AC-P23-001..012 remain LIVE NOT VERIFIED and upstream/human approvals remain pending. |
+| P23 | E2E + Accessibility + Performance | PARTIAL | P23-A/B bounded metadata foundations plus P23-C no-run performance and P23-D no-drill recovery planning foundations are delivered. Two synthetic full-stack negative journeys now verify consent-withdrawal and cross-session denial on the existing P7 path; broader live journeys, accessibility audit, performance run, and recovery drill remain unperformed. AC-P23-001..012 remain LIVE NOT VERIFIED and upstream/human approvals remain pending. |
 | P24 | Pilot Readiness | NOT STARTED | Pre-P24 unapproved evidence and unsigned owner docket drafted; conditional scope undecided, AC-P24-001..013 LIVE NOT VERIFIED, human pilot prohibited and formal release decision NOT RECORDED. |
 
 ---
@@ -3415,4 +3415,30 @@ AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED.
 Next action: independently review this bounded replay. Do not add real module integration, patient
 journey, clinical precedence, data access, action execution, UI, persistence or activation until the
 recorded P20 readiness prerequisites genuinely exist.
+```
+
+---
+
+# 116. P23-A Core-Journey Negative E2E Evidence
+
+```text
+Status: PARTIAL - BOUNDED SYNTHETIC FULL-STACK NEGATIVE EVIDENCE FOR THE EXISTING P7 PATH ONLY;
+P23 remains PARTIAL and all live AC-P23/product acceptance remains unverified.
+Baseline: exact merged origin/main @ 59425eac9929dda7c9c8ce5e36d8914ce710f80f. Work was performed
+on phase/p23-a-core-journey-negative-e2e in an isolated worktree.
+Evidence: two independent Playwright journeys exercise Chromium, the patient-web BFF, FastAPI and
+real PostgreSQL. Consent withdrawal after a synthetic draft produces CONSENT_REQUIRED, withholds the
+draft value and leaves the session active. A separately onboarded context receives the same
+non-enumerating AUTHENTICATION_REQUIRED denial for existing foreign and unknown intake identifiers,
+receives no protected value, and cannot affect the owner's continuing access.
+Security correction: the intake authorization boundary now normalizes pre-authorization not-found
+results to the same content-free authentication denial, closing the verified existence oracle. No
+successful flow, endpoint/schema/migration, dependency/lockfile, feature flag, runtime registration,
+infrastructure or blocked P8+ module changed.
+Acceptance truth: this closes two negative-oracle gaps for the existing P7 technical journey only.
+It is not broader journey validation, clinical validation, accessibility certification,
+performance evidence, recovery evidence, pilot authorization or release evidence. AC-P23-001..012
+and AC-PROD-001..014 remain LIVE/PRODUCT-LEVEL NOT VERIFIED; all governance restrictions remain.
+Next action: independently review this bounded evidence. Broader P23 execution remains gated by the
+recorded journey-specific ownership, approvals, fixtures, oracles and evidence-handling decisions.
 ```
