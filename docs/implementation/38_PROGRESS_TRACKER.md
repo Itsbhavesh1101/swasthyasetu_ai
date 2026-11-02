@@ -3754,3 +3754,30 @@ Chromium presentation, PostgreSQL/Docker and security CI cover the bounded engin
 Next: preserve the working synthetic demonstration path; do not activate mental-health assessment,
 clinical rules, crisis guidance, verified resources, referrals or real patient processing.
 ```
+
+---
+
+# 129. College Demo Wave 6 — Synthetic Self-Care Safety Preview
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P15
+live acceptance remains PARTIAL/BLOCKED and no self-care or clinical authority is created.
+Implementation: the patient self-care route composes the reviewed P9 deterministic synthetic safety
+engine, P15-A immutable unapproved knowledge-pack contract, and P15-B deterministic eligibility
+engine. One fixed case yields a source-bound engineering candidate placeholder; a second adds the
+P9 synthetic hard override and proves safety-first blocking with zero downstream candidates.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_self_care_demo_wave6 feature flag. Staging, pilot and production cannot register it.
+The result explicitly establishes no clinical eligibility and provides no guidance text or display
+authorization. It performs no RAG, model call, patient-data processing, sharing or external delivery.
+Scope: no remedy, instruction, Ayurveda/gharelu content, clinical predicate, real source, approved
+knowledge, retrieval/index/vector store, consent change, persistence, migration, event/job,
+dependency, network operation or browser storage. Alembic remains p7a_0007 and every live P15 gate
+and upstream restriction remains unchanged.
+Verification: deterministic P9-to-P15 composition, hard-block precedence, strict backend/BFF schemas,
+hostile approval/effect mutations, protected-environment gating, accessible no-action UI, full
+regression/build suites, real Chromium presentation, PostgreSQL/Docker and security CI cover the
+bounded engineering path.
+Next: preserve the working synthetic demonstration path; do not activate self-care advice, clinical
+eligibility, approved knowledge, RAG, patient processing or real-world delivery.
+```

@@ -230,6 +230,30 @@ test("synthetic MannSetu preview remains symbolic and non-actionable", async ({ 
   ).toEqual({ local: 0, session: 0, visibleCookies: "" });
 });
 
+test("synthetic self-care preview preserves safety blocking without guidance", async ({ page }) => {
+  await page.goto("/self-care");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Synthetic self-care safety preview" }),
+  ).toBeVisible();
+  await expect(page.getByText(/no self-care guidance is displayed/i)).toBeVisible();
+  await expect(page.getByText(/upstream synthetic safety override removes/i)).toBeVisible();
+  await expect(page.getByText(/placeholder contains no remedy, instruction/i)).toBeVisible();
+  await expect(
+    page.getByRole("button", {
+      name: /advice|retrieve|recommend|remedy|treat|consent|share|send|deliver/i,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator("form, input, textarea, select, [href^='http']")).toHaveCount(0);
+  expect(
+    await page.evaluate(() => ({
+      local: localStorage.length,
+      session: sessionStorage.length,
+      visibleCookies: document.cookie,
+    })),
+  ).toEqual({ local: 0, session: 0, visibleCookies: "" });
+});
+
 test("representative controls keep touch targets and high-contrast identity", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
