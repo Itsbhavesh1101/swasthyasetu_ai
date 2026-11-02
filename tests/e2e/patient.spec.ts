@@ -385,6 +385,72 @@ test("a failed intake save keeps unsent input and succeeds only after an explici
   expect(savedState.answers[0].value).toBe(unsentAnswer);
 });
 
+test("an offline answer stays memory-only and is never replayed after reconnection", async ({
+  context,
+  page,
+}) => {
+  test.slow();
+  const unsentAnswer = "Synthetic offline answer that must not be queued";
+  await activateServiceWorker(page);
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  await page.getByLabel(/what would you like to share/i).fill(unsentAnswer);
+  let answerRequests = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/answers") && request.method() === "POST") answerRequests += 1;
+  });
+
+  await context.setOffline(true);
+  try {
+    await page.getByRole("button", { name: /save and continue/i }).click();
+    await expect(page.locator("#answer-error")).toHaveText(
+      "The request could not be confirmed. Refresh before trying again.",
+    );
+    await expect(page.getByLabel(/what would you like to share/i)).toHaveValue(unsentAnswer);
+    expect(answerRequests).toBe(1);
+    await expectPrivateCache(page);
+    expect(
+      await page.evaluate(async () => ({
+        local: localStorage.length,
+        session: sessionStorage.length,
+        indexedDatabases: (await indexedDB.databases()).length,
+      })),
+    ).toEqual({ local: 0, session: 0, indexedDatabases: 0 });
+  } finally {
+    await context.setOffline(false);
+  }
+
+  const unchanged = await page.request.get(`/api${intakePath}`);
+  expect(unchanged.ok(), await unchanged.text()).toBe(true);
+  expect((await unchanged.json()).answers).toHaveLength(0);
+  expect(answerRequests).toBe(1);
+  expect(
+    await page.evaluate(async () => {
+      const registration = await navigator.serviceWorker.ready;
+      const sync = Reflect.get(registration, "sync") as
+        { getTags(): Promise<string[]> } | undefined;
+      if (!sync) return { state: "UNAVAILABLE", tags: [] };
+      try {
+        return { state: "AVAILABLE", tags: await sync.getTags() };
+      } catch {
+        return { state: "DISABLED", tags: [] };
+      }
+    }),
+  ).toMatchObject({ tags: [] });
+  await expect(page.getByLabel(/what would you like to share/i)).toHaveValue(unsentAnswer);
+
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  await expect(page).toHaveURL(/\/review$/, { timeout: 15_000 });
+  const saved = await page.request.get(`/api${intakePath}`);
+  expect(saved.ok(), await saved.text()).toBe(true);
+  const savedState = await saved.json();
+  expect(savedState.answers).toHaveLength(1);
+  expect(savedState.answers[0].value).toBe(unsentAnswer);
+  expect(answerRequests).toBe(2);
+});
+
 test("an ambiguous intake response refetches saved state without replaying the mutation", async ({
   page,
 }) => {
