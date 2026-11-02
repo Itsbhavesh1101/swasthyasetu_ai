@@ -3836,3 +3836,35 @@ security CI cover the bounded engineering path.
 Next: preserve the working synthetic demonstration path; do not activate official ABDM APIs, ABHA
 identity, exchange consent, patient/FHIR payloads, sandbox access, callbacks or external transport.
 ```
+
+---
+
+# 132. College Demo Wave 9 — Offline Synthetic Classical-ML Replay
+
+```text
+Status: COMPLETE for the explicitly offline LOCAL/TEST college demonstration subset; canonical P18
+remains PARTIAL/BLOCKED, P18-E remains blocked, and every live FR-ML/AC-P18 outcome remains
+unverified.
+Implementation: python -m ml.research.demo composes the reviewed P18-A through P18-D mechanics over
+one fixed non-medical in-memory fixture. It snapshots a strict dataset manifest, creates a seeded
+group-aware split, fits mean-imputation and standard-score preprocessing on training rows only,
+fits the deterministic nearest-centroid engineering baseline, evaluates exact symbolic labels on
+the locked test membership, builds a fixed-limitation model card, and resolves an immutable
+TEST_ONLY_UNAPPROVED candidate.
+Safety boundary: all code remains under /ml. backend/app imports no research package and no API,
+patient/clinician UI, database, worker, tracker, artifact loader, or production runtime is created.
+STAGING, PILOT, and PRODUCTION are denied. The content-free receipt contains only closed states,
+partition/exact-match counts, and provenance fingerprints; it is explicitly ENGINEERING_ONLY,
+OFFLINE_NO_EGRESS, NOT_ACTIVATED, and NO_PERFORMANCE_OR_CLINICAL_CLAIM.
+Scope: no real/sample biomedical data, clinical task, disease target, medical feature/label,
+probability, threshold, calibration, fairness/explainability claim, validated metric, real training
+library, model artifact, serialization, MLflow/tracker, network, persistence, migration, dependency,
+promotion, inference, P18-E benchmark or P19 comparison. Alembic remains p7a_0007.
+Verification: deterministic replay, direct-constructor and forced-mutation rejection, exact
+partition/evaluation binding, protected-environment denial, content-free canonical CLI success and
+failure output, research isolation, full backend/research regression, compilation and security CI
+cover the bounded engineering path.
+Next: preserve the offline synthetic demonstration; do not interpret exact-match counts as model
+performance or activate real dataset access, governed training, artifact loading, clinical
+inference, P18-E, or P19 comparison without the unresolved P18 readiness decisions.
+```

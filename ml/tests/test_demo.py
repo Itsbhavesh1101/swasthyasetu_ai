@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 import unittest
 from dataclasses import asdict, replace
+from pathlib import Path
 
 from ml.research.candidates import (
     SyntheticCandidateStatus,
@@ -31,6 +35,8 @@ from ml.research.pipeline import (
     ScalingPolicy,
     SyntheticEvaluationState,
 )
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class SyntheticClassicalDemoTests(unittest.TestCase):
@@ -130,6 +136,78 @@ class SyntheticClassicalDemoTests(unittest.TestCase):
             ):
                 run_synthetic_classical_demo(environment)
             self.assertIs(error.exception.code, ResearchBoundaryCode.PROTECTED_ENVIRONMENT)
+
+
+class SyntheticClassicalDemoCliTests(unittest.TestCase):
+    def test_cli_emits_canonical_content_free_json(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "ml.research.demo", "--environment", "TEST"],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 0)
+        self.assertEqual(completed.stderr, "")
+        payload = json.loads(completed.stdout)
+        self.assertEqual(
+            set(payload),
+            {
+                "activation_state",
+                "authority",
+                "baseline_kind",
+                "candidate_fingerprint",
+                "candidate_id",
+                "candidate_status",
+                "candidate_version",
+                "card_fingerprint",
+                "card_metric",
+                "card_purpose",
+                "card_state",
+                "claim_state",
+                "correct_count",
+                "data_classification",
+                "dataset_admission_state",
+                "dataset_fingerprint",
+                "demo_version",
+                "environment",
+                "error_count",
+                "evaluated_count",
+                "evaluation_fingerprint",
+                "evaluation_state",
+                "evidence_fingerprint",
+                "missing_value_policy",
+                "model_fingerprint",
+                "preprocessing_fingerprint",
+                "runtime_state",
+                "scaling_policy",
+                "split_fingerprint",
+                "test_count",
+                "train_count",
+                "validation_count",
+            },
+        )
+        self.assertEqual(payload["environment"], "TEST")
+        self.assertEqual(payload["claim_state"], "NO_PERFORMANCE_OR_CLINICAL_CLAIM")
+        self.assertEqual(payload["activation_state"], "NOT_ACTIVATED")
+        self.assertEqual(
+            completed.stdout,
+            json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        )
+
+    def test_cli_protected_environment_returns_stable_error(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "ml.research.demo", "--environment", "PRODUCTION"],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(completed.stdout, "")
+        self.assertEqual(completed.stderr, '{"error":"PROTECTED_ENVIRONMENT"}\n')
 
 
 if __name__ == "__main__":

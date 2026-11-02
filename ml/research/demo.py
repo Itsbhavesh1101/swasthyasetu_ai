@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import argparse
+import json
 import re
-from dataclasses import dataclass
+import sys
+from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from hashlib import sha256
@@ -486,3 +489,33 @@ __all__ = [
     "run_synthetic_classical_demo",
     "validate_synthetic_classical_demo_receipt",
 ]
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Replay fixed non-medical P18 engineering mechanics offline."
+    )
+    parser.add_argument(
+        "--environment",
+        choices=tuple(environment.value for environment in ResearchEnvironment),
+        default=ResearchEnvironment.LOCAL.value,
+    )
+    return parser
+
+
+def main(argv: tuple[str, ...] | None = None) -> int:
+    arguments = _parser().parse_args(argv)
+    try:
+        receipt = run_synthetic_classical_demo(ResearchEnvironment(arguments.environment))
+    except ResearchBoundaryError as error:
+        print(
+            json.dumps({"error": error.code.value}, sort_keys=True, separators=(",", ":")),
+            file=sys.stderr,
+        )
+        return 2
+    print(json.dumps(asdict(receipt), sort_keys=True, separators=(",", ":")))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
