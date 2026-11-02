@@ -11,3 +11,19 @@
 .demo-lifecycle li::marker {
   font-weight: 700;
 }
+
+.summary-sections {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.summary-section {
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.summary-section h3 {
+  margin-block-start: 0;
+}

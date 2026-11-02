@@ -3677,3 +3677,28 @@ checks cover the bounded engineering path. All live P11 and P10 approval gates r
 Next: a synthetic-only P10 clinician summary review composition may reuse the already implemented
 source-backed summary contracts without enabling identity, assignment, confirmation or persistence.
 ```
+
+---
+
+# 126. College Demo Wave 3 — Synthetic Source-Backed Summary Review
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P10
+live acceptance remains PARTIAL/BLOCKED and no clinician authority is created.
+Implementation: the clinician engineering workspace composes the reviewed P10-A deterministic
+summary projector and source-drift checker. It presents all canonical summary sections, one exact
+patient-reported synthetic token, explicit UNVERIFIED/UNKNOWN missing-data semantics, and a STALE
+draft after detection of a new synthetic HPI source.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_summary_demo_wave3 feature flag. Staging, pilot and production cannot register it.
+The path accepts no request input and exposes no patient, encounter, summary, actor or source ID;
+source access is NOT_AUTHORIZED and edit, confirm and reject controls are structurally false/absent.
+Scope: no identity, assignment, consent change, persistence, migration, schema, AI generation,
+clinical assertion, source viewer, audit/outbox mutation, dependency or browser persistence.
+Alembic head remains p7a_0007. P8-C/P9-C Stage 3 and every live P10/P11 gate remain unchanged.
+Verification: strict backend and BFF response validation, hostile authority/reordering mutations,
+default/protected-environment gating, deterministic P10 composition, accessible no-control UI,
+regression suites, production builds, real browser presentation and security checks cover the unit.
+Next: retain the fully working synthetic demonstration path while choosing another bounded offline
+composition; do not activate live clinician identity, assignment, source access or review actions.
+```
