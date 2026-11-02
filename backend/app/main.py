@@ -24,6 +24,10 @@ from app.modules.clinical_intake.public import (
 )
 from app.modules.consent.public import build_consent_registration
 from app.modules.encounters.public import build_encounter_service, build_encounters_registration
+from app.modules.engineering_abdm_demo.public import (
+    ENGINEERING_ABDM_DEMO_FEATURE,
+    build_engineering_abdm_demo_registration,
+)
 from app.modules.engineering_demo.public import (
     ENGINEERING_DEMO_FEATURE,
     build_engineering_demo_registration,
@@ -129,6 +133,10 @@ def create_app(
             Environment.LOCAL,
             Environment.TEST,
         } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_CONTENT_FEATURE))
+        engineering_abdm_demo_enabled = resolved_settings.environment in {
+            Environment.LOCAL,
+            Environment.TEST,
+        } and resolved_feature_flags.is_enabled(FeatureFlag(ENGINEERING_ABDM_DEMO_FEATURE))
         engineering_demo_enabled = resolved_settings.environment in {
             Environment.LOCAL,
             Environment.TEST,
@@ -183,6 +191,10 @@ def create_app(
                 service=intake_service,
             ),
         ]
+        if engineering_abdm_demo_enabled:
+            registrations.append(
+                build_engineering_abdm_demo_registration(environment=resolved_settings.environment)
+            )
         if engineering_demo_enabled:
             registrations.append(build_engineering_demo_registration(intake_reader=intake_service))
         if engineering_document_demo_enabled:

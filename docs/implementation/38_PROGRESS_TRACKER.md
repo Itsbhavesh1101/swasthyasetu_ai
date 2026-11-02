@@ -3808,3 +3808,31 @@ security CI cover the bounded engineering path.
 Next: preserve the working synthetic demonstration path; do not activate live FHIR resources,
 profile/terminology claims, patient exchange, transport, ABDM integration or external validation.
 ```
+
+---
+
+# 131. College Demo Wave 8 — Synthetic ABDM Failure Boundary Preview
+
+```text
+Status: COMPLETE for the explicitly local/test-only college demonstration subset; canonical P17
+live acceptance remains PARTIAL/BLOCKED and no ABDM, ABHA, sandbox or exchange authority is created.
+Implementation: the patient ABDM route composes the reviewed P17-A content-free request/result
+contracts through a private deterministic zero-egress adapter. One fixed request returns the exact
+SYNTHETIC_REJECTED outcome; an unknown request fails closed as SYNTHETIC_UNAVAILABLE and can never
+fall back to acceptance.
+Safety boundary: the separate backend module is default-off and registered only in LOCAL/TEST under
+the engineering_abdm_demo_wave8 feature flag. Staging, pilot and production cannot register it. The
+service accepts no input, accesses no local intake or database, and exposes no identifier, endpoint,
+credential, artifact reference, hash, timestamp, payload, callback or action control.
+Scope: no official protocol or operation, ABHA identity/linkage, consent evaluation, FHIR resource,
+sandbox, partner, network, retry, reconciliation, import/export, persistence, migration, dependency,
+production feature activation or browser storage. Existing P17-D real-PostgreSQL tests separately
+prove detached failure outcomes do not damage committed P7 intake data. Every live P17 criterion and
+upstream restriction remains unchanged and unclaimed.
+Verification: deterministic contract/adapter composition, unknown-request fail-closed behavior,
+strict backend/BFF schemas, hostile success/identity/effect mutations, protected-environment gating,
+accessible no-action UI, regression/build suites, real Chromium presentation, PostgreSQL/Docker and
+security CI cover the bounded engineering path.
+Next: preserve the working synthetic demonstration path; do not activate official ABDM APIs, ABHA
+identity, exchange consent, patient/FHIR payloads, sandbox access, callbacks or external transport.
+```

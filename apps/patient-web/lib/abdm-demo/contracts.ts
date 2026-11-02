@@ -1,0 +1,23 @@
+export type EngineeringABDMPreview = {
+  classification: "ENGINEERING_SYNTHETIC";
+  authority: "ENGINEERING_ONLY";
+  verification: "UNVERIFIED";
+  mode: "SYNTHETIC_OFFLINE_MOCK";
+  operation: "SYNTHETIC_OPERATION_ALPHA";
+  scripted_state: "SYNTHETIC_REJECTED";
+  scripted_issue: "SYNTHETIC_REJECTED";
+  unknown_state: "SYNTHETIC_UNAVAILABLE";
+  unknown_issue: "SYNTHETIC_UNAVAILABLE";
+  zero_egress: true;
+  official_protocol_adopted: false;
+  abha_identity_processed: false;
+  consent_evaluated: false;
+  fhir_payload_present: false;
+  sandbox_connected: false;
+  patient_data_processed: false;
+  local_intake_accessed: false;
+  local_intake_mutated: false;
+  external_transport: false;
+  persistence_written: false;
+  notice: string;
+};
