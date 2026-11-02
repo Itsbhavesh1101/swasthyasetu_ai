@@ -8,8 +8,10 @@ import { intakeRequest } from "../lib/intake/client";
 import type { AnswerType, IntakeQuestion, IntakeView } from "../lib/intake/contracts";
 
 const push = vi.fn();
+const replace = vi.fn();
+const router = { push, replace };
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
 vi.mock("../lib/intake/client", () => ({ intakeRequest: vi.fn() }));
 
 function question(answerType: AnswerType): IntakeQuestion {
@@ -286,6 +288,29 @@ describe("P7-C answer controls", () => {
       `/intake/${current.intake_id}/review`,
     );
     expect(request.mock.calls.filter(([, init]) => init?.method === "POST")).toHaveLength(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("removes loaded intake state and returns to session start when the session is invalid", async () => {
+    const request = vi.mocked(intakeRequest);
+    const current = intakeView();
+    request.mockResolvedValueOnce({ ok: true, value: current }).mockResolvedValueOnce({
+      ok: false,
+      error: { code: "SESSION_UNAVAILABLE", message: "Start a private session first." },
+    });
+
+    const user = userEvent.setup();
+    render(<IntakeJourney intakeId={current.intake_id} />);
+    const answer = await screen.findByLabelText(/synthetic text question/i);
+    await user.type(answer, "Synthetic value removed on session loss");
+    await user.click(screen.getByRole("button", { name: /save and continue/i }));
+
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/language"));
+    expect(
+      screen.queryByDisplayValue("Synthetic value removed on session loss"),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /save and continue/i })).not.toBeInTheDocument();
+    expect(request).toHaveBeenCalledTimes(2);
     expect(push).not.toHaveBeenCalled();
   });
 });

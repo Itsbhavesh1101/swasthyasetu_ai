@@ -492,6 +492,63 @@ test("a stale intake version refetches authoritative state and requires review",
   }
 });
 
+test("concurrent session closure removes loaded intake state and browser credentials", async ({
+  context,
+  page,
+  request,
+}) => {
+  test.slow();
+  const unsentAnswer = "Synthetic unsent value removed after session closure";
+  await completeOnboarding(page);
+  await page.getByRole("button", { name: /start intake/i }).click();
+  await expect(page).toHaveURL(/\/intake\/[0-9a-f-]+$/);
+  const intakePath = new URL(page.url()).pathname;
+  const intakeId = intakePath.split("/").at(-1);
+  await page.getByLabel(/what would you like to share/i).fill(unsentAnswer);
+
+  const cookies = await context.cookies();
+  const sessionId = cookies.find(({ name }) => name === sessionIdCookie)?.value;
+  const sessionToken = cookies.find(({ name }) => name === sessionTokenCookie)?.value;
+  expect(sessionId).toBeTruthy();
+  expect(sessionToken).toBeTruthy();
+  const closed = await request.post(`${backendUrl}/api/v1/sessions/${sessionId}/close`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  });
+  expect(closed.status(), await closed.text()).toBe(200);
+
+  const deniedPromise = page.waitForResponse(
+    (response) => response.url().endsWith("/answers") && response.request().method() === "POST",
+  );
+  await page.getByRole("button", { name: /save and continue/i }).click();
+  const denied = await deniedPromise;
+  const deniedBody = await denied.text();
+  expect(denied.status()).toBe(401);
+  expect(denied.headers()["cache-control"]).toContain("no-store");
+  expect(JSON.parse(deniedBody)).toEqual({
+    error: { code: "SESSION_UNAVAILABLE", message: "Start a private session first." },
+  });
+  expect(deniedBody).not.toContain(unsentAnswer);
+
+  await expect(page).toHaveURL(/\/language$/);
+  await expect(page.getByText(unsentAnswer)).toHaveCount(0);
+  const remainingCookies = await context.cookies();
+  expect(remainingCookies.some(({ name }) => name === sessionIdCookie)).toBe(false);
+  expect(remainingCookies.some(({ name }) => name === sessionTokenCookie)).toBe(false);
+  expect(
+    await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length })),
+  ).toEqual({ local: 0, session: 0 });
+
+  const backendDenied = await request.get(`${backendUrl}/api/v1/intakes/${intakeId}`, {
+    headers: { Authorization: `Bearer ${sessionToken}` },
+  });
+  const backendDeniedBody = await backendDenied.text();
+  expect(backendDenied.status()).toBe(409);
+  expect(JSON.parse(backendDeniedBody)).toMatchObject({
+    error: { code: "INVALID_STATE_TRANSITION" },
+  });
+  expect(backendDeniedBody).not.toContain(unsentAnswer);
+});
+
 test("withdrawing consent blocks an active intake without ending the session", async ({ page }) => {
   test.slow();
   const protectedDraft = "Synthetic consent-withdrawal draft";
