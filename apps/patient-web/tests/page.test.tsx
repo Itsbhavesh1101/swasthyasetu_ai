@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import PatientHomePage from "../app/page";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe("patient landing page", () => {
   it("presents one clear heading and honest product language", () => {
@@ -14,14 +16,11 @@ describe("patient landing page", () => {
     expect(screen.getByText(/does not provide a diagnosis/i)).toBeVisible();
   });
 
-  it("links to account and urgent-help routes", () => {
+  it("puts sign-in and registration forms first and keeps urgent help visible", () => {
     render(<PatientHomePage />);
 
-    expect(screen.getByRole("link", { name: /create account/i })).toHaveAttribute(
-      "href",
-      "/register",
-    );
-    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("button", { name: /create account/i })).toBeVisible();
+    expect(screen.getByRole("button", { name: /sign in/i })).toBeVisible();
     expect(screen.getByRole("link", { name: /urgent help/i })).toHaveAttribute(
       "href",
       "/urgent-help",

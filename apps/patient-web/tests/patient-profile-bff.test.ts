@@ -27,7 +27,11 @@ function request(method = "GET", body?: unknown, headers?: Record<string, string
 }
 
 function account() {
-  return Response.json({ patient_id: patientId });
+  return Response.json({
+    patient_id: patientId,
+    display_name: "Patient Demo",
+    profile_complete: true,
+  });
 }
 
 function profile(updatedAt = "2026-11-03T10:00:00Z") {
@@ -42,6 +46,9 @@ function profile(updatedAt = "2026-11-03T10:00:00Z") {
       gender_identity: null,
       pregnancy_status: null,
       location_context: "Delhi",
+      height_cm: 165,
+      weight_kg: 60,
+      bmi: 22,
     },
     created_at: "2026-11-03T09:00:00Z",
     updated_at: updatedAt,
@@ -86,12 +93,15 @@ describe("patient profile BFF", () => {
       request("PATCH", {
         expectedUpdatedAt: "2026-11-03T10:00:00Z",
         preferredLanguage: "en",
+        displayName: "Patient Demo",
         demographics: {
           dateOfBirth: null,
           administrativeSex: null,
           genderIdentity: null,
           pregnancyStatus: null,
           locationContext: null,
+          heightCm: null,
+          weightKg: null,
         },
         patientId: "attacker-controlled",
       }),
@@ -119,7 +129,10 @@ describe("patient profile BFF", () => {
           genderIdentity: null,
           pregnancyStatus: null,
           locationContext: "Delhi",
+          heightCm: 165,
+          weightKg: 60,
         },
+        displayName: "Patient Demo",
       }),
     );
     expect(response.status).toBe(409);

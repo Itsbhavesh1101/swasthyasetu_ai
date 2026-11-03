@@ -746,6 +746,41 @@ a {
   }
 }
 
+.account-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.account-entry-grid > section {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.form-heading {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.calculated-field {
+  display: flex;
+  min-height: 2.8rem;
+  align-items: center;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--patient-border);
+  border-radius: 0.7rem;
+  background: var(--patient-surface-soft);
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .account-entry-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

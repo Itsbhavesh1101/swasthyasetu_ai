@@ -27,7 +27,6 @@ class AccountAlreadyExistsError(RuntimeError):
 @dataclass(frozen=True, slots=True)
 class RegisterPatient:
     email: EmailAddress
-    display_name: DisplayName
     password: RawPassword = field(repr=False)
     preferred_language: str | None = None
 
@@ -44,7 +43,8 @@ class CurrentAccount:
     actor_id: OpaqueId
     patient_id: OpaqueId
     email: str
-    display_name: str
+    display_name: str | None
+    profile_complete: bool
     status: AccountStatus
 
 
@@ -73,6 +73,13 @@ class PatientAccountRepository(Protocol):
     async def get_by_actor(
         self, session: AsyncSession, actor_id: OpaqueId
     ) -> PatientAccount | None: ...
+    async def save_display_name(
+        self,
+        session: AsyncSession,
+        actor_id: OpaqueId,
+        display_name: DisplayName,
+        updated_at: datetime,
+    ) -> PatientAccount: ...
 
 
 class AccountActorRepository(Protocol):
@@ -93,6 +100,7 @@ class AccountActorRepository(Protocol):
 
 class AccountPatientRepository(Protocol):
     async def add(self, session: AsyncSession, patient: Patient) -> object: ...
+    async def get(self, session: AsyncSession, patient_id: OpaqueId) -> Patient | None: ...
 
 
 class AccountSessionRepository(Protocol):
@@ -116,12 +124,13 @@ class AccountSessionRepository(Protocol):
     def close(self, record: object, *, closed_at: datetime) -> Session: ...
 
 
-def current_account(account: PatientAccount) -> CurrentAccount:
+def current_account(account: PatientAccount, *, profile_complete: bool = False) -> CurrentAccount:
     return CurrentAccount(
         account_id=account.account_id,
         actor_id=account.actor_id,
         patient_id=account.patient_id,
         email=account.email.display,
-        display_name=account.display_name.value,
+        display_name=None if account.display_name is None else account.display_name.value,
+        profile_complete=profile_complete,
         status=account.status,
     )

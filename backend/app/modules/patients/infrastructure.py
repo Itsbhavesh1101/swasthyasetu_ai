@@ -89,6 +89,14 @@ class PatientDemographicsRecord(Base):
     __tablename__ = "patient_demographics"
     __table_args__ = (
         CheckConstraint("age_years IS NULL OR age_years >= 0", name="age_years_non_negative"),
+        CheckConstraint(
+            "height_cm IS NULL OR (height_cm >= 30 AND height_cm <= 275)",
+            name="height_cm_range",
+        ),
+        CheckConstraint(
+            "weight_kg IS NULL OR (weight_kg >= 1 AND weight_kg <= 700)",
+            name="weight_kg_range",
+        ),
     )
 
     patient_id: Mapped[UUID] = mapped_column(
@@ -102,6 +110,8 @@ class PatientDemographicsRecord(Base):
     gender_identity: Mapped[str | None] = mapped_column(String(256), nullable=True)
     pregnancy_status: Mapped[str | None] = mapped_column(String(256), nullable=True)
     location_context: Mapped[str | None] = mapped_column(String(256), nullable=True)
+    height_cm: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
+    weight_kg: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
     demographics_metadata: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     patient: Mapped[PatientRecord] = relationship(back_populates="demographics_record")
@@ -356,6 +366,8 @@ def _demographics_record(patient: Patient) -> PatientDemographicsRecord | None:
         gender_identity=value.gender_identity,
         pregnancy_status=value.pregnancy_status,
         location_context=value.location_context,
+        height_cm=value.height_cm,
+        weight_kg=value.weight_kg,
         demographics_metadata=None,
         updated_at=patient.updated_at,
     )
@@ -455,6 +467,8 @@ class PostgresPatientRepository:
                     gender_identity=demographics.gender_identity,
                     pregnancy_status=demographics.pregnancy_status,
                     location_context=demographics.location_context,
+                    height_cm=demographics.height_cm,
+                    weight_kg=demographics.weight_kg,
                 )
             ),
             identifiers=tuple(

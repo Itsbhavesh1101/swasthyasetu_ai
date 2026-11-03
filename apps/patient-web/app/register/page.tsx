@@ -7,7 +7,7 @@ export default function RegisterPage() {
       <PageHeader
         eyebrow="Private patient record"
         title="Create your patient account"
-        description="Use your name and email to create a private health record you can return to."
+        description="Use your email and a secure password first. You will create your personal profile next."
       />
       <AccountForm mode="register" />
       <p>

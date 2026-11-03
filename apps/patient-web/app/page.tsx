@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AccountForm } from "../components/account-form";
 import { ActionLink, PageHeader, Panel, StatusBanner } from "../components/ui-primitives";
 
 export const metadata: Metadata = { title: "Home" };
@@ -13,11 +14,19 @@ export default function PatientHomePage() {
         description="Create a private patient account to maintain your details, medical history, and documents. SwasthyaSetu does not provide a diagnosis."
       />
 
-      <div className="hero-actions" aria-label="Patient actions">
-        <ActionLink href="/register">Create account</ActionLink>
-        <ActionLink href="/login" variant="secondary">
-          Sign in
-        </ActionLink>
+      <div className="account-entry-grid">
+        <section aria-labelledby="sign-in-title">
+          <h2 id="sign-in-title">Sign in</h2>
+          <p>Continue to your private health dashboard.</p>
+          <AccountForm mode="login" />
+        </section>
+        <section aria-labelledby="register-title">
+          <h2 id="register-title">Create an account</h2>
+          <p>Start with your email and a secure password. Your profile comes next.</p>
+          <AccountForm mode="register" />
+        </section>
+      </div>
+      <div className="hero-actions" aria-label="Help actions">
         <ActionLink href="/urgent-help" variant="critical">
           Urgent help
         </ActionLink>

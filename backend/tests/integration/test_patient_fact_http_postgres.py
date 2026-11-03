@@ -14,7 +14,7 @@ from app.main import create_app
 from app.modules.identity.infrastructure import PostgresActorRepository
 from app.modules.patient_accounts.application import PatientAccountService
 from app.modules.patient_accounts.contracts import RegisterPatient
-from app.modules.patient_accounts.domain import DisplayName, EmailAddress, RawPassword
+from app.modules.patient_accounts.domain import EmailAddress, RawPassword
 from app.modules.patient_accounts.infrastructure import PostgresPatientAccountRepository
 from app.modules.patient_accounts.passwords import Argon2PasswordHasher
 from app.modules.patients.application import PatientService
@@ -73,7 +73,6 @@ async def test_patient_history_http_is_strict_self_scoped_and_correctable(
             "/api/v1/accounts/register",
             json={
                 "email": "history@example.com",
-                "display_name": "History Patient",
                 "password": "correct horse battery staple",
             },
         )
@@ -161,7 +160,6 @@ async def test_injected_correction_failure_rolls_back_old_and_replacement_atomic
     registered = await accounts.register(
         RegisterPatient(
             email=EmailAddress("atomicity@example.com"),
-            display_name=DisplayName("Atomicity Patient"),
             password=RawPassword("correct horse battery staple"),
             preferred_language="en",
         )

@@ -2,6 +2,7 @@
 
 from dataclasses import FrozenInstanceError
 from datetime import UTC, date, datetime, timedelta, timezone
+from decimal import Decimal
 
 import pytest
 
@@ -164,3 +165,13 @@ def test_demographics_rejects_negative_age_datetime_and_bad_optional_text() -> N
         PatientDemographics(date_of_birth=datetime(1995, 4, 8, tzinfo=UTC))
     with pytest.raises(ValueError, match="gender_identity"):
         PatientDemographics(gender_identity=" ")
+
+
+def test_demographics_validates_measurements_and_derives_bmi() -> None:
+    demographics = PatientDemographics(height_cm=Decimal("165"), weight_kg=Decimal("60"))
+    assert demographics.bmi == Decimal("22.0")
+    assert PatientDemographics(height_cm=Decimal("165")).bmi is None
+    with pytest.raises(ValueError, match="height_cm"):
+        PatientDemographics(height_cm=Decimal("29.9"))
+    with pytest.raises(ValueError, match="weight_kg"):
+        PatientDemographics(weight_kg=Decimal("700.1"))

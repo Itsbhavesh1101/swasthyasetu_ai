@@ -79,6 +79,29 @@ class FakeAccounts:
             (account for account in self.by_email.values() if account.actor_id == actor_id), None
         )
 
+    async def save_display_name(
+        self,
+        session: AsyncSession,
+        actor_id: OpaqueId,
+        display_name: DisplayName,
+        updated_at: datetime,
+    ) -> PatientAccount:
+        account = await self.get_by_actor(session, actor_id)
+        assert account is not None
+        updated = PatientAccount(
+            account_id=account.account_id,
+            actor_id=account.actor_id,
+            patient_id=account.patient_id,
+            email=account.email,
+            display_name=display_name,
+            password_digest=account.password_digest,
+            status=account.status,
+            created_at=account.created_at,
+            updated_at=updated_at,
+        )
+        self.by_email[account.email.normalized] = updated
+        return updated
+
 
 class FakeActors:
     def __init__(self) -> None:
@@ -128,6 +151,10 @@ class FakePatients:
         self.transactions.append(session)
         self.values[patient.patient_id] = patient
         return patient
+
+    async def get(self, session: AsyncSession, patient_id: OpaqueId) -> Patient | None:
+        self.transactions.append(session)
+        return self.values.get(patient_id)
 
 
 class FakeSessions:
@@ -234,7 +261,6 @@ async def test_registration_uses_one_transaction_and_exact_bindings() -> None:
     result = await service.register(
         RegisterPatient(
             email=EmailAddress("Patient@Example.com"),
-            display_name=DisplayName("Patient Demo"),
             password=RawPassword("correct horse battery staple"),
             preferred_language="en",
         )
@@ -243,6 +269,7 @@ async def test_registration_uses_one_transaction_and_exact_bindings() -> None:
     assert database.transaction_count == 1
     assert result.session_token == "opaque-account-session-token"
     assert result.account.email == "Patient@Example.com"
+    assert result.account.display_name is None
     assert result.session.session_type is SessionType.AUTHENTICATED
     assert result.session.actor_id == result.account.actor_id
     assert result.session.patient_id == result.account.patient_id
@@ -270,7 +297,6 @@ async def test_naive_clock_fails_before_any_transaction() -> None:
         await service.register(
             RegisterPatient(
                 email=EmailAddress("patient@example.com"),
-                display_name=DisplayName("Patient Demo"),
                 password=RawPassword("correct horse battery staple"),
             )
         )
@@ -284,7 +310,6 @@ async def test_unknown_and_wrong_password_fail_with_the_same_generic_error() -> 
     await service.register(
         RegisterPatient(
             email=EmailAddress("patient@example.com"),
-            display_name=DisplayName("Patient Demo"),
             password=RawPassword("correct horse battery staple"),
         )
     )

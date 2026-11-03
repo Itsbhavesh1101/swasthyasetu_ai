@@ -31,7 +31,8 @@ class PatientAccountRecord(Base):
             name="email_normalized_canonical",
         ),
         CheckConstraint(
-            "length(btrim(email_display)) > 0 AND length(btrim(display_name)) > 0",
+            "length(btrim(email_display)) > 0 AND "
+            "(display_name IS NULL OR length(btrim(display_name)) > 0)",
             name="display_fields_nonempty",
         ),
     )
@@ -53,7 +54,7 @@ class PatientAccountRecord(Base):
         String(320), nullable=False, unique=True, index=True
     )
     email_display: Mapped[str] = mapped_column(String(320), nullable=False)
-    display_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    display_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     password_hash: Mapped[str] = mapped_column(String(512), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -76,7 +77,7 @@ class PostgresPatientAccountRepository:
             patient_id=account.patient_id.value,
             email_normalized=account.email.normalized,
             email_display=account.email.display,
-            display_name=account.display_name.value,
+            display_name=None if account.display_name is None else account.display_name.value,
             password_hash=account.password_digest.value,
             status=account.status.value,
             created_at=account.created_at,
@@ -113,6 +114,24 @@ class PostgresPatientAccountRepository:
         record = (await session.execute(statement)).scalar_one_or_none()
         return None if record is None else self.to_domain(record)
 
+    async def save_display_name(
+        self,
+        session: AsyncSession,
+        actor_id: OpaqueId,
+        display_name: DisplayName,
+        updated_at: datetime,
+    ) -> PatientAccount:
+        statement = (
+            select(PatientAccountRecord)
+            .where(PatientAccountRecord.actor_id == actor_id.value)
+            .with_for_update()
+        )
+        record = (await session.execute(statement)).scalar_one()
+        record.display_name = display_name.value
+        record.updated_at = updated_at
+        await session.flush()
+        return self.to_domain(record)
+
     @staticmethod
     def to_domain(record: PatientAccountRecord) -> PatientAccount:
         return PatientAccount(
@@ -120,7 +139,7 @@ class PostgresPatientAccountRepository:
             actor_id=OpaqueId(record.actor_id),
             patient_id=OpaqueId(record.patient_id),
             email=EmailAddress(record.email_display),
-            display_name=DisplayName(record.display_name),
+            display_name=None if record.display_name is None else DisplayName(record.display_name),
             password_digest=PasswordDigest.from_persisted(record.password_hash),
             status=AccountStatus(record.status),
             created_at=record.created_at,

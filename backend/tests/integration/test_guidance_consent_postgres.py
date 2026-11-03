@@ -73,7 +73,6 @@ async def test_exact_actor_consent_gates_grounded_guidance_and_revocation(
             "/api/v1/accounts/register",
             json={
                 "email": "guidance@example.com",
-                "display_name": "Guidance Patient",
                 "password": "correct horse battery staple",
             },
         )

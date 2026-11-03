@@ -27,15 +27,16 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
     const result = await submitAccount(mode, {
       email: String(data.get("email") ?? ""),
       password,
-      ...(mode === "register" ? { name: String(data.get("name") ?? "") } : {}),
     });
     const passwordInput = form.elements.namedItem("password") as HTMLInputElement;
     passwordInput.value = "";
     const confirmationInput = form.elements.namedItem("confirmation") as HTMLInputElement | null;
     if (confirmationInput) confirmationInput.value = "";
     if (result?.state === "AUTHENTICATED") {
-      setSuccess(mode === "register" ? "Account created. Opening your dashboard." : "Signed in.");
-      router.push("/dashboard");
+      setSuccess(
+        mode === "register" ? "Account created. Let’s create your profile." : "Signed in.",
+      );
+      router.push(result.profileComplete ? "/dashboard" : "/profile?setup=1");
     } else {
       setError(
         mode === "login"
@@ -54,12 +55,6 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
         </div>
       ) : null}
       {success ? <div aria-live="polite">{success}</div> : null}
-      {mode === "register" ? (
-        <label>
-          Full name
-          <input autoComplete="name" maxLength={120} name="name" required />
-        </label>
-      ) : null}
       <label>
         Email address
         <input autoComplete="email" maxLength={320} name="email" required type="email" />

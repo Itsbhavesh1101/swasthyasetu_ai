@@ -18,7 +18,12 @@ from app.modules.patient_accounts.contracts import (
     RegisterPatient,
     current_account,
 )
-from app.modules.patient_accounts.domain import AccountStatus, PatientAccount, RawPassword
+from app.modules.patient_accounts.domain import (
+    AccountStatus,
+    DisplayName,
+    PatientAccount,
+    RawPassword,
+)
 from app.modules.patients.domain import Patient, PatientStatus
 from app.modules.sessions.application import generate_session_token, hash_session_token
 from app.modules.sessions.domain import Session, SessionStatus, SessionType
@@ -71,7 +76,7 @@ class PatientAccountService:
             actor_id=actor_id,
             patient_id=patient_id,
             email=command.email,
-            display_name=command.display_name,
+            display_name=None,
             password_digest=self._passwords.hash(command.password),
             status=AccountStatus.ACTIVE,
             created_at=now,
@@ -170,7 +175,31 @@ class PatientAccountService:
 
     async def get_current_account(self, token: str) -> CurrentAccount:
         account, _, _ = await self._resolve_authenticated(token)
-        return current_account(account)
+        return await self._current_with_profile_state(account)
+
+    async def update_display_name(self, token: str, display_name: DisplayName) -> CurrentAccount:
+        account, _, _ = await self._resolve_authenticated(token)
+        database = self._require_database()
+        async with database.transaction() as transaction:
+            updated = await self._accounts.save_display_name(
+                transaction, account.actor_id, display_name, self._now()
+            )
+        return await self._current_with_profile_state(updated)
+
+    async def _current_with_profile_state(self, account: PatientAccount) -> CurrentAccount:
+        database = self._require_database()
+        async with database.transaction() as transaction:
+            patient = await self._patients.get(transaction, account.patient_id)
+        demographics = None if patient is None else patient.demographics
+        complete = (
+            account.display_name is not None
+            and demographics is not None
+            and demographics.date_of_birth is not None
+            and demographics.administrative_sex is not None
+            and demographics.height_cm is not None
+            and demographics.weight_kg is not None
+        )
+        return current_account(account, profile_complete=complete)
 
     async def close_session(self, token: str) -> None:
         database = self._require_database()

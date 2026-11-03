@@ -49,7 +49,6 @@ async def test_account_http_lifecycle_and_cross_account_isolation(
             "/api/v1/accounts/register",
             json={
                 "email": "first@example.com",
-                "display_name": "First Patient",
                 "password": "correct horse battery staple",
                 "preferred_language": "en",
             },
@@ -58,7 +57,6 @@ async def test_account_http_lifecycle_and_cross_account_isolation(
             "/api/v1/accounts/register",
             json={
                 "email": "second@example.com",
-                "display_name": "Second Patient",
                 "password": "another correct horse password",
             },
         )
@@ -89,6 +87,7 @@ async def test_account_http_lifecycle_and_cross_account_isolation(
     assert first_me.status_code == 200
     assert second_me.status_code == 200
     assert first_me.json()["email"] == "first@example.com"
+    assert first_me.json()["profile_complete"] is False
     assert second_me.json()["email"] == "second@example.com"
     assert first_me.json()["patient_id"] != second_me.json()["patient_id"]
     assert logout.status_code == 204

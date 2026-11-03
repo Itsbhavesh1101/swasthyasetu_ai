@@ -6,19 +6,25 @@ import DashboardPage from "../app/dashboard/page";
 import ProfilePage from "../app/profile/page";
 
 const patientId = "2f0bb868-b00b-41c6-9335-f9c8b96ce7b2";
+const push = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 beforeEach(() => {
   vi.unstubAllGlobals();
+  push.mockReset();
 });
 
 it("shows the signed-in patient dashboard and core health-record actions", async () => {
   vi.stubGlobal(
     "fetch",
-    vi
-      .fn()
-      .mockResolvedValue(
-        Response.json({ state: "AUTHENTICATED", displayName: "Patient Demo", patientId }),
-      ),
+    vi.fn().mockResolvedValue(
+      Response.json({
+        state: "AUTHENTICATED",
+        displayName: "Patient Demo",
+        patientId,
+        profileComplete: true,
+      }),
+    ),
   );
   render(<DashboardPage />);
   expect(await screen.findByText(/welcome back, patient demo/i)).toBeVisible();
@@ -38,12 +44,17 @@ it("loads and saves the editable patient profile with an optimistic version", as
           patientId,
           status: "ACTIVE",
           preferredLanguage: "en",
+          displayName: "Patient Demo",
+          profileComplete: true,
           demographics: {
             dateOfBirth: "2000-01-02",
             administrativeSex: "female",
             genderIdentity: null,
             pregnancyStatus: null,
             locationContext: "Delhi",
+            heightCm: 165,
+            weightKg: 60,
+            bmi: 22,
           },
           updatedAt: "2026-11-03T10:00:00Z",
         },
@@ -56,6 +67,8 @@ it("loads and saves the editable patient profile with an optimistic version", as
           patientId,
           status: "ACTIVE",
           preferredLanguage: "hi",
+          displayName: "Patient Demo",
+          profileComplete: true,
           demographics: null,
           updatedAt: "2026-11-03T10:01:00Z",
         },
@@ -65,8 +78,10 @@ it("loads and saves the editable patient profile with an optimistic version", as
   render(<ProfilePage />);
   expect(await screen.findByDisplayValue("Delhi")).toBeVisible();
   await user.selectOptions(screen.getByLabelText(/preferred language/i), "hi");
+  expect(screen.getByLabelText(/bmi \(calculated\)/i)).toHaveTextContent("22.0");
   await user.click(screen.getByRole("button", { name: /save details/i }));
-  expect(await screen.findByText(/details have been saved/i)).toBeVisible();
+  expect(await screen.findByText(/profile is ready/i)).toBeVisible();
+  expect(push).toHaveBeenCalledWith("/dashboard");
   const submitted = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
     string,
     unknown
