@@ -480,6 +480,21 @@ review, publication, policy, or audit authority. Staging, pilot, and production 
 fixture construction. The command adds no real identity, patient or clinical data, API, database,
 migration, module registration, network call, feature flag, or runtime activation.
 
+## Offline synthetic readiness-planning replay
+
+The detached P23 performance/recovery and P24 release-planning inventories can be reconstructed as
+one honest engineering summary:
+
+```powershell
+py -m uv run python -m app.validation.demo --environment test
+```
+
+The replay produces all 37 reviewed planning records while retaining `UNVERIFIED`, `NOT_EXECUTED`,
+`NOT_ELIGIBLE`, and `NOT_RECORDED` states. P22 security regression remains test-suite evidence only,
+not release authorization. Staging, pilot, and production are rejected before fixture construction.
+The command performs no measurements, drills, safety evaluation, deployment, pilot, release, data
+access, persistence, network activity, or runtime activation.
+
 ## Quality checks
 
 ```powershell
