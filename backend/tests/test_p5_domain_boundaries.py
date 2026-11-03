@@ -6,6 +6,8 @@ from pathlib import Path
 from app.config import Settings
 from app.main import create_app
 from app.modules.encounters.infrastructure import EncounterRecord
+from app.modules.patient_accounts.infrastructure import PatientAccountRecord
+from app.modules.patient_documents.infrastructure import PatientDocumentRecord
 from app.modules.patients.infrastructure import (
     AllergyRecordProjection,
     ClinicalFactProvenanceRecord,
@@ -123,4 +125,6 @@ def test_metadata_preserves_p5b_and_adds_only_p7a_tables() -> None:
         "clinical_intakes",
         "intake_answers",
         "questionnaire_instances",
+        PatientAccountRecord.__tablename__,
+        PatientDocumentRecord.__tablename__,
     }

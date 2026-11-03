@@ -39,3 +39,5 @@ class Session:
     expires_at: datetime
     closed_at: datetime | None
     updated_at: datetime
+    actor_id: OpaqueId | None = None
+    patient_id: OpaqueId | None = None

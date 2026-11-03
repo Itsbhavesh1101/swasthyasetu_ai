@@ -5,6 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from app.config import DatabaseSettings
 from app.events.outbox import OutboxEventRecord
+from app.modules.patient_accounts.infrastructure import PatientAccountRecord
+from app.modules.patient_documents.infrastructure import PatientDocumentRecord
 from app.modules.sessions.infrastructure import SessionRecord
 from app.shared.persistence import NAMING_CONVENTION, Base, DatabaseRuntime
 from app.shared.persistence.runtime import create_database_runtime
@@ -53,6 +55,8 @@ def test_metadata_contains_registered_tables_through_p7a() -> None:
         "clinical_intakes",
         "intake_answers",
         "questionnaire_instances",
+        PatientAccountRecord.__tablename__,
+        PatientDocumentRecord.__tablename__,
     }
     assert Base.metadata.naming_convention == NAMING_CONVENTION
 

@@ -10,6 +10,8 @@ from sqlalchemy import Table
 from app.events import EventEnvelope
 from app.events.dispatcher import DispatchBatchResult, OutboxDispatcher, RetryPolicy
 from app.events.outbox import OutboxEventRecord, OutboxRepository, OutboxStatus
+from app.modules.patient_accounts.infrastructure import PatientAccountRecord
+from app.modules.patient_documents.infrastructure import PatientDocumentRecord
 from app.shared.persistence import Base
 
 NOW = datetime(2026, 1, 2, 3, 4, tzinfo=UTC)
@@ -49,6 +51,8 @@ def test_outbox_has_required_schema_alongside_registered_module_tables() -> None
         "clinical_intakes",
         "intake_answers",
         "questionnaire_instances",
+        PatientAccountRecord.__tablename__,
+        PatientDocumentRecord.__tablename__,
     }
     assert tuple(table.columns) == tuple(
         table.c[name]
