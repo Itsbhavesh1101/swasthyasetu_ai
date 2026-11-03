@@ -9,6 +9,7 @@ from app.modules.patients.contracts import (
     FactCursor,
     FactPage,
     PatientAlreadyExistsError,
+    PatientProfileConflictError,
     PatientRepository,
 )
 from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
@@ -69,6 +70,39 @@ class PatientService:
             )
         return patient
 
+    async def update_profile(
+        self,
+        *,
+        patient_id: OpaqueId,
+        expected_updated_at: datetime,
+        preferred_language: str | None,
+        demographics: PatientDemographics | None,
+    ) -> Patient:
+        database = self._require_database()
+        expected = self._normalize_time("expected_updated_at", expected_updated_at)
+        now = self._now()
+        async with database.transaction() as transaction:
+            patient = await self._patients.get(transaction, patient_id)
+            if patient is None or patient.updated_at != expected:
+                raise self._stale_profile()
+            updated = Patient(
+                patient_id=patient.patient_id,
+                status=patient.status,
+                created_at=patient.created_at,
+                updated_at=now,
+                preferred_language=preferred_language,
+                demographics=demographics,
+                identifiers=patient.identifiers,
+            )
+            try:
+                return await self._patients.save(
+                    transaction,
+                    updated,
+                    expected_updated_at=expected,
+                )
+            except PatientProfileConflictError as exc:
+                raise self._stale_profile() from exc
+
     async def get_fact(self, fact_id: OpaqueId) -> ClinicalFact:
         database = self._require_database()
         async with database.transaction() as transaction:
@@ -127,6 +161,19 @@ class PatientService:
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("patient clock must be timezone-aware")
         return value.astimezone(UTC)
+
+    @staticmethod
+    def _normalize_time(name: str, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError(f"{name} must be timezone-aware")
+        return value.astimezone(UTC)
+
+    @staticmethod
+    def _stale_profile() -> ApplicationError:
+        return ApplicationError(
+            code=ErrorCode.RESOURCE_CONFLICT,
+            message="The patient profile changed or is unavailable. Reload and try again.",
+        )
 
     @staticmethod
     def _conflict(cause: Exception | None = None) -> ApplicationError:

@@ -7,10 +7,11 @@ from decimal import Decimal
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Request, Response, status
+from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.api.security.authorization import get_actor_context, require_self_subject
+from app.api.security.patient_authentication import PatientAuthenticator, authenticate_patient
 from app.modules.identity.authorization import PATIENT_READ_SELF, PATIENT_WRITE_SELF
 from app.modules.identity.public import IDENTITY_AUTHORIZE
 from app.modules.patients.clinical import ClinicalFact, FactType, clinical_fact_label
@@ -19,6 +20,7 @@ from app.modules.patients.contracts import (
     FactCursor,
     ListFactsCapability,
     ReadPatientCapability,
+    UpdatePatientCapability,
 )
 from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
 from app.modules.provenance.domain import ProvenanceSourceType, VerificationState
@@ -61,6 +63,20 @@ class CreatePatientRequest(BaseModel):
         if value is not None and value != value.strip():
             raise ValueError("preferred_language must be trimmed")
         return value
+
+
+class UpdatePatientRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_updated_at: datetime
+    preferred_language: str | None = Field(default=None, min_length=1, max_length=64)
+    demographics: DemographicsRequest | None = None
+
+    @field_validator("expected_updated_at")
+    @classmethod
+    def validate_expected_updated_at(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("expected_updated_at must be timezone-aware")
+        return value.astimezone(UTC)
 
 
 class DemographicsResponse(BaseModel):
@@ -184,8 +200,29 @@ def build_patients_router(
     creator: CreatePatientCapability,
     reader: ReadPatientCapability,
     facts: ListFactsCapability,
+    updater: UpdatePatientCapability,
+    authenticator: PatientAuthenticator | None = None,
 ) -> APIRouter:
-    router = APIRouter(prefix="/patients", tags=["patients"])
+    router_dependencies: list[Any] = []
+    if authenticator is not None:
+
+        async def require_authenticated_patient(
+            request: Request,
+            authorization: Annotated[str | None, Header()] = None,
+        ) -> None:
+            await authenticate_patient(
+                request,
+                authorization,
+                authenticator=authenticator,
+            )
+
+        router_dependencies.append(Depends(require_authenticated_patient))
+
+    router = APIRouter(
+        prefix="/patients",
+        tags=["patients"],
+        dependencies=router_dependencies,
+    )
 
     @router.post("", response_model=PatientResponse, status_code=status.HTTP_201_CREATED)
     async def create_patient(
@@ -222,6 +259,29 @@ def build_patients_router(
     async def get_patient(patient_id: UUID, response: Response) -> PatientResponse:
         response.headers["Cache-Control"] = "no-store"
         return patient_view(await reader.get_patient(OpaqueId(patient_id)))
+
+    @router.patch(
+        "/{patient_id}",
+        response_model=PatientResponse,
+        dependencies=[Depends(require_self_subject(PATIENT_WRITE_SELF, "patient_id"))],
+    )
+    async def update_patient(
+        patient_id: UUID, payload: UpdatePatientRequest, response: Response
+    ) -> PatientResponse:
+        response.headers["Cache-Control"] = "no-store"
+        demographics = (
+            None
+            if payload.demographics is None
+            else PatientDemographics(**payload.demographics.model_dump())
+        )
+        return patient_view(
+            await updater.update_profile(
+                patient_id=OpaqueId(patient_id),
+                expected_updated_at=payload.expected_updated_at,
+                preferred_language=payload.preferred_language,
+                demographics=demographics,
+            )
+        )
 
     @router.get(
         "/{patient_id}/facts",

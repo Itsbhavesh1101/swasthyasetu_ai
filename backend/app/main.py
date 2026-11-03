@@ -191,7 +191,10 @@ def create_app(
                 database=resolved_database,
             ),
             build_consent_registration(database=resolved_database),
-            build_patients_registration(service=patient_service),
+            build_patients_registration(
+                service=patient_service,
+                authenticator=patient_account_service,
+            ),
             build_encounters_registration(service=encounter_service),
             build_provenance_registration(service=provenance_service),
             build_clinical_intake_registration(

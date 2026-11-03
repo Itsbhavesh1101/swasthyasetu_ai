@@ -12,7 +12,6 @@ from app.config import DatabaseSettings, Settings
 from app.main import create_app
 from app.modules.encounters.infrastructure import EncounterRecord
 from app.modules.identity.domain import RoleCode
-from app.modules.identity.infrastructure import ActorRecord, ActorRoleRecord
 from app.modules.patients.infrastructure import PostgresClinicalFactRepository
 from app.modules.patients.public import ClinicalFact, FactType, Problem, ProblemStatus
 from app.modules.provenance.public import (
@@ -52,22 +51,6 @@ async def database_runtime() -> AsyncIterator[DatabaseRuntime]:
 async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
     database_runtime: DatabaseRuntime,
 ) -> None:
-    patient_id = OpaqueId.new()
-    actor_id = OpaqueId.new()
-    async with database_runtime.transaction() as transaction:
-        transaction.add(
-            ActorRecord(
-                id=actor_id.value,
-                actor_type="PATIENT",
-                subject_ref=patient_id.value,
-                institution_id=None,
-                status="ACTIVE",
-                created_at=NOW,
-                updated_at=NOW,
-                role_records=[ActorRoleRecord(role_code="patient", created_at=NOW)],
-            )
-        )
-
     settings = Settings(
         database=DatabaseSettings(
             enabled=True, url="postgresql+psycopg://unused:unused@localhost/unused"
@@ -75,36 +58,56 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
         _env_file=None,
     )
     application = create_app(settings, database=database_runtime)
+    trusted: dict[str, OpaqueId] = {}
 
     @application.middleware("http")
     async def trusted_actor(request, call_next):  # type: ignore[no-untyped-def]
-        request.state.actor_context = ActorContext(
-            actor_id=actor_id,
-            actor_type="PATIENT",
-            roles=frozenset({RoleCode.PATIENT.value}),
-            subject_id=patient_id,
-            is_authenticated=True,
-        )
+        if "actor_id" in trusted and "patient_id" in trusted:
+            request.state.actor_context = ActorContext(
+                actor_id=trusted["actor_id"],
+                actor_type="PATIENT",
+                roles=frozenset({RoleCode.PATIENT.value}),
+                subject_id=trusted["patient_id"],
+                is_authenticated=True,
+            )
         return await call_next(request)
 
     async with AsyncClient(
         transport=ASGITransport(app=application), base_url="http://test"
     ) as client:
-        created_patient = await client.post(
-            "/api/v1/patients",
+        account = await client.post(
+            "/api/v1/accounts/register",
             json={
+                "email": "p5c@example.com",
+                "display_name": "P5C Patient",
+                "password": "correct horse battery staple",
                 "preferred_language": "en",
-                "demographics": {"age_years": 30, "location_context": "synthetic"},
             },
         )
-        assert created_patient.status_code == 201
+        assert account.status_code == 201
+        account_bearer = {"Authorization": f"Bearer {account.json()['session_token']}"}
+        current = await client.get("/api/v1/accounts/me", headers=account_bearer)
+        patient_id = OpaqueId.parse(current.json()["patient_id"])
+        async with database_runtime.transaction() as transaction:
+            actor_value = (
+                await transaction.execute(
+                    text("SELECT actor_id FROM patient_accounts WHERE patient_id = :patient_id"),
+                    {"patient_id": patient_id.value},
+                )
+            ).scalar_one()
+        trusted.update(actor_id=OpaqueId(actor_value), patient_id=patient_id)
+
+        created_patient = await client.get(f"/api/v1/patients/{patient_id}", headers=account_bearer)
+        assert created_patient.status_code == 200
         assert created_patient.json()["patient_id"] == str(patient_id)
         assert "identifiers" not in created_patient.json()
         assert created_patient.headers["cache-control"] == "no-store"
 
-        duplicate = await client.post("/api/v1/patients", json={})
+        duplicate = await client.post("/api/v1/patients", headers=account_bearer, json={})
         assert duplicate.status_code == 409
-        cross_subject = await client.get(f"/api/v1/patients/{OpaqueId.new()}")
+        cross_subject = await client.get(
+            f"/api/v1/patients/{OpaqueId.new()}", headers=account_bearer
+        )
         assert cross_subject.status_code == 403
 
         session_response = await client.post(
@@ -194,7 +197,9 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
                 )
             )
 
-        facts = await client.get(f"/api/v1/patients/{patient_id}/facts?limit=1")
+        facts = await client.get(
+            f"/api/v1/patients/{patient_id}/facts?limit=1", headers=account_bearer
+        )
         assert facts.status_code == 200
         assert facts.json()["items"][0]["canonical_label"] == "synthetic condition"
         assert "source_ref" not in facts.text

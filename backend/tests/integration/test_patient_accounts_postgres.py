@@ -5,10 +5,12 @@ from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import DatabaseSettings, PatientAccountSettings
+from app.config import DatabaseSettings, PatientAccountSettings, Settings
+from app.main import create_app
 from app.modules.identity.domain import ActorType, RoleCode
 from app.modules.identity.infrastructure import ActorRecord, PostgresActorRepository
 from app.modules.patient_accounts.application import PatientAccountService
@@ -130,6 +132,68 @@ async def test_registration_login_and_authentication_bind_exact_patient(
     with pytest.raises(ApplicationError) as closed:
         await service.authenticate(registered.session_token)
     assert closed.value.code is ErrorCode.AUTHENTICATION_REQUIRED
+
+
+async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic(
+    database_runtime: DatabaseRuntime,
+) -> None:
+    application = create_app(Settings(_env_file=None), database=database_runtime)
+    async with AsyncClient(
+        transport=ASGITransport(app=application), base_url="http://test"
+    ) as client:
+        registered = await client.post(
+            "/api/v1/accounts/register",
+            json={
+                "email": "profile@example.com",
+                "display_name": "Profile Patient",
+                "password": "correct horse battery staple",
+                "preferred_language": "en",
+            },
+        )
+        assert registered.status_code == 201
+        bearer = {"Authorization": f"Bearer {registered.json()['session_token']}"}
+        current = await client.get("/api/v1/accounts/me", headers=bearer)
+        patient_id = current.json()["patient_id"]
+        profile = await client.get(f"/api/v1/patients/{patient_id}", headers=bearer)
+        assert profile.status_code == 200
+        assert "identifiers" not in profile.json()
+
+        anonymous = await client.get(f"/api/v1/patients/{patient_id}")
+        cross_subject = await client.get(f"/api/v1/patients/{OpaqueId.new()}", headers=bearer)
+        unknown_field = await client.patch(
+            f"/api/v1/patients/{patient_id}",
+            headers=bearer,
+            json={
+                "expected_updated_at": profile.json()["updated_at"],
+                "preferred_language": "hi",
+                "demographics": None,
+                "patient_id": patient_id,
+            },
+        )
+        assert anonymous.status_code == 401
+        assert cross_subject.status_code == 403
+        assert unknown_field.status_code == 422
+
+        update_payload = {
+            "expected_updated_at": profile.json()["updated_at"],
+            "preferred_language": "hi",
+            "demographics": {
+                "date_of_birth": "2000-01-02",
+                "administrative_sex": "female",
+                "location_context": "Delhi",
+            },
+        }
+        updated = await client.patch(
+            f"/api/v1/patients/{patient_id}", headers=bearer, json=update_payload
+        )
+        stale = await client.patch(
+            f"/api/v1/patients/{patient_id}", headers=bearer, json=update_payload
+        )
+        assert updated.status_code == 200
+        assert updated.json()["preferred_language"] == "hi"
+        assert updated.json()["demographics"]["location_context"] == "Delhi"
+        assert stale.status_code == 409
+        assert stale.json()["error"]["code"] == "RESOURCE_CONFLICT"
 
 
 async def test_duplicate_email_and_bad_credentials_are_generic(

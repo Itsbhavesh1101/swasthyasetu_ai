@@ -464,9 +464,44 @@ a {
 }
 
 .onboarding-form,
-.consent-stack {
+.consent-stack,
+.profile-form {
   display: grid;
   gap: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-form label,
+.account-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--patient-text);
+  font-weight: 750;
+}
+
+.profile-form input,
+.profile-form select,
+.account-form input {
+  width: 100%;
+  min-height: var(--patient-touch);
+  border: 1px solid var(--patient-border);
+  border-radius: var(--patient-radius-sm);
+  background: white;
+  color: var(--patient-text);
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+}
+
+.form-message,
+.welcome-line {
+  margin: 0;
+  color: var(--patient-primary-strong);
+  font-weight: 800;
 }
 
 .choice-group {
@@ -592,6 +627,7 @@ a {
 
 @media (max-width: 47rem) {
   .feature-grid,
+  .form-grid,
   .footer-content {
     grid-template-columns: 1fr;
   }

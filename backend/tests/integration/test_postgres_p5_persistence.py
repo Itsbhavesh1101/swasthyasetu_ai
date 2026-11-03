@@ -223,7 +223,14 @@ async def test_patient_save_round_trips_lifecycle_fields(
     async with database_runtime.transaction() as session:
         await repository.add(session, patient)
     async with database_runtime.transaction() as session:
-        assert await repository.save(session, changed) == changed
+        assert (
+            await repository.save(
+                session,
+                changed,
+                expected_updated_at=patient.updated_at,
+            )
+            == changed
+        )
     async with database_runtime.session_factory() as session:
         assert await repository.get(session, patient.patient_id) == changed
 

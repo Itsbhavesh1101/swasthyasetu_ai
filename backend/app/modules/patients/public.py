@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter
 
+from app.api.security.patient_authentication import PatientAuthenticator
 from app.modules.patients.clinical import (
     AllergyRecord,
     ClinicalFact,
@@ -33,6 +34,7 @@ from app.modules.patients.contracts import (
     ListFactsCapability,
     ReadFactCapability,
     ReadPatientCapability,
+    UpdatePatientCapability,
 )
 from app.modules.patients.domain import (
     Patient,
@@ -50,6 +52,7 @@ if TYPE_CHECKING:
 
 PATIENTS_CREATE = CapabilityKey[CreatePatientCapability](CapabilityIdentifier("patients.create"))
 PATIENTS_READ = CapabilityKey[ReadPatientCapability](CapabilityIdentifier("patients.read"))
+PATIENTS_UPDATE = CapabilityKey[UpdatePatientCapability](CapabilityIdentifier("patients.update"))
 PATIENTS_FACT_READ = CapabilityKey[ReadFactCapability](CapabilityIdentifier("patients.fact.read"))
 PATIENTS_FACTS_LIST = CapabilityKey[ListFactsCapability](
     CapabilityIdentifier("patients.facts.list")
@@ -60,7 +63,13 @@ PATIENTS_MANIFEST = ModuleManifest(
     version=1,
     provided_capabilities=frozenset(
         key.identifier
-        for key in (PATIENTS_CREATE, PATIENTS_READ, PATIENTS_FACT_READ, PATIENTS_FACTS_LIST)
+        for key in (
+            PATIENTS_CREATE,
+            PATIENTS_READ,
+            PATIENTS_UPDATE,
+            PATIENTS_FACT_READ,
+            PATIENTS_FACTS_LIST,
+        )
     ),
     api_prefixes=("/patients",),
     required_permissions=("patient:read:self", "patient:write:self"),
@@ -86,15 +95,28 @@ def build_patient_service(
     )
 
 
-def build_patients_registration(*, service: "PatientService") -> ModuleRegistration[APIRouter]:
+def build_patients_registration(
+    *,
+    service: "PatientService",
+    authenticator: PatientAuthenticator | None = None,
+) -> ModuleRegistration[APIRouter]:
     from app.modules.patients.api import build_patients_router
 
     return ModuleRegistration(
         manifest=PATIENTS_MANIFEST,
-        routers=(build_patients_router(creator=service, reader=service, facts=service),),
+        routers=(
+            build_patients_router(
+                creator=service,
+                reader=service,
+                updater=service,
+                facts=service,
+                authenticator=authenticator,
+            ),
+        ),
         capability_bindings=(
             PATIENTS_CREATE.bind(service),
             PATIENTS_READ.bind(service),
+            PATIENTS_UPDATE.bind(service),
             PATIENTS_FACT_READ.bind(service),
             PATIENTS_FACTS_LIST.bind(service),
         ),
@@ -134,6 +156,7 @@ __all__ = [
     "PATIENTS_FACTS_LIST",
     "PATIENTS_MANIFEST",
     "PATIENTS_READ",
+    "PATIENTS_UPDATE",
     "build_patient_service",
     "build_patients_registration",
     "clinical_fact_label",
