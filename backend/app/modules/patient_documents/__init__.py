@@ -1,1 +1,1 @@
-"""Patient-owned document vault bounded context."""
+"""Private patient document-vault module."""

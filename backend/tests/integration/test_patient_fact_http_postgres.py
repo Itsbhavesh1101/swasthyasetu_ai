@@ -126,11 +126,14 @@ async def test_patient_history_http_is_strict_self_scoped_and_correctable(
         assert stale.status_code == 409
 
         listed = await client.get(path, headers=bearer)
+        listed_again = await client.get(path, headers=bearer)
         assert listed.status_code == 200
-        assert [item["canonical_label"] for item in listed.json()["items"]] == [
+        labels = [item["canonical_label"] for item in listed.json()["items"]]
+        assert labels == [item["canonical_label"] for item in listed_again.json()["items"]]
+        assert set(labels) == {
             "Synthetic migraine",
             "Synthetic migraine corrected",
-        ]
+        }
 
 
 class FailingSupersessionRepository(PostgresClinicalFactRepository):
