@@ -23,6 +23,8 @@ from ml.research.candidates import (
     SyntheticCardMetric,
     SyntheticCardPurpose,
     SyntheticCardState,
+    SyntheticModelCandidate,
+    SyntheticModelCard,
     build_synthetic_model_candidate,
     build_synthetic_model_card,
     synthetic_model_candidate_fingerprint,
@@ -321,10 +323,16 @@ def _labels_for_rows(
     )
 
 
-def run_synthetic_classical_demo(
+@dataclass(frozen=True, slots=True, kw_only=True)
+class _SyntheticClassicalDemoBundle:
+    receipt: SyntheticClassicalDemoReceipt
+    candidate: SyntheticModelCandidate
+    card: SyntheticModelCard
+
+
+def _build_synthetic_classical_demo_bundle(
     environment: ResearchEnvironment,
-) -> SyntheticClassicalDemoReceipt:
-    """Replay fixed non-medical mechanics without product or clinical authority."""
+) -> _SyntheticClassicalDemoBundle:
 
     safe_environment = validate_research_environment(environment)
     rows = _fixture_rows()
@@ -473,12 +481,25 @@ def run_synthetic_classical_demo(
         "card_fingerprint": synthetic_model_card_fingerprint(card),
         "candidate_fingerprint": synthetic_model_candidate_fingerprint(resolved_candidate),
     }
-    return SyntheticClassicalDemoReceipt(
+    receipt = SyntheticClassicalDemoReceipt(
         **receipt_fields,  # type: ignore[arg-type]
         evidence_fingerprint=_receipt_evidence_fingerprint(
             **receipt_fields,  # type: ignore[arg-type]
         ),
     )
+    return _SyntheticClassicalDemoBundle(
+        receipt=receipt,
+        candidate=resolved_candidate,
+        card=card,
+    )
+
+
+def run_synthetic_classical_demo(
+    environment: ResearchEnvironment,
+) -> SyntheticClassicalDemoReceipt:
+    """Replay fixed non-medical mechanics without product or clinical authority."""
+
+    return _build_synthetic_classical_demo_bundle(environment).receipt
 
 
 __all__ = [
