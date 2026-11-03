@@ -11,10 +11,13 @@ from app.config.sections import (
     DatabaseSettings,
     FeaturesSettings,
     FhirSettings,
+    GuidanceSettings,
     LlmSettings,
     ObjectStorageSettings,
     ObservabilitySettings,
     OcrSettings,
+    PatientAccountSettings,
+    PatientDocumentSettings,
     RateLimitSettings,
     SecuritySettings,
     SessionsSettings,
@@ -65,6 +68,9 @@ class Settings(BaseSettings):
     security: SecuritySettings = Field(default_factory=SecuritySettings)
     rate_limits: RateLimitSettings = Field(default_factory=RateLimitSettings)
     sessions: SessionsSettings = Field(default_factory=SessionsSettings)
+    patient_accounts: PatientAccountSettings = Field(default_factory=PatientAccountSettings)
+    patient_documents: PatientDocumentSettings = Field(default_factory=PatientDocumentSettings)
+    guidance: GuidanceSettings = Field(default_factory=GuidanceSettings)
     object_storage: ObjectStorageSettings = Field(default_factory=ObjectStorageSettings)
     llm: LlmSettings = Field(default_factory=LlmSettings)
     ocr: OcrSettings = Field(default_factory=OcrSettings)

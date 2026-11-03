@@ -1,5 +1,7 @@
 """Frozen, provider-neutral configuration sections for the platform."""
 
+import re
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
@@ -81,6 +83,59 @@ class SessionsSettings(ConfigurationSection):
 
     pseudonymous_ttl_minutes: int = Field(default=60, ge=1, le=10_080)
     kiosk_ttl_minutes: int = Field(default=30, ge=1, le=10_080)
+
+
+class PatientAccountSettings(ConfigurationSection):
+    """Configuration for authenticated patient account sessions."""
+
+    authenticated_ttl_minutes: int = Field(default=1_440, ge=15, le=43_200)
+
+
+class PatientDocumentSettings(ConfigurationSection):
+    """Controlled local document storage settings for the patient product."""
+
+    enabled: bool = False
+    root: Path | None = None
+    max_bytes: int = Field(default=10 * 1024 * 1024, ge=1_024, le=100 * 1024 * 1024)
+
+    @model_validator(mode="after")
+    def validate_storage_root(self) -> "PatientDocumentSettings":
+        if self.enabled and self.root is None:
+            raise ValueError("document storage root is required when storage is enabled")
+        return self
+
+
+class GuidanceSettings(ConfigurationSection):
+    """Disabled-by-default configuration for grounded wellness guidance."""
+
+    enabled: bool = False
+    api_key: SecretStr | None = None
+    model: str | None = None
+    deadline_seconds: int = Field(default=10, ge=1, le=60)
+    allowed_source_domains: tuple[str, ...] = (
+        "ayush.gov.in",
+        "ccras.nic.in",
+        "who.int",
+    )
+
+    @field_validator("allowed_source_domains")
+    @classmethod
+    def validate_source_domains(cls, value: tuple[str, ...]) -> tuple[str, ...]:
+        domain_pattern = re.compile(
+            r"^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+"
+            r"[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?$"
+        )
+        if not value or any(domain_pattern.fullmatch(domain) is None for domain in value):
+            raise ValueError("guidance source allowlist must contain canonical DNS domains")
+        if len(value) != len(set(value)):
+            raise ValueError("guidance source allowlist must contain canonical DNS domains")
+        return value
+
+    @model_validator(mode="after")
+    def validate_provider_configuration(self) -> "GuidanceSettings":
+        if self.enabled and (self.api_key is None or not self.model):
+            raise ValueError("API key and model are required when guidance is enabled")
+        return self
 
 
 class ObjectStorageSettings(ConfigurationSection):
