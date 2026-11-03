@@ -9,20 +9,23 @@ export default function PatientHomePage() {
     <div className="page-stack">
       <PageHeader
         eyebrow="Private by design"
-        title="Your health journey, one step at a time"
-        description="SwasthyaSetu offers a clear place to begin sharing health information when you are ready. It does not provide a diagnosis."
+        title="Your health history, kept together"
+        description="Create a private patient account to maintain your details, medical history, and documents. SwasthyaSetu does not provide a diagnosis."
       />
 
       <div className="hero-actions" aria-label="Patient actions">
-        <ActionLink href="/start">Get started</ActionLink>
+        <ActionLink href="/register">Create account</ActionLink>
+        <ActionLink href="/login" variant="secondary">
+          Sign in
+        </ActionLink>
         <ActionLink href="/urgent-help" variant="critical">
           Urgent help
         </ActionLink>
       </div>
 
       <StatusBanner title="You stay in control" tone="info">
-        Onboarding uses only temporary, private session cookies. The browser does not store health
-        information or consent records in local storage.
+        Authentication uses private HttpOnly session cookies. The browser does not store passwords,
+        health information, or consent records in local storage.
       </StatusBanner>
 
       <section aria-labelledby="what-to-expect-title" className="feature-grid">

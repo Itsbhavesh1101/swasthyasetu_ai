@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { PatientNavigation } from "./patient-navigation";
+import { AccountMenu } from "./account-menu";
 import { UrgentHelpLink } from "./urgent-help-link";
 
 export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -22,6 +23,7 @@ export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
             </span>
           </Link>
           <UrgentHelpLink />
+          <AccountMenu />
         </div>
         <div className="shell-container">
           <PatientNavigation />

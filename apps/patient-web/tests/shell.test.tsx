@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PatientShell } from "../components/patient-shell";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe("patient shell", () => {
   it("provides landmarks, navigation, skip target, and persistent urgent help", () => {
@@ -36,7 +39,8 @@ describe("patient shell", () => {
 
     const navigation = screen.getByRole("navigation", { name: "Patient navigation" });
     expect(navigation).toHaveTextContent("Home");
-    expect(navigation).toHaveTextContent("Start");
+    expect(navigation).toHaveTextContent("Dashboard");
+    expect(navigation).toHaveTextContent("Sign in");
     expect(navigation).not.toHaveTextContent("Documents");
     expect(navigation).not.toHaveTextContent("Results");
   });

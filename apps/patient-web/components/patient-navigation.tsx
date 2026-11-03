@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 const navigationItems = [
   { href: "/", label: "Home" },
-  { href: "/start", label: "Start" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/login", label: "Sign in" },
 ] as const;
 
 export function PatientNavigation() {
