@@ -3897,3 +3897,34 @@ cover the bounded engineering path.
 Next: preserve this no-run demonstration. Do not select or execute a quantum experiment or claim a
 comparison until an approved real P18 benchmark and every P19 readiness prerequisite exist.
 ```
+
+---
+
+# 134. College Demo Wave 11 — Offline Synthetic Care-Composition Replay
+
+```text
+Status: COMPLETE for the explicitly offline LOCAL/TEST college demonstration subset; canonical P20
+remains PARTIAL/BLOCKED and every live AC-P20/product outcome remains unverified.
+Implementation: python -m app.modules.care_orchestration.demo exercises the exact reviewed P20-A/B/
+C/D engineering chain with two fixed, content-free evidence references. It validates version-bound
+source descriptors and exact-echo receipts, reconciles one immutable snapshot, and creates a
+deterministic replay that preserves every symbolic candidate without ranking, selection, suppression
+or execution. A selectable synthetic unavailable-source state produces an explicit abstention with
+no candidate output.
+Safety boundary: STAGING, PILOT and PRODUCTION are denied before availability or fixture validation.
+All evidence, sources, candidates, reasons and actions remain closed engineering-only symbols;
+authority is ENGINEERING_ONLY, classification is ENGINEERING_SYNTHETIC and verification is
+UNVERIFIED. Output is a canonical content-free metadata summary with exact request, reconciliation
+and replay fingerprints.
+Scope: no patient/clinical content or identifiers, medical meaning, policy/precedence, consent or
+authorization decision, provider output, cross-module data access, ORM, persistence, migration,
+route/API/UI, event/job, dependency, telemetry, feature flag, network, module registration, runtime
+activation, pilot or release behavior. Alembic remains p7a_0007 and all P20 readiness restrictions
+remain unchanged.
+Verification: deterministic replay, source-call completeness, preserved-candidate and unavailable-
+evidence abstention paths, strict enum boundaries, protected-environment preflight, canonical CLI
+output, full backend/frontend regression, PostgreSQL/Docker, browser and security CI cover the
+bounded engineering path.
+Next: preserve this offline symbolic replay. Do not connect it to patient data, clinical policy,
+cross-module reads, UI or runtime activation until every applicable P20 prerequisite is approved.
+```

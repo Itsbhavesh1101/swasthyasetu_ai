@@ -439,6 +439,27 @@ bodies, query strings, credentials, cookies, or exception details. External expo
 default and enabling it is rejected because P2-C installs no exporter. No Collector or monitoring
 service is required.
 
+## Offline synthetic care-composition demonstration
+
+The complete detached P20 structural chain can be replayed with fixed, content-free engineering
+fixtures:
+
+```powershell
+py -m uv run python -m app.modules.care_orchestration.demo --environment test
+```
+
+An explicit unavailable-source path demonstrates fail-closed abstention:
+
+```powershell
+py -m uv run python -m app.modules.care_orchestration.demo --environment local --beta-availability UNAVAILABLE
+```
+
+The replay validates two version-bound source receipts, reconciles one immutable snapshot, and
+preserves symbolic candidates without ranking, selecting, interpreting, or executing an action.
+Staging, pilot, and production are rejected before fixture construction. The command contains no
+patient or clinical data and adds no API, database, migration, module registration, feature flag,
+network call, care policy, or runtime activation.
+
 ## Quality checks
 
 ```powershell
