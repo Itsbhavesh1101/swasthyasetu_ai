@@ -204,7 +204,7 @@ async def test_encounter_service_rejects_ineligible_http_type_or_session_pair(
     assert error.value.code is ErrorCode.VALIDATION_ERROR
 
 
-async def test_database_disabled_patient_route_is_registered_and_safe_503() -> None:
+async def test_patient_route_requires_real_bearer_before_database_access() -> None:
     application = create_app(Settings(_env_file=None))
     patient_id = OpaqueId.new()
 
@@ -225,12 +225,12 @@ async def test_database_disabled_patient_route_is_registered_and_safe_503() -> N
     ) as client:
         response = await client.get(f"/api/v1/patients/{patient_id}")
 
-    assert response.status_code == 503
-    assert response.json()["error"]["code"] == "DEPENDENCY_UNAVAILABLE"
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "AUTHENTICATION_REQUIRED"
     assert response.headers["cache-control"] == "no-store"
 
 
-async def test_patient_create_rejects_client_id_and_missing_trusted_subject() -> None:
+async def test_patient_create_rejects_injected_context_without_real_bearer() -> None:
     from httpx import ASGITransport, AsyncClient
 
     application = create_app(Settings(_env_file=None))
@@ -250,8 +250,8 @@ async def test_patient_create_rejects_client_id_and_missing_trusted_subject() ->
         forbidden = await client.post("/api/v1/patients", json={})
         invalid = await client.post("/api/v1/patients", json={"patient_id": str(OpaqueId.new())})
 
-    assert forbidden.status_code == 403
-    assert invalid.status_code == 422
+    assert forbidden.status_code == 401
+    assert invalid.status_code == 401
     assert invalid.headers["cache-control"] == "no-store"
 
 

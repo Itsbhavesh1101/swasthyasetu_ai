@@ -1,8 +1,11 @@
 """Typed settings behavior tests."""
 
+from pathlib import Path
+
 import pytest
 from pydantic import SecretStr, ValidationError
 
+import app.config as config
 from app.config import (
     AbdmSettings,
     AppSettings,
@@ -195,3 +198,113 @@ def test_database_validation_error_masks_url_secret() -> None:
         DatabaseSettings(enabled=True, url=SecretStr(f"postgresql://user:{secret}@localhost/db"))
 
     assert secret not in str(error.value)
+
+
+def test_patient_product_sections_have_safe_defaults() -> None:
+    patient_account_settings = config.PatientAccountSettings
+    patient_document_settings = config.PatientDocumentSettings
+    guidance_settings = config.GuidanceSettings
+
+    settings = Settings(_env_file=None)
+
+    assert isinstance(settings.patient_accounts, patient_account_settings)
+    assert settings.patient_accounts.authenticated_ttl_minutes == 1_440
+    assert isinstance(settings.patient_documents, patient_document_settings)
+    assert settings.patient_documents.enabled is False
+    assert settings.patient_documents.root is None
+    assert settings.patient_documents.max_bytes == 10 * 1024 * 1024
+    assert isinstance(settings.guidance, guidance_settings)
+    assert settings.guidance.enabled is False
+    assert settings.guidance.api_key is None
+    assert settings.guidance.model is None
+    assert settings.guidance.deadline_seconds == 10
+    assert settings.guidance.allowed_source_domains == (
+        "ayush.gov.in",
+        "ccras.nic.in",
+        "who.int",
+    )
+
+
+@pytest.mark.parametrize("value", [0, 14, 43_201])
+def test_authenticated_session_ttl_is_bounded(value: int) -> None:
+    patient_account_settings = config.PatientAccountSettings
+
+    with pytest.raises(ValidationError):
+        patient_account_settings(authenticated_ttl_minutes=value)
+
+
+def test_enabled_patient_document_storage_requires_an_explicit_root() -> None:
+    patient_document_settings = config.PatientDocumentSettings
+
+    with pytest.raises(ValidationError, match="document storage root is required"):
+        patient_document_settings(enabled=True)
+
+    configured = patient_document_settings(enabled=True, root=Path("patient-documents"))
+    assert configured.root == Path("patient-documents")
+
+
+def test_enabled_guidance_requires_a_key_and_model() -> None:
+    guidance_settings = config.GuidanceSettings
+
+    with pytest.raises(ValidationError, match="API key and model are required"):
+        guidance_settings(enabled=True)
+
+    configured = guidance_settings(
+        enabled=True,
+        api_key=SecretStr("synthetic-gemini-key"),
+        model="gemini-test-model",
+    )
+    assert configured.api_key is not None
+    assert configured.api_key.get_secret_value() == "synthetic-gemini-key"
+    assert configured.model == "gemini-test-model"
+    assert "synthetic-gemini-key" not in repr(configured)
+
+
+@pytest.mark.parametrize(
+    "domain",
+    [
+        "https://ayush.gov.in",
+        "ayush.gov.in/path",
+        "*.ayush.gov.in",
+        "AYUSH.GOV.IN",
+        " ayush.gov.in",
+        "ayush.gov.in ",
+        "localhost",
+    ],
+)
+def test_guidance_source_allowlist_accepts_only_canonical_domains(domain: str) -> None:
+    guidance_settings = config.GuidanceSettings
+
+    with pytest.raises(ValidationError, match="canonical DNS domains"):
+        guidance_settings(allowed_source_domains=(domain,))
+
+
+def test_patient_product_nested_environment_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("SWASTHYASETU_PATIENT_ACCOUNTS__AUTHENTICATED_TTL_MINUTES", "720")
+    monkeypatch.setenv("SWASTHYASETU_PATIENT_DOCUMENTS__ENABLED", "true")
+    monkeypatch.setenv("SWASTHYASETU_PATIENT_DOCUMENTS__ROOT", "patient-documents")
+    monkeypatch.setenv("SWASTHYASETU_PATIENT_DOCUMENTS__MAX_BYTES", "2048")
+    monkeypatch.setenv("SWASTHYASETU_GUIDANCE__ENABLED", "true")
+    monkeypatch.setenv("SWASTHYASETU_GUIDANCE__API_KEY", "synthetic-gemini-key")
+    monkeypatch.setenv("SWASTHYASETU_GUIDANCE__MODEL", "gemini-test-model")
+    monkeypatch.setenv("SWASTHYASETU_GUIDANCE__DEADLINE_SECONDS", "5")
+    monkeypatch.setenv(
+        "SWASTHYASETU_GUIDANCE__ALLOWED_SOURCE_DOMAINS",
+        '["ayush.gov.in","who.int"]',
+    )
+
+    settings = Settings(_env_file=None)
+
+    assert settings.patient_accounts.authenticated_ttl_minutes == 720
+    assert settings.patient_documents.enabled is True
+    assert settings.patient_documents.root == Path("patient-documents")
+    assert settings.patient_documents.max_bytes == 2048
+    assert settings.guidance.enabled is True
+    assert settings.guidance.api_key is not None
+    assert settings.guidance.api_key.get_secret_value() == "synthetic-gemini-key"
+    assert settings.guidance.model == "gemini-test-model"
+    assert settings.guidance.deadline_seconds == 5
+    assert settings.guidance.allowed_source_domains == ("ayush.gov.in", "who.int")
+    assert "synthetic-gemini-key" not in repr(settings)

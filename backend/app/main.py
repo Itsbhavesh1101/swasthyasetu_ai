@@ -1,6 +1,6 @@
 """FastAPI application construction and Uvicorn entry point."""
 
-from collections.abc import AsyncIterator, Sequence
+from collections.abc import AsyncIterator, Callable, Sequence
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
@@ -22,7 +22,7 @@ from app.modules.clinical_intake.public import (
     build_clinical_intake_registration,
     build_clinical_intake_service,
 )
-from app.modules.consent.public import build_consent_registration
+from app.modules.consent.public import build_consent_registration, build_consent_service
 from app.modules.encounters.public import build_encounter_service, build_encounters_registration
 from app.modules.engineering_abdm_demo.public import (
     ENGINEERING_ABDM_DEMO_FEATURE,
@@ -57,8 +57,18 @@ from app.modules.engineering_summary_demo.public import (
     build_engineering_summary_demo_registration,
 )
 from app.modules.identity.public import build_identity_registration
+from app.modules.patient_accounts.public import (
+    build_patient_account_service,
+    build_patient_accounts_registration,
+)
+from app.modules.patient_documents.public import (
+    build_patient_document_service,
+    build_patient_documents_registration,
+)
 from app.modules.patients.public import build_patient_service, build_patients_registration
 from app.modules.provenance.public import build_provenance_registration, build_provenance_service
+from app.modules.self_care.guidance_contracts import GuidanceProvider
+from app.modules.self_care.public import build_guidance_service, build_self_care_registration
 from app.modules.sessions.public import build_sessions_registration
 from app.shared.feature_flags import (
     ConfigurationFeatureFlagProvider,
@@ -86,6 +96,7 @@ def create_app(
     feature_flags: FeatureFlagService | None = None,
     database: DatabaseRuntime | None = None,
     llm_provider: LLMProvider | None = None,
+    guidance_provider_factory: Callable[[], GuidanceProvider] | None = None,
     rate_limiter: RateLimiter | None = None,
 ) -> FastAPI:
     """Create an application from explicitly supplied, compile-time registrations."""
@@ -120,6 +131,20 @@ def create_app(
     resolved_module_registrations: Sequence[ModuleRegistration[APIRouter]]
     if module_registrations is None:
         patient_service = build_patient_service(database=resolved_database)
+        patient_account_service = build_patient_account_service(
+            database=resolved_database,
+            settings=resolved_settings.patient_accounts,
+        )
+        patient_document_service = build_patient_document_service(
+            database=resolved_database,
+            settings=resolved_settings.patient_documents,
+        )
+        consent_service = build_consent_service(database=resolved_database)
+        guidance_service = build_guidance_service(
+            settings=resolved_settings.guidance,
+            consent=consent_service,
+            provider_factory=guidance_provider_factory,
+        )
         encounter_service = build_encounter_service(
             database=resolved_database, patients=patient_service
         )
@@ -177,14 +202,31 @@ def create_app(
                 provider=llm_provider,
             ),
             build_identity_registration(database=resolved_database),
+            build_patient_accounts_registration(service=patient_account_service),
+            build_patient_documents_registration(
+                service=patient_document_service,
+                authenticator=patient_account_service,
+                max_bytes=resolved_settings.patient_documents.max_bytes,
+            ),
             build_sessions_registration(
                 settings=resolved_settings.sessions,
                 database=resolved_database,
             ),
-            build_consent_registration(database=resolved_database),
-            build_patients_registration(service=patient_service),
+            build_consent_registration(service=consent_service),
+            build_self_care_registration(
+                service=guidance_service,
+                consent=consent_service,
+                authenticator=patient_account_service,
+            ),
+            build_patients_registration(
+                service=patient_service,
+                authenticator=patient_account_service,
+            ),
             build_encounters_registration(service=encounter_service),
-            build_provenance_registration(service=provenance_service),
+            build_provenance_registration(
+                service=provenance_service,
+                authenticator=patient_account_service,
+            ),
             build_clinical_intake_registration(
                 database=resolved_database,
                 engineering_content_enabled=engineering_content_enabled,

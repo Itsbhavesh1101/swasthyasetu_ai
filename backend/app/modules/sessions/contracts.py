@@ -50,12 +50,18 @@ class SessionRepository(Protocol):
         token_hash: str,
         created_at: datetime,
         expires_at: datetime,
+        actor_id: OpaqueId | None = None,
+        patient_id: OpaqueId | None = None,
     ) -> object: ...
 
     async def get(self, session: AsyncSession, session_id: OpaqueId) -> object | None: ...
 
     async def get_for_update(
         self, session: AsyncSession, session_id: OpaqueId
+    ) -> object | None: ...
+
+    async def get_by_token_hash(
+        self, session: AsyncSession, token_hash: str, *, for_update: bool = False
     ) -> object | None: ...
 
     def to_domain(self, record: object) -> Session: ...

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from fastapi import APIRouter
 
+from app.api.security.patient_authentication import PatientAuthenticator
 from app.modules.encounters.public import ENCOUNTERS_LIST, ListEncountersCapability
 from app.modules.patients.public import (
     PATIENTS_FACT_READ,
@@ -66,13 +67,13 @@ def build_provenance_service(
 
 
 def build_provenance_registration(
-    *, service: "ProvenanceTimelineService"
+    *, service: "ProvenanceTimelineService", authenticator: PatientAuthenticator
 ) -> ModuleRegistration[APIRouter]:
     from app.modules.provenance.api import build_timeline_router
 
     return ModuleRegistration(
         manifest=PROVENANCE_MANIFEST,
-        routers=(build_timeline_router(timeline=service),),
+        routers=(build_timeline_router(timeline=service, authenticator=authenticator),),
         capability_bindings=(PROVENANCE_READ.bind(service), PATIENTS_TIMELINE.bind(service)),
     )
 

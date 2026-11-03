@@ -48,14 +48,11 @@ CONSENT_MANIFEST = ModuleManifest(
 
 def build_consent_registration(
     *,
-    database: DatabaseRuntime | None,
+    database: DatabaseRuntime | None = None,
+    service: ConsentService | None = None,
     clock: Callable[[], datetime] = utc_now,
 ) -> ModuleRegistration[APIRouter]:
-    service = ConsentService(
-        database=database,
-        outbox=OutboxRepository(),
-        clock=clock,
-    )
+    service = service or build_consent_service(database=database, clock=clock)
     router = build_consent_router(
         grant=service,
         reader=service,
@@ -75,6 +72,12 @@ def build_consent_registration(
     )
 
 
+def build_consent_service(
+    *, database: DatabaseRuntime | None, clock: Callable[[], datetime] = utc_now
+) -> ConsentService:
+    return ConsentService(database=database, outbox=OutboxRepository(), clock=clock)
+
+
 __all__ = [
     "CONSENT_CHECK",
     "CONSENT_GRANT",
@@ -82,5 +85,7 @@ __all__ = [
     "CONSENT_MANIFEST",
     "CONSENT_READ",
     "CONSENT_REVOKE",
+    "ConsentService",
+    "build_consent_service",
     "build_consent_registration",
 ]

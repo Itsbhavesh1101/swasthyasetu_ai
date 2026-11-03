@@ -142,7 +142,7 @@ jobs:
       - name: Inspect migration revision
         run: |
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
-            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "p7a_0007"
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "patient_hub_0008"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
             "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='outbox_events'")" = "16"
@@ -163,7 +163,7 @@ jobs:
             "SELECT data_type FROM information_schema.columns WHERE table_schema='public' AND table_name='consent_records' AND column_name='scope'")" = "jsonb"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events','consent_records','patients','patient_demographics','patient_identifiers','encounters','clinical_facts','clinical_fact_provenance','medications','allergies','observations','clinical_intakes','intake_answers','questionnaire_instances')")" = "17"
+            "SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('actors','actor_roles','sessions','outbox_events','consent_records','patients','patient_demographics','patient_identifiers','encounters','clinical_facts','clinical_fact_provenance','medications','allergies','observations','clinical_intakes','intake_answers','questionnaire_instances','patient_accounts','patient_documents')")" = "19"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
             "SELECT count(*) FROM pg_constraint WHERE conname IN ('fk_actor_roles_actor_id_actors','fk_sessions_actor_id_actors','ck_actors_actor_type_supported','ck_actors_status_supported','ck_actor_roles_role_code_supported')")" = "5"
@@ -271,6 +271,8 @@ jobs:
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
       SWASTHYASETU_BACKEND_URL: http://127.0.0.1:8000
+      SWASTHYASETU_PATIENT_DOCUMENTS__ENABLED: "true"
+      SWASTHYASETU_PATIENT_DOCUMENTS__ROOT: /tmp/swasthyasetu-e2e-documents
       SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake","engineering_demo_wave1","engineering_document_demo_wave2","engineering_summary_demo_wave3","engineering_referral_demo_wave4","engineering_mannsetu_demo_wave5","engineering_self_care_demo_wave6","engineering_fhir_demo_wave7","engineering_abdm_demo_wave8"]'
     steps:
       - name: Check out repository
@@ -331,7 +333,7 @@ jobs:
         shell: bash
         run: |
           cd backend
-          nohup uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-playwright.log 2>&1 &
+          nohup uv run uvicorn e2e_app:app --host 127.0.0.1 --port 8000 > ../backend-playwright.log 2>&1 &
           cd ..
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8000/health/ready > /tmp/ready.json; then

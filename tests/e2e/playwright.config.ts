@@ -6,7 +6,8 @@ const adminPort = Number(process.env.SWASTHYASETU_E2E_ADMIN_PORT ?? "3102");
 
 export default defineConfig({
   testDir: ".",
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   reporter: "html",
@@ -16,7 +17,7 @@ export default defineConfig({
   projects: [
     {
       name: "patient-web",
-      testMatch: /patient\.spec\.ts/,
+      testMatch: /patient(?:-[a-z-]+)?\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], baseURL: `http://127.0.0.1:${patientPort}` },
     },
     {

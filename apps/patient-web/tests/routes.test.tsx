@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import ErrorPage from "../app/error";
 import DocumentsPage from "../app/documents/page";
@@ -10,6 +10,8 @@ import ResultsPage from "../app/results/page";
 import UrgentHelpPage from "../app/urgent-help/page";
 
 describe("patient route states", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
   it("uses safe urgent-help wording without invented contact data", () => {
     const { container } = render(<UrgentHelpPage />);
 
@@ -21,12 +23,17 @@ describe("patient route states", () => {
     expect(container).not.toHaveTextContent(/\+?\d[\d\s()-]{6,}/);
   });
 
-  it("renders future routes as unavailable with a natively disabled control", () => {
+  it("protects the document vault when no patient is signed in", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(Response.json({ state: "ANONYMOUS" }, { status: 401 })),
+    );
     render(<DocumentsPage />);
 
-    expect(screen.getByText("Not available yet")).toBeVisible();
-    expect(screen.getByText(/document upload and review are not enabled/i)).toBeVisible();
-    expect(screen.getByRole("button", { name: "Continue unavailable" })).toBeDisabled();
+    expect(
+      await screen.findByRole("heading", { name: "Sign in to use your document vault" }),
+    ).toBeVisible();
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/login");
   });
 
   it("keeps results honest and unavailable without a safety assessment claim", () => {

@@ -25,9 +25,7 @@ def test_plan_is_deterministic_loopback_only_and_non_mutating() -> None:
 
     assert first == second
     assert first["urls"] == {
-        "admin": "http://127.0.0.1:3102",
         "backend": "http://127.0.0.1:8000",
-        "clinician": "http://127.0.0.1:3101",
         "patient": "http://127.0.0.1:3100",
     }
     assert first["compose_project"] == "swasthyasetu-local"
@@ -67,21 +65,11 @@ def test_runtime_state_round_trip_is_atomic_and_minimal(
     state_file = tmp_path / ".demo" / "runtime.json"
     monkeypatch.setattr(launcher, "RUNTIME_FILE", state_file)
 
-    launcher.write_runtime_state(
-        [
-            {"name": "patient", "pid": 101},
-            {"name": "clinician", "pid": 102},
-            {"name": "admin", "pid": 103},
-        ]
-    )
+    launcher.write_runtime_state([{"name": "patient", "pid": 101}])
 
     assert launcher.load_runtime_state() == {
         "repository": str(launcher.ROOT),
-        "processes": [
-            {"name": "patient", "pid": 101},
-            {"name": "clinician", "pid": 102},
-            {"name": "admin", "pid": 103},
-        ],
+        "processes": [{"name": "patient", "pid": 101}],
     }
     assert not state_file.with_suffix(".tmp").exists()
 
@@ -117,3 +105,45 @@ def test_windows_corepack_command_uses_cmd_call_without_shell_interpolation(
         "install",
         "--frozen-lockfile",
     ]
+
+
+def test_status_uses_database_aware_backend_readiness(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = _load_launcher()
+    checked: list[str] = []
+
+    def available(url: str) -> bool:
+        checked.append(url)
+        return True
+
+    monkeypatch.setattr(launcher, "_url_available", available)
+    monkeypatch.setattr(launcher, "RUNTIME_FILE", Path("missing-runtime-state.json"))
+
+    assert launcher.status() == {
+        "runtime_state_present": False,
+        "services": {"backend": True, "patient": True},
+    }
+    assert checked == [
+        "http://127.0.0.1:8000/health/ready",
+        "http://127.0.0.1:3100",
+    ]
+
+
+def test_local_configuration_is_created_once_without_overwriting(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    launcher = _load_launcher()
+    example = tmp_path / ".env.example"
+    local = tmp_path / ".env"
+    example.write_text("SAFE=example\n", encoding="utf-8")
+    monkeypatch.setattr(launcher, "EXAMPLE_ENV", example)
+    monkeypatch.setattr(launcher, "LOCAL_ENV", local)
+
+    launcher.prepare_local_configuration()
+    assert local.read_text(encoding="utf-8") == "SAFE=example\n"
+
+    local.write_text("SAFE=custom\n", encoding="utf-8")
+    launcher.prepare_local_configuration()
+    assert local.read_text(encoding="utf-8") == "SAFE=custom\n"

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { OnboardingReadiness } from "../../components/onboarding-readiness";
+import { AccountIntakeReadiness } from "../../components/account-intake-readiness";
 import { PageHeader } from "../../components/ui-primitives";
 
 export const metadata: Metadata = { title: "Health journey" };
@@ -10,9 +10,9 @@ export default function EncounterPage() {
     <div className="page-stack page-stack--narrow">
       <PageHeader
         title="Health journey"
-        description="Check your private session and consent, then start a structured intake draft."
+        description="Use your patient account to start or resume a structured intake draft."
       />
-      <OnboardingReadiness />
+      <AccountIntakeReadiness />
     </div>
   );
 }

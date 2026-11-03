@@ -143,6 +143,7 @@ class ConsentService:
         subject_id: OpaqueId,
         purpose: ConsentPurpose,
         required_scope: ConsentScope,
+        required_notice_version: NoticeVersion | None = None,
     ) -> bool:
         database = self._require_database()
         now = self._now()
@@ -157,8 +158,29 @@ class ConsentService:
                 (record := self._repository.to_domain(candidate)).status is ConsentStatus.GRANTED
                 and (record.expires_at is None or now < record.expires_at)
                 and record.scope.covers(required_scope)
+                and (
+                    required_notice_version is None
+                    or record.notice_version == required_notice_version
+                )
                 for candidate in candidates
             )
+
+    async def has_active_consent(
+        self,
+        *,
+        subject_type: ConsentSubjectType,
+        subject_id: OpaqueId,
+        purpose: ConsentPurpose,
+        required_scope: ConsentScope,
+        notice_version: NoticeVersion,
+    ) -> bool:
+        return await self.has_consent(
+            subject_type=subject_type,
+            subject_id=subject_id,
+            purpose=purpose,
+            required_scope=required_scope,
+            required_notice_version=notice_version,
+        )
 
     async def require_consent(
         self,
@@ -167,12 +189,14 @@ class ConsentService:
         subject_id: OpaqueId,
         purpose: ConsentPurpose,
         required_scope: ConsentScope,
+        required_notice_version: NoticeVersion | None = None,
     ) -> None:
         if not await self.has_consent(
             subject_type=subject_type,
             subject_id=subject_id,
             purpose=purpose,
             required_scope=required_scope,
+            required_notice_version=required_notice_version,
         ):
             raise ApplicationError(
                 code=ErrorCode.CONSENT_REQUIRED,

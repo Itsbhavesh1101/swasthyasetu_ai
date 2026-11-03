@@ -39,11 +39,14 @@ def test_new_modules_have_only_pure_document_contract_dependencies() -> None:
         assert all(not module.startswith("app.") or module in allowed for module in imported)
 
 
-def test_no_runtime_document_api_or_public_activation() -> None:
+def test_synthetic_document_candidates_have_no_runtime_activation() -> None:
     assert not (ROOT / "app/modules/documents/public.py").exists()
     assert not (ROOT / "app/modules/documents/application.py").exists()
-    paths = app.openapi()["paths"]
-    assert not any("document" in path.lower() for path in paths)
+    document_paths = [path for path in app.openapi()["paths"] if "document" in path.casefold()]
+    assert document_paths
+    assert all(
+        path.startswith("/api/v1/patients/{patient_id}/documents") for path in document_paths
+    )
     source = (ROOT / "app/main.py").read_text(encoding="utf-8")
     assert "documents.candidates" not in source
     assert "documents.evidence" not in source
@@ -65,9 +68,12 @@ def test_no_executable_or_value_extraction_surface() -> None:
         assert ".text" not in source
 
 
-def test_no_schema_or_dependency_change() -> None:
+def test_p11_candidate_contracts_add_no_candidate_schema() -> None:
     versions = tuple((ROOT / "migrations/versions").glob("*.py"))
-    assert len(versions) == 7
+    migration_source = "\n".join(item.read_text(encoding="utf-8") for item in versions)
+
+    assert "document_candidates" not in migration_source
+    assert "detached_evidence" not in migration_source
     assert "p7a_0007" in (ROOT / "alembic.ini").read_text(encoding="utf-8") or any(
         "p7a_0007" in item.read_text(encoding="utf-8") for item in versions
     )

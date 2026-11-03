@@ -112,6 +112,7 @@ class CheckConsentCapability(Protocol):
         subject_id: OpaqueId,
         purpose: ConsentPurpose,
         required_scope: ConsentScope,
+        required_notice_version: NoticeVersion | None = None,
     ) -> bool: ...
 
     async def require_consent(
@@ -121,4 +122,5 @@ class CheckConsentCapability(Protocol):
         subject_id: OpaqueId,
         purpose: ConsentPurpose,
         required_scope: ConsentScope,
+        required_notice_version: NoticeVersion | None = None,
     ) -> None: ...

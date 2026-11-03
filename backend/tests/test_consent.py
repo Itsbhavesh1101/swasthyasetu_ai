@@ -237,8 +237,11 @@ def test_default_application_registers_consent_and_exposes_no_public_check_route
         "consent",
         "encounters",
         "identity",
+        "patient_accounts",
+        "patient_documents",
         "patients",
         "provenance",
+        "self_care",
         "sessions",
     )
     for key in (CONSENT_GRANT, CONSENT_READ, CONSENT_LIST, CONSENT_REVOKE, CONSENT_CHECK):

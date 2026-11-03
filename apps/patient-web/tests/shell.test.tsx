@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 
 import { PatientShell } from "../components/patient-shell";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
 describe("patient shell", () => {
   it("provides landmarks, navigation, skip target, and persistent urgent help", () => {
@@ -27,7 +30,7 @@ describe("patient shell", () => {
     );
   });
 
-  it("keeps planned features out of active primary navigation", () => {
+  it("exposes only the working patient product in primary navigation", () => {
     render(
       <PatientShell>
         <h1>Test page</h1>
@@ -36,8 +39,15 @@ describe("patient shell", () => {
 
     const navigation = screen.getByRole("navigation", { name: "Patient navigation" });
     expect(navigation).toHaveTextContent("Home");
-    expect(navigation).toHaveTextContent("Start");
-    expect(navigation).not.toHaveTextContent("Documents");
+    expect(navigation).toHaveTextContent("Dashboard");
+    expect(navigation).toHaveTextContent("Profile");
+    expect(navigation).toHaveTextContent("History");
+    expect(navigation).toHaveTextContent("Timeline");
+    expect(navigation).toHaveTextContent("Documents");
+    expect(navigation).toHaveTextContent("Health journey");
+    expect(navigation).toHaveTextContent("Home guidance");
+    expect(navigation).not.toHaveTextContent("Sign in");
     expect(navigation).not.toHaveTextContent("Results");
+    expect(navigation).not.toHaveTextContent("MannSetu");
   });
 });

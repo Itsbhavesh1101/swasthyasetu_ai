@@ -28,7 +28,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship, selectinload
 
-from app.modules.patients.contracts import FactCursor, PatientAlreadyExistsError
+from app.modules.patients.contracts import (
+    FactCursor,
+    PatientAlreadyExistsError,
+    PatientProfileConflictError,
+)
 from app.modules.patients.persistence import (
     canonical_label,
     deserialize_clinical_value,
@@ -406,7 +410,13 @@ class PostgresPatientRepository:
         record = (await session.execute(statement)).scalar_one_or_none()
         return None if record is None else self.to_domain(record)
 
-    async def save(self, session: AsyncSession, patient: Patient) -> Patient:
+    async def save(
+        self,
+        session: AsyncSession,
+        patient: Patient,
+        *,
+        expected_updated_at: datetime,
+    ) -> Patient:
         statement = (
             select(PatientRecord)
             .options(
@@ -417,8 +427,8 @@ class PostgresPatientRepository:
             .with_for_update()
         )
         record = (await session.execute(statement)).scalar_one_or_none()
-        if record is None:
-            raise LookupError("patient record does not exist")
+        if record is None or record.updated_at != expected_updated_at:
+            raise PatientProfileConflictError
         record.status = patient.status.value
         record.preferred_language = patient.preferred_language
         record.updated_at = patient.updated_at

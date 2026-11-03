@@ -1,9 +1,8 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ConsentPage from "../app/consent/page";
-import EncounterPage from "../app/encounter/page";
 import LanguagePage from "../app/language/page";
 import StartPage from "../app/start/page";
 
@@ -149,55 +148,5 @@ describe("P6-B onboarding UI", () => {
       expect.objectContaining({ method: "POST" }),
     );
     expect(fetchSpy).not.toHaveBeenCalledWith("/api/onboarding/session/close", expect.anything());
-  });
-
-  it.each([
-    [{ state: "NO_SESSION" }, null, /start a private session/i, "/language"],
-    [{ state: "ACTIVE" }, { state: "NOT_GRANTED" }, /consent is still needed/i, "/consent"],
-    [{ state: "ACTIVE" }, { state: "GRANTED" }, /private session and consent are ready/i, null],
-  ])(
-    "shows the governed encounter readiness state",
-    async (session, consent, message, expectedHref) => {
-      const fetchSpy = vi.fn().mockResolvedValueOnce(Response.json(session));
-      if (consent) fetchSpy.mockResolvedValueOnce(Response.json(consent));
-      vi.stubGlobal("fetch", fetchSpy);
-      render(<EncounterPage />);
-
-      expect(await screen.findByText(message)).toBeVisible();
-      if (expectedHref === null) {
-        expect(screen.getByRole("button", { name: /start intake/i })).toBeVisible();
-      } else {
-        expect(screen.getByText(/clinical intake is not available/i)).toBeVisible();
-      }
-      if (expectedHref) {
-        expect(screen.getByRole("link", { name: /continue/i })).toHaveAttribute(
-          "href",
-          expectedHref,
-        );
-        if (expectedHref === "/consent") {
-          expect(screen.getByRole("button", { name: /end private session/i })).toBeVisible();
-        }
-      } else {
-        expect(screen.getByRole("button", { name: /end private session/i })).toBeVisible();
-      }
-    },
-  );
-
-  it("shows degraded readiness and lets an active session be ended", async () => {
-    const user = userEvent.setup();
-    const fetchSpy = vi
-      .fn()
-      .mockResolvedValueOnce(Response.json({ state: "ACTIVE" }))
-      .mockResolvedValueOnce(Response.json({ state: "GRANTED" }))
-      .mockResolvedValueOnce(Response.json({ state: "CLOSED" }));
-    vi.stubGlobal("fetch", fetchSpy);
-    render(<EncounterPage />);
-
-    await user.click(await screen.findByRole("button", { name: /end private session/i }));
-    await waitFor(() => expect(push).toHaveBeenCalledWith("/language"));
-    expect(fetchSpy).toHaveBeenLastCalledWith(
-      "/api/onboarding/session/close",
-      expect.objectContaining({ method: "POST" }),
-    );
   });
 });

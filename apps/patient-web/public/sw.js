@@ -1,11 +1,22 @@
 const CACHE_PREFIX = "swasthyasetu-patient-shell-";
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_NAME = `${CACHE_PREFIX}v2`;
 const APPROVED_SHELL_PATHS = Object.freeze([
   "/offline",
   "/manifest.webmanifest",
   "/icons/icon-192.png",
   "/icons/icon-512.png",
   "/icons/icon-maskable-512.png",
+]);
+const PRIVATE_ROUTE_PREFIXES = Object.freeze([
+  "/api/",
+  "/dashboard",
+  "/profile",
+  "/history",
+  "/timeline",
+  "/documents",
+  "/encounter",
+  "/intake",
+  "/guidance",
 ]);
 
 function safeShellRequest(path) {
@@ -50,7 +61,7 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
   if (!url.protocol.startsWith("http") || url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith("/api/")) return;
+  if (PRIVATE_ROUTE_PREFIXES.some((prefix) => url.pathname.startsWith(prefix))) return;
 
   if (request.mode === "navigate") {
     event.respondWith(fetch(request).catch(() => caches.match("/offline")));

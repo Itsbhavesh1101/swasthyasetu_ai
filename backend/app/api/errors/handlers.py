@@ -39,7 +39,7 @@ def _protect_sensitive_response(request: Request, response: JSONResponse) -> JSO
     route = str(getattr(request.scope.get("route"), "path", ""))
     if any(
         f"/{segment}" in route
-        for segment in ("sessions", "consents", "patients", "encounters", "intakes")
+        for segment in ("accounts", "sessions", "consents", "patients", "encounters", "intakes")
     ):
         response.headers["Cache-Control"] = "no-store"
     return response

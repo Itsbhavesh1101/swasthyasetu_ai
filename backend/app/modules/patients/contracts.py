@@ -6,7 +6,7 @@ from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.patients.clinical import ClinicalFact, FactType
+from app.modules.patients.clinical import ClinicalFact, ClinicalValue, FactSupersession, FactType
 from app.modules.patients.domain import Patient, PatientDemographics
 from app.modules.provenance.domain import VerificationState
 from app.shared.types import OpaqueId
@@ -14,6 +14,10 @@ from app.shared.types import OpaqueId
 
 class PatientAlreadyExistsError(RuntimeError):
     """Repository-level uniqueness conflict without persistence leakage."""
+
+
+class PatientProfileConflictError(RuntimeError):
+    """Repository-level optimistic write conflict without persistence leakage."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +46,40 @@ class ReadPatientCapability(Protocol):
     async def get_patient(self, patient_id: OpaqueId) -> Patient: ...
 
 
+class UpdatePatientCapability(Protocol):
+    async def update_profile(
+        self,
+        *,
+        patient_id: OpaqueId,
+        expected_updated_at: datetime,
+        preferred_language: str | None,
+        demographics: PatientDemographics | None,
+    ) -> Patient: ...
+
+
+class WritePatientFactCapability(Protocol):
+    async def add_patient_fact(
+        self,
+        *,
+        patient_id: OpaqueId,
+        actor_id: OpaqueId,
+        fact_type: FactType,
+        value: ClinicalValue,
+        effective_time: datetime | None,
+    ) -> ClinicalFact: ...
+
+    async def supersede_patient_fact(
+        self,
+        *,
+        patient_id: OpaqueId,
+        actor_id: OpaqueId,
+        expected_current_id: OpaqueId,
+        fact_type: FactType,
+        value: ClinicalValue,
+        effective_time: datetime | None,
+    ) -> FactSupersession: ...
+
+
 class ReadFactCapability(Protocol):
     async def get_fact(self, fact_id: OpaqueId) -> ClinicalFact: ...
 
@@ -63,10 +101,21 @@ class ListFactsCapability(Protocol):
 class PatientRepository(Protocol):
     async def add(self, session: AsyncSession, patient: Patient) -> object: ...
     async def get(self, session: AsyncSession, patient_id: OpaqueId) -> Patient | None: ...
+    async def save(
+        self,
+        session: AsyncSession,
+        patient: Patient,
+        *,
+        expected_updated_at: datetime,
+    ) -> Patient: ...
 
 
 class ClinicalFactRepository(Protocol):
+    async def add(self, session: AsyncSession, fact: ClinicalFact) -> object: ...
     async def get(self, session: AsyncSession, fact_id: OpaqueId) -> ClinicalFact | None: ...
+    async def persist_supersession(
+        self, session: AsyncSession, supersession: FactSupersession
+    ) -> FactSupersession: ...
     async def list_for_patient(
         self,
         session: AsyncSession,

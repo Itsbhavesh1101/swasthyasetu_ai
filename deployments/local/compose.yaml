@@ -32,11 +32,20 @@ services:
       SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake","engineering_demo_wave1","engineering_document_demo_wave2","engineering_summary_demo_wave3","engineering_referral_demo_wave4","engineering_mannsetu_demo_wave5","engineering_self_care_demo_wave6","engineering_fhir_demo_wave7","engineering_abdm_demo_wave8"]'
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB must be set}
+      SWASTHYASETU_PATIENT_ACCOUNTS__AUTHENTICATED_TTL_MINUTES: ${AUTHENTICATED_TTL_MINUTES:-1440}
+      SWASTHYASETU_PATIENT_DOCUMENTS__ENABLED: "true"
+      SWASTHYASETU_PATIENT_DOCUMENTS__ROOT: /var/lib/swasthyasetu/documents
+      SWASTHYASETU_PATIENT_DOCUMENTS__MAX_BYTES: ${PATIENT_DOCUMENT_MAX_BYTES:-10485760}
+      SWASTHYASETU_GUIDANCE__ENABLED: ${GEMINI_ENABLED:-false}
+      SWASTHYASETU_GUIDANCE__API_KEY: ${GEMINI_API_KEY:-}
+      SWASTHYASETU_GUIDANCE__MODEL: ${GEMINI_MODEL:-}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-8000}:8000"
     depends_on:
       postgres:
         condition: service_healthy
+    volumes:
+      - patient_documents:/var/lib/swasthyasetu/documents
     healthcheck:
       test:
         [
@@ -53,3 +62,5 @@ services:
 volumes:
   postgres_data:
     name: swasthyasetu-local-postgres-data
+  patient_documents:
+    name: swasthyasetu-local-patient-documents

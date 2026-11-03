@@ -88,12 +88,14 @@ class PostgresSessionRepository:
         token_hash: str,
         created_at: datetime,
         expires_at: datetime,
+        actor_id: OpaqueId | None = None,
+        patient_id: OpaqueId | None = None,
     ) -> SessionRecord:
         record = SessionRecord(
             id=session_id.value,
             session_type=session_type.value,
-            actor_id=None,
-            patient_id=None,
+            actor_id=None if actor_id is None else actor_id.value,
+            patient_id=None if patient_id is None else patient_id.value,
             language_preference=language_preference,
             status=SessionStatus.ACTIVE.value,
             token_hash=token_hash,
@@ -118,6 +120,14 @@ class PostgresSessionRepository:
         )
         return (await session.execute(statement)).scalar_one_or_none()
 
+    async def get_by_token_hash(
+        self, session: AsyncSession, token_hash: str, *, for_update: bool = False
+    ) -> SessionRecord | None:
+        statement = select(SessionRecord).where(SessionRecord.token_hash == token_hash)
+        if for_update:
+            statement = statement.with_for_update()
+        return (await session.execute(statement)).scalar_one_or_none()
+
     def to_domain(self, record: object) -> Session:
         if not isinstance(record, SessionRecord):
             raise TypeError("session repository received an unexpected record")
@@ -130,6 +140,8 @@ class PostgresSessionRepository:
             expires_at=record.expires_at,
             closed_at=record.closed_at,
             updated_at=record.updated_at,
+            actor_id=None if record.actor_id is None else OpaqueId(record.actor_id),
+            patient_id=None if record.patient_id is None else OpaqueId(record.patient_id),
         )
 
     def token_hash(self, record: object) -> str:

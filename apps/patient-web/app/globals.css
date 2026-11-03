@@ -233,6 +233,7 @@ a {
 
 .patient-navigation {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.25rem;
   padding-bottom: 0.65rem;
 }
@@ -246,6 +247,7 @@ a {
   padding: 0.5rem 0.85rem;
   font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .navigation-link:hover,
@@ -464,9 +466,126 @@ a {
 }
 
 .onboarding-form,
-.consent-stack {
+.consent-stack,
+.profile-form {
   display: grid;
   gap: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.profile-form label,
+.account-form label {
+  display: grid;
+  gap: 0.4rem;
+  color: var(--patient-text);
+  font-weight: 750;
+}
+
+.profile-form input,
+.profile-form select,
+.account-form input,
+.history-form input,
+.history-form select,
+.history-form textarea {
+  width: 100%;
+  min-height: var(--patient-touch);
+  border: 1px solid var(--patient-border);
+  border-radius: var(--patient-radius-sm);
+  background: white;
+  color: var(--patient-text);
+  padding: 0.7rem 0.8rem;
+  font: inherit;
+}
+
+.history-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.history-form label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 750;
+}
+
+.history-list {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--patient-border);
+  padding-block: 1rem;
+}
+
+.history-item h3,
+.history-item p {
+  margin: 0;
+}
+
+.history-item--previous {
+  color: var(--patient-muted);
+}
+
+.document-upload,
+.document-upload label,
+.document-list,
+.document-list li,
+.document-list li > div:first-child {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.document-upload label {
+  font-weight: 750;
+}
+.document-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.document-list li {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-top: 1px solid var(--patient-border);
+  padding-block: 1rem;
+}
+.document-list small {
+  color: var(--patient-muted);
+}
+
+.guidance-form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.question-preview,
+.safety-note {
+  border-left: 0.25rem solid var(--patient-primary);
+  padding-left: 0.9rem;
+}
+
+.guidance-result a {
+  overflow-wrap: anywhere;
+}
+
+.form-message,
+.welcome-line {
+  margin: 0;
+  color: var(--patient-primary-strong);
+  font-weight: 800;
 }
 
 .choice-group {
@@ -592,6 +711,7 @@ a {
 
 @media (max-width: 47rem) {
   .feature-grid,
+  .form-grid,
   .footer-content {
     grid-template-columns: 1fr;
   }

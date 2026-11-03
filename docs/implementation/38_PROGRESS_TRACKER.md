@@ -4000,21 +4000,48 @@ the canonical P22-P24 readiness documents.
 ```text
 Status: COMPLETE for local synthetic college demonstration packaging.
 Implementation: py scripts/demo.py start provides one bounded launcher for the existing local
-PostgreSQL/backend Compose project and all three Next.js applications. It verifies prerequisites and
+PostgreSQL/backend Compose project and the patient Next.js application. It verifies prerequisites and
 loopback ports, installs the locked frontend workspace, applies migrations explicitly, waits for
-backend/frontend readiness, records only validated launcher-owned PIDs, and writes separate ignored
-logs. plan and status are read-only; stop terminates only validated frontend process trees and the
-named Compose project while preserving the synthetic database volume.
+database-aware backend and patient readiness, records only the validated launcher-owned patient PID,
+and writes an ignored log. plan and status are read-only; stop terminates only that validated process
+tree and the named Compose project while preserving the synthetic data volumes.
 Safety boundary: no broad process discovery, Docker prune, volume deletion, public bind, production
 environment, seed patient data, credential generation or hidden feature activation is performed.
 Runtime state is repository-bound, minimal, atomically written and ignored by Git. Failed startup
 cleans recorded frontend processes and the named Compose project.
-Documentation: docs/DEMO_GUIDE.md provides the exact onboarding/intake/result walkthrough, clinician
-and administrator checks, offline P18-P24 replays, honest synthetic limitations, status command and
-safe shutdown procedure.
+Documentation: docs/DEMO_GUIDE.md provides the account, profile, medical-history, timeline, document,
+intake and optional grounded-guidance walkthrough, honest limitations, status command and safe
+shutdown procedure.
 Verification: launcher plan/state unit tests, full backend/frontend regression, all three production
 builds, migration head, Compose configuration, browser journeys and security CI cover the packaged
 path. No dependency, lockfile, schema or migration changed.
 Next: use the launcher and guide for the college demonstration. Real clinical, institutional,
 provider, pilot and production work remains governed by the canonical readiness restrictions.
+```
+
+---
+
+# 138. Patient Health Hub — College Demo Product
+
+```text
+Status: IMPLEMENTED for the local synthetic college demonstration; not production or clinical
+software.
+Product: a patient can register with name/email/password, sign in, maintain a private profile and
+typed medical history, preserve correction history, review a longitudinal timeline, store validated
+PDF/JPEG/PNG documents, and complete a consented structured intake. Optional Gemini guidance is
+disabled by default, requires exact external-processing consent, validates official-source citations,
+and fails closed for diagnostic, prescription, dosage, emergency, or otherwise high-risk requests.
+Identity and ownership: opaque account sessions bind one actor and patient. All private APIs derive
+the patient from the trusted session and enforce self-subject access; arbitrary patient identifiers
+cannot redirect an operation to another account.
+Local operation: py scripts/demo.py start launches PostgreSQL, applies migrations, starts the backend,
+waits for database-aware readiness, and launches only the patient application. PostgreSQL and
+document bytes use separate preserved named volumes. status probes /health/ready; stop targets only
+launcher-owned resources.
+Browser privacy: server-only HttpOnly/SameSite=Strict cookies; no sensitive browser persistence; the
+service worker caches only approved public shell resources and excludes API and private product data.
+Primary navigation: Home, Dashboard, Profile, History, Timeline, Documents, Health journey, and Home
+guidance. Historical engineering previews and clinician/admin shells are not primary product routes.
+Deferred: MannSetu diagnosis, real hospital/admin workflows, production deployment, and any claim of
+diagnosis, treatment, medical advice, or emergency service.
 ```

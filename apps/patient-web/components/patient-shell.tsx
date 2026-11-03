@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { PatientNavigation } from "./patient-navigation";
+import { AccountMenu } from "./account-menu";
 import { UrgentHelpLink } from "./urgent-help-link";
 
 export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -22,6 +23,7 @@ export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
             </span>
           </Link>
           <UrgentHelpLink />
+          <AccountMenu />
         </div>
         <div className="shell-container">
           <PatientNavigation />
@@ -34,11 +36,11 @@ export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
         <div className="shell-container footer-content">
           <div>
             <strong>SwasthyaSetu Patient</strong>
-            <p>A respectful, privacy-conscious place to begin.</p>
+            <p>Your private health history, documents, and guided intake in one place.</p>
           </div>
           <p>
-            This early shell does not provide medical advice, diagnosis, or verified emergency
-            contacts.
+            This college demonstration supports personal record keeping. It does not replace a
+            doctor, diagnosis, treatment, or emergency care.
           </p>
         </div>
       </footer>
