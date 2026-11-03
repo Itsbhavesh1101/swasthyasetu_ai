@@ -26,11 +26,7 @@ RUNTIME_FILE = RUNTIME_DIR / "runtime.json"
 LOG_DIR = RUNTIME_DIR / "logs"
 
 BACKEND_URL = "http://127.0.0.1:8000"
-FRONTENDS = (
-    ("patient", "@swasthyasetu/patient-web", 3100),
-    ("clinician", "@swasthyasetu/clinician-web", 3101),
-    ("admin", "@swasthyasetu/admin-web", 3102),
-)
+FRONTENDS = (("patient", "@swasthyasetu/patient-web", 3100),)
 ALLOWED_PROCESS_NAMES = frozenset(name for name, _, _ in FRONTENDS)
 
 
@@ -46,9 +42,7 @@ def build_plan() -> dict[str, object]:
         "database_reset": False,
         "synthetic_only": True,
         "urls": {
-            "admin": "http://127.0.0.1:3102",
             "backend": BACKEND_URL,
-            "clinician": "http://127.0.0.1:3101",
             "patient": "http://127.0.0.1:3100",
         },
     }
@@ -134,6 +128,14 @@ def _run(command: Sequence[str], *, environment: dict[str, str] | None = None) -
 
 def _compose_environment_file() -> Path:
     return LOCAL_ENV if LOCAL_ENV.is_file() else EXAMPLE_ENV
+
+
+def prepare_local_configuration() -> None:
+    """Create the ignored local configuration once without replacing user values."""
+
+    if not LOCAL_ENV.exists():
+        LOCAL_ENV.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(EXAMPLE_ENV, LOCAL_ENV)
 
 
 def _compose_command(*arguments: str) -> list[str]:
@@ -255,7 +257,7 @@ def _stop_frontends(processes: object) -> None:
 
 
 def start() -> dict[str, object]:
-    """Start the local database, backend, and three frontend workspaces."""
+    """Start the local database, backend, and patient application."""
 
     docker = _require_command("docker")
     _require_command("corepack")
@@ -263,12 +265,11 @@ def start() -> dict[str, object]:
         raise DemoLauncherError("DOCKER_DESKTOP_NOT_READY")
     if RUNTIME_FILE.exists():
         raise DemoLauncherError("DEMO_ALREADY_STARTED")
-    occupied = [port for port in (8000, 3100, 3101, 3102) if not _port_is_available(port)]
+    occupied = [port for port in (8000, 3100) if not _port_is_available(port)]
     if occupied:
         raise DemoLauncherError("REQUIRED_PORT_UNAVAILABLE")
 
-    if not LOCAL_ENV.exists():
-        shutil.copyfile(EXAMPLE_ENV, LOCAL_ENV)
+    prepare_local_configuration()
     processes: list[dict[str, object]] = []
     try:
         _run(_corepack_command("install", "--frozen-lockfile"))
@@ -327,9 +328,13 @@ def status() -> dict[str, object]:
 
     urls = build_plan()["urls"]
     assert isinstance(urls, dict)
+    probes = {
+        "backend": f"{BACKEND_URL}/health/ready",
+        "patient": str(urls["patient"]),
+    }
     return {
         "runtime_state_present": RUNTIME_FILE.exists(),
-        "services": {name: _url_available(str(url)) for name, url in sorted(urls.items())},
+        "services": {name: _url_available(url) for name, url in sorted(probes.items())},
     }
 
 

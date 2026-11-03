@@ -50,6 +50,22 @@ It uses the official immutable
 `python:3.12.15-alpine3.23@sha256:1fd55c2f838c4f76262f9eeed899ff9168ea96ac383c61667d6f204325e1f169`
 base without mutating its operating-system package set during the build.
 
+## Run the patient product
+
+The repository-level launcher is the recommended college-demo path:
+
+```powershell
+py scripts/demo.py start
+```
+
+It starts this PostgreSQL/backend stack, explicitly applies migrations, and launches only the patient
+application at <http://127.0.0.1:3100>. `py scripts/demo.py status` checks `/health/ready`, not merely
+the backend port. `py scripts/demo.py stop` preserves both named volumes.
+
+Patient document storage is enabled for the local backend and uses the dedicated
+`swasthyasetu-local-patient-documents` volume. Gemini guidance remains disabled unless the ignored
+`.env` sets `GEMINI_ENABLED=true`, `GEMINI_API_KEY`, and `GEMINI_MODEL`. Never commit a real key.
+
 ## Stop or reset
 
 Stop containers while preserving the PostgreSQL volume:

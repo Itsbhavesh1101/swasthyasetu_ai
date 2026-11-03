@@ -4,8 +4,9 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "SwasthyaSetu Patient",
     short_name: "SwasthyaSetu",
-    description: "A clear, privacy-conscious starting point for the SwasthyaSetu patient journey.",
-    start_url: "/",
+    description:
+      "A private patient health hub for personal history, documents, intake, and wellness guidance.",
+    start_url: "/dashboard",
     scope: "/",
     display: "standalone",
     background_color: "#f5f7f2",

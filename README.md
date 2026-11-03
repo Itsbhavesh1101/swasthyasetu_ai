@@ -1,9 +1,17 @@
 # SwasthyaSetu AI
 
-Unified multimodal clinical-intake, mental-health triage, document-intelligence, care-navigation,
-self-care governance, interoperability, and ML/QML research platform.
+Patient-focused health record and wellness demonstration. A patient can register with name and
+email, sign in, maintain profile and medical history, store documents, complete a structured health
+intake, review a longitudinal timeline, and optionally request source-backed home-care information.
+The repository also preserves earlier synthetic research foundations, but they are not part of the
+primary patient product.
 
 ## Current status
+
+**The working college-demo product is the patient health hub.** It uses real PostgreSQL persistence,
+opaque server-side sessions, private patient-owned records, controlled document storage, and an
+optional Gemini integration that is disabled until configured. It is not production software and
+does not provide diagnosis, treatment, prescriptions, or emergency care.
 
 **P1 Repository + Tooling Foundation COMPLETE. P2 Shared Platform Kernel COMPLETE. P3 Persistence + Events + Jobs COMPLETE. P4 Identity + Sessions + Consent COMPLETE. P5 Patient + Encounter + Provenance COMPLETE. P6 Patient Web Foundation COMPLETE. P7 Structured Clinical Intake COMPLETE for the gated engineering flow; production clinical content approval remains deferred.**
 
@@ -134,7 +142,8 @@ On Windows with Docker Desktop, Python, and Node.js 24 available:
 py scripts/demo.py start
 ```
 
-This starts PostgreSQL, applies migrations, starts the backend, and launches the patient, clinician,
-and administrator applications on loopback. Use `py scripts/demo.py status` to inspect availability
-and `py scripts/demo.py stop` to stop only the recorded demo processes while preserving the synthetic
-database volume. The complete walkthrough and safety boundaries are in `docs/DEMO_GUIDE.md`.
+This starts PostgreSQL, applies migrations, starts the backend, and launches only the patient product
+at <http://127.0.0.1:3100>. Use `py scripts/demo.py status` to verify both the patient application and
+database-aware backend readiness. Use `py scripts/demo.py stop` to stop only launcher-owned resources
+while preserving the local database and document volumes. Account registration, medical history,
+document vault, intake, optional Gemini setup, and safety boundaries are in `docs/DEMO_GUIDE.md`.

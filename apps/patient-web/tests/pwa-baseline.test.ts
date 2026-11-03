@@ -9,6 +9,9 @@ import manifest from "../app/manifest";
 
 const applicationRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const serviceWorker = readFileSync(join(applicationRoot, "public", "sw.js"), "utf8");
+const approvedShellAllowlist = serviceWorker.match(
+  /const APPROVED_SHELL_PATHS = Object\.freeze\(\[[\s\S]*?\]\);/,
+)?.[0];
 
 function pngDimensions(path: string): [number, number] {
   const png = readFileSync(path);
@@ -22,7 +25,7 @@ describe("P6-C privacy-safe PWA baseline", () => {
     expect(value).toMatchObject({
       name: "SwasthyaSetu Patient",
       short_name: "SwasthyaSetu",
-      start_url: "/",
+      start_url: "/dashboard",
       scope: "/",
       display: "standalone",
       lang: "en",
@@ -51,19 +54,24 @@ describe("P6-C privacy-safe PWA baseline", () => {
   });
 
   it("uses an explicit generic-only shell allowlist", () => {
-    expect(serviceWorker).toContain("const CACHE_NAME = `${CACHE_PREFIX}v1`");
-    expect(serviceWorker).toContain('"/offline"');
-    expect(serviceWorker).toContain('"/manifest.webmanifest"');
-    expect(serviceWorker).toContain('"/icons/icon-192.png"');
-    expect(serviceWorker).not.toMatch(/["'`]\/consent["'`]/);
-    expect(serviceWorker).not.toMatch(/["'`]\/encounter["'`]/);
-    expect(serviceWorker).not.toContain("clinical_intake");
-    expect(serviceWorker).not.toContain("session_token");
+    expect(approvedShellAllowlist).toBeDefined();
+    expect(serviceWorker).toContain("const CACHE_NAME = `${CACHE_PREFIX}v2`");
+    expect(approvedShellAllowlist).toContain('"/offline"');
+    expect(approvedShellAllowlist).toContain('"/manifest.webmanifest"');
+    expect(approvedShellAllowlist).toContain('"/icons/icon-192.png"');
+    expect(approvedShellAllowlist).not.toMatch(/["'`]\/consent["'`]/);
+    expect(approvedShellAllowlist).not.toMatch(/["'`]\/encounter["'`]/);
+    expect(approvedShellAllowlist).not.toMatch(
+      /["'`]\/(?:dashboard|profile|history|timeline|documents|guidance)["'`]/,
+    );
+    expect(approvedShellAllowlist).not.toContain("clinical_intake");
+    expect(approvedShellAllowlist).not.toContain("session_token");
   });
 
   it("bypasses APIs and mutations and uses network-only navigation with offline fallback", () => {
     expect(serviceWorker).toContain('request.method !== "GET"');
-    expect(serviceWorker).toContain('url.pathname.startsWith("/api/")');
+    expect(serviceWorker).toContain('"/api/"');
+    expect(serviceWorker).toContain("PRIVATE_ROUTE_PREFIXES.some");
     expect(serviceWorker).toContain('request.mode === "navigate"');
     expect(serviceWorker).toContain('fetch(request).catch(() => caches.match("/offline"))');
     expect(serviceWorker).not.toMatch(/addEventListener\(["'](?:sync|push)["']/i);
