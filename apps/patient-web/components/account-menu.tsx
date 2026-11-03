@@ -16,7 +16,7 @@ export function AccountMenu() {
   if (account.state !== "AUTHENTICATED") return null;
   return (
     <button
-      className="button"
+      className="button button--account"
       onClick={async () => {
         const response = await fetch("/api/account/logout", { method: "POST" });
         if (response.ok) router.push("/login");

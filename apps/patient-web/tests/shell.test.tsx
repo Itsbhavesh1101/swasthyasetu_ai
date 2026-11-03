@@ -17,6 +17,7 @@ describe("patient shell", () => {
     );
 
     expect(screen.getByRole("banner")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Patient workspace" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Patient navigation" })).toBeInTheDocument();
     expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
     expect(screen.getByRole("contentinfo")).toBeInTheDocument();
@@ -28,6 +29,7 @@ describe("patient shell", () => {
       "href",
       "/urgent-help",
     );
+    expect(screen.getByText("Private health space")).toBeVisible();
   });
 
   it("exposes only the working patient product in primary navigation", () => {
