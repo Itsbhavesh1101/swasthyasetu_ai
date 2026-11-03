@@ -3,6 +3,7 @@
 import os
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
+from uuid import UUID
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -89,7 +90,7 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
         current = await client.get("/api/v1/accounts/me", headers=account_bearer)
         patient_id = OpaqueId.parse(current.json()["patient_id"])
         async with database_runtime.transaction() as transaction:
-            actor_value = (
+            actor_value: UUID = (
                 await transaction.execute(
                     text("SELECT actor_id FROM patient_accounts WHERE patient_id = :patient_id"),
                     {"patient_id": patient_id.value},

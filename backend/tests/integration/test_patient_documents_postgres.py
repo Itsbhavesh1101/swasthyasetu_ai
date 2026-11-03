@@ -6,11 +6,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.storage import LocalFilesystemObjectStorage
-from app.config import DatabaseSettings, PatientAccountSettings
+from app.config import DatabaseSettings, PatientAccountSettings, PatientDocumentSettings, Settings
+from app.main import create_app
 from app.modules.identity.infrastructure import PostgresActorRepository
 from app.modules.patient_accounts.application import PatientAccountService
 from app.modules.patient_accounts.contracts import RegisterPatient
@@ -144,3 +146,89 @@ async def test_metadata_failure_rolls_back_row_and_compensates_object(
         count = await transaction.scalar(select(func.count()).select_from(PatientDocumentRecord))
     assert count == 0
     assert list(root.rglob("*.pdf")) == []
+
+
+async def test_document_http_authentication_upload_download_idor_and_delete(
+    database_runtime: DatabaseRuntime, tmp_path: Path
+) -> None:
+    settings = Settings(
+        patient_documents=PatientDocumentSettings(
+            enabled=True,
+            root=tmp_path / "http-vault",
+            max_bytes=1024,
+        ),
+        _env_file=None,
+    )
+    application = create_app(settings, database=database_runtime)
+    async with AsyncClient(
+        transport=ASGITransport(app=application), base_url="http://test"
+    ) as client:
+        unauthenticated = await client.post(
+            f"/api/v1/patients/{OpaqueId.new()}/documents",
+            content=b"not even multipart",
+            headers={"Content-Type": "multipart/form-data; boundary=broken"},
+        )
+        assert unauthenticated.status_code == 401
+
+        account = await client.post(
+            "/api/v1/accounts/register",
+            json={
+                "email": "http-documents@example.com",
+                "display_name": "HTTP Document Patient",
+                "password": "correct horse battery staple",
+            },
+        )
+        bearer = {"Authorization": f"Bearer {account.json()['session_token']}"}
+        current = await client.get("/api/v1/accounts/me", headers=bearer)
+        patient_id = current.json()["patient_id"]
+        path = f"/api/v1/patients/{patient_id}/documents"
+
+        uploaded = await client.post(
+            path,
+            headers=bearer,
+            files={"file": ("synthetic report.pdf", PDF, "application/pdf")},
+        )
+        assert uploaded.status_code == 201
+        payload = uploaded.json()
+        assert set(payload) == {
+            "document_id",
+            "display_name",
+            "mime_type",
+            "byte_size",
+            "created_at",
+        }
+        assert uploaded.headers["cache-control"] == "no-store"
+        document_id = payload["document_id"]
+
+        listed = await client.get(path, headers=bearer)
+        downloaded = await client.get(f"{path}/{document_id}/content", headers=bearer)
+        cross = await client.get(
+            f"/api/v1/patients/{OpaqueId.new()}/documents/{document_id}/content",
+            headers=bearer,
+        )
+        assert listed.status_code == 200 and len(listed.json()["items"]) == 1
+        assert downloaded.status_code == 200 and downloaded.content == PDF
+        assert downloaded.headers["content-type"].startswith("application/pdf")
+        assert (
+            "filename*=UTF-8''synthetic%20report.pdf" in downloaded.headers["content-disposition"]
+        )
+        assert downloaded.headers["x-content-type-options"] == "nosniff"
+        assert cross.status_code == 403
+
+        oversized = await client.post(
+            path,
+            headers=bearer,
+            files={
+                "file": (
+                    "large.pdf",
+                    b"%PDF-" + b"x" * 1024,
+                    "application/pdf",
+                )
+            },
+        )
+        assert oversized.status_code == 413
+
+        deleted = await client.delete(f"{path}/{document_id}", headers=bearer)
+        unavailable = await client.get(f"{path}/{document_id}/content", headers=bearer)
+        assert deleted.status_code == 204
+        assert unavailable.status_code == 404

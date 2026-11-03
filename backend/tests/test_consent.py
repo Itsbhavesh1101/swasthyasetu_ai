@@ -238,6 +238,7 @@ def test_default_application_registers_consent_and_exposes_no_public_check_route
         "encounters",
         "identity",
         "patient_accounts",
+        "patient_documents",
         "patients",
         "provenance",
         "sessions",

@@ -8,8 +8,12 @@ from app.main import app
 ROOT = Path(__file__).parents[1]
 
 
-def test_no_document_runtime_route_or_registration() -> None:
-    assert all("documents" not in path for path in app.openapi()["paths"])
+def test_synthetic_ocr_has_no_runtime_route_or_registration() -> None:
+    document_paths = [path for path in app.openapi()["paths"] if "document" in path.casefold()]
+    assert document_paths
+    assert all(
+        path.startswith("/api/v1/patients/{patient_id}/documents") for path in document_paths
+    )
     assert not (ROOT / "app/modules/documents/public.py").exists()
     assert not (ROOT / "app/modules/documents/application.py").exists()
 

@@ -10,8 +10,12 @@ from app.modules.documents.registry import ProcessorDisposition, build_synthetic
 ROOT = Path(__file__).parents[1]
 
 
-def test_no_document_runtime_route_registration_or_public_surface() -> None:
-    assert all("documents" not in path for path in app.openapi()["paths"])
+def test_synthetic_document_ingestion_has_no_runtime_surface() -> None:
+    document_paths = [path for path in app.openapi()["paths"] if "document" in path.casefold()]
+    assert document_paths
+    assert all(
+        path.startswith("/api/v1/patients/{patient_id}/documents") for path in document_paths
+    )
     assert "documents" not in app.state.module_registry.module_ids
     assert not (ROOT / "app/modules/documents/public.py").exists()
     assert not (ROOT / "app/modules/documents/application.py").exists()
@@ -93,7 +97,11 @@ def test_p11c_registry_remains_inert_and_p11b_mock_remains_test_only() -> None:
     assert callable(classify_synthetic)
 
 
-def test_patient_documents_ui_remains_honestly_unavailable() -> None:
+def test_patient_document_vault_does_not_activate_synthetic_processing() -> None:
     page = (ROOT.parent / "apps/patient-web/app/documents/page.tsx").read_text(encoding="utf-8")
-    assert "unavailable" in page.casefold() or "not available" in page.casefold()
-    assert 'input type="file"' not in page.casefold()
+    vault = (ROOT.parent / "apps/patient-web/components/document-vault.tsx").read_text(
+        encoding="utf-8"
+    )
+    assert "DocumentVault" in page
+    assert 'type="file"' in vault
+    assert all(term not in (page + vault) for term in ("MockOCRAdapter", "classify_synthetic"))

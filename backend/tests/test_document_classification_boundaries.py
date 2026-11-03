@@ -9,8 +9,12 @@ from app.modules.documents.registry import build_synthetic_processor_registry
 ROOT = Path(__file__).parents[1]
 
 
-def test_documents_remain_absent_from_openapi_and_module_composition() -> None:
-    assert all("document" not in path.casefold() for path in app.openapi()["paths"])
+def test_synthetic_document_classification_remains_absent_from_runtime() -> None:
+    document_paths = [path for path in app.openapi()["paths"] if "document" in path.casefold()]
+    assert document_paths
+    assert all(
+        path.startswith("/api/v1/patients/{patient_id}/documents") for path in document_paths
+    )
     assert "documents" not in app.state.module_registry.module_ids
     assert not (ROOT / "app/modules/documents/public.py").exists()
     assert not (ROOT / "app/modules/documents/application.py").exists()

@@ -9,6 +9,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.patients.application import PatientService
+from app.modules.patients.clinical import ClinicalFact, FactSupersession
 from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
 from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.persistence import DatabaseRuntime
@@ -54,8 +55,16 @@ class FakePatients:
 
 
 class FakeFacts:
+    async def add(self, session: AsyncSession, fact: ClinicalFact) -> object:
+        return fact
+
     async def get(self, session: AsyncSession, fact_id: OpaqueId) -> None:
         return None
+
+    async def persist_supersession(
+        self, session: AsyncSession, supersession: FactSupersession
+    ) -> FactSupersession:
+        return supersession
 
     async def list_for_patient(self, session: AsyncSession, **kwargs: object) -> tuple[()]:
         return ()

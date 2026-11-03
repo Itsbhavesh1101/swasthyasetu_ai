@@ -537,6 +537,33 @@ a {
   color: var(--patient-muted);
 }
 
+.document-upload,
+.document-upload label,
+.document-list,
+.document-list li,
+.document-list li > div:first-child {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.document-upload label {
+  font-weight: 750;
+}
+.document-list {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.document-list li {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-top: 1px solid var(--patient-border);
+  padding-block: 1rem;
+}
+.document-list small {
+  color: var(--patient-muted);
+}
+
 .form-message,
 .welcome-line {
   margin: 0;
