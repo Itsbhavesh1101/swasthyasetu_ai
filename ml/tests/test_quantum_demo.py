@@ -2,8 +2,12 @@
 
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 import unittest
 from dataclasses import asdict, replace
+from pathlib import Path
 
 from ml.quantum.contracts import (
     QuantumApprovalState,
@@ -30,6 +34,8 @@ from ml.quantum.planning import (
     SymbolicEncodingSelection,
 )
 from ml.research.contracts import ResearchAuthority, ResearchEnvironment
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 class SyntheticQuantumDemoTests(unittest.TestCase):
@@ -105,6 +111,46 @@ class SyntheticQuantumDemoTests(unittest.TestCase):
             with self.assertRaises(QuantumBoundaryError) as error:
                 run_synthetic_quantum_demo(environment)
             self.assertIs(error.exception.code, QuantumBoundaryCode.PROTECTED_ENVIRONMENT)
+
+
+class SyntheticQuantumDemoCliTests(unittest.TestCase):
+    def test_cli_emits_canonical_non_executable_json(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "ml.quantum.demo", "--environment", "TEST"],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 0)
+        self.assertEqual(completed.stderr, "")
+        payload = json.loads(completed.stdout)
+        self.assertEqual(payload["environment"], "TEST")
+        self.assertEqual(payload["gateway_execution_state"], "NOT_EXECUTED")
+        self.assertEqual(payload["plan_execution_state"], "NOT_EXECUTED")
+        self.assertEqual(payload["plan_encoding"], "NOT_SELECTED")
+        self.assertEqual(payload["plan_circuit"], "NOT_DESIGNED")
+        self.assertEqual(payload["plan_backend"], "NO_BACKEND_SELECTED")
+        self.assertEqual(payload["plan_claim_state"], "NO_COMPARATIVE_CLAIM")
+        self.assertEqual(payload["activation_state"], "NOT_ACTIVATED")
+        self.assertEqual(
+            completed.stdout,
+            json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+        )
+
+    def test_cli_protected_environment_returns_stable_error(self) -> None:
+        completed = subprocess.run(
+            [sys.executable, "-m", "ml.quantum.demo", "--environment", "PRODUCTION"],
+            check=False,
+            capture_output=True,
+            cwd=ROOT,
+            text=True,
+        )
+
+        self.assertEqual(completed.returncode, 2)
+        self.assertEqual(completed.stdout, "")
+        self.assertEqual(completed.stderr, '{"error":"PROTECTED_ENVIRONMENT"}\n')
 
 
 if __name__ == "__main__":
