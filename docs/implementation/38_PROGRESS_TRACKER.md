@@ -3959,3 +3959,36 @@ Next: preserve this offline structural replay. Do not connect it to real identit
 operations, clinical review, persistent audit, UI or runtime activation until every applicable P21
 prerequisite is approved.
 ```
+
+---
+
+# 136. College Demo Wave 13 — Offline Synthetic Readiness-Planning Replay
+
+```text
+Status: COMPLETE for the explicitly offline LOCAL/TEST college demonstration subset. This completes
+the bounded synthetic college-demo implementation path; canonical P22/P23 remain PARTIAL, P24
+remains NOT STARTED for pilot/release purposes, and every live acceptance or release outcome remains
+unverified.
+Implementation: python -m app.validation.demo reconstructs the exact reviewed P23 performance and
+recovery inventories plus the P24 release-evidence, safety-evaluation and operational-rehearsal
+inventories. Five immutable manifests bind 37 complete, canonical planning records to one synthetic
+build identity. P22 security regression is labeled TEST_SUITE_ONLY_NOT_RELEASE_EVIDENCE rather than
+being promoted into release authority.
+Safety boundary: STAGING, PILOT and PRODUCTION are denied before build-identity or fixture
+validation. The aggregate status is BLOCKED_NOT_RELEASE_ELIGIBLE. Verification remains UNVERIFIED,
+execution remains NOT_EXECUTED, eligibility remains NOT_ELIGIBLE and the release decision remains
+NOT_RECORDED. No green test or manifest is represented as human, clinical, operational or release
+approval.
+Scope: no patient/clinical data, measurement, load generation, recovery drill, failure injection,
+safety evaluation, policy/resource validation, accountable sign-off, pilot decision, deployment,
+release, persistence, migration, route/API/UI, event/job, dependency, telemetry export, network,
+feature flag, module registration or runtime activation. Alembic remains p7a_0007 and all P22-P24
+governance restrictions remain unchanged.
+Verification: exact inventory cardinality and canonical fingerprints, unexecuted/ineligible/no-
+decision invariants, strict build identity, protected-environment preflight, canonical content-free
+CLI output, full backend/frontend regression, PostgreSQL/Docker, browser and security CI cover the
+bounded engineering path.
+Next: use the working synthetic project for the college demonstration. Any real pilot, production
+release or clinical claim still requires the live evidence and accountable decisions recorded in
+the canonical P22-P24 readiness documents.
+```
