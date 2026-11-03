@@ -47,6 +47,7 @@ wandb/
 tmp/
 temp/
 *.tmp
+.demo/
 
 # Temporary upstream repositories used only for technical spikes/research
 .external/

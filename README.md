@@ -125,3 +125,16 @@ development/test local-filesystem adapter. No worker daemon or storage service i
 Backend setup and verification commands are documented in `backend/README.md`.
 Frontend setup and verification commands are documented in `docs/frontend/README.md`.
 Local container and PostgreSQL commands are documented in `deployments/local/README.md`.
+
+## Run the complete synthetic demonstration
+
+On Windows with Docker Desktop, Python, and Node.js 24 available:
+
+```powershell
+py scripts/demo.py start
+```
+
+This starts PostgreSQL, applies migrations, starts the backend, and launches the patient, clinician,
+and administrator applications on loopback. Use `py scripts/demo.py status` to inspect availability
+and `py scripts/demo.py stop` to stop only the recorded demo processes while preserving the synthetic
+database volume. The complete walkthrough and safety boundaries are in `docs/DEMO_GUIDE.md`.

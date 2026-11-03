@@ -3992,3 +3992,29 @@ Next: use the working synthetic project for the college demonstration. Any real 
 release or clinical claim still requires the live evidence and accountable decisions recorded in
 the canonical P22-P24 readiness documents.
 ```
+
+---
+
+# 137. College Demo Wave 14 — Reproducible Local Project Launcher
+
+```text
+Status: COMPLETE for local synthetic college demonstration packaging.
+Implementation: py scripts/demo.py start provides one bounded launcher for the existing local
+PostgreSQL/backend Compose project and all three Next.js applications. It verifies prerequisites and
+loopback ports, installs the locked frontend workspace, applies migrations explicitly, waits for
+backend/frontend readiness, records only validated launcher-owned PIDs, and writes separate ignored
+logs. plan and status are read-only; stop terminates only validated frontend process trees and the
+named Compose project while preserving the synthetic database volume.
+Safety boundary: no broad process discovery, Docker prune, volume deletion, public bind, production
+environment, seed patient data, credential generation or hidden feature activation is performed.
+Runtime state is repository-bound, minimal, atomically written and ignored by Git. Failed startup
+cleans recorded frontend processes and the named Compose project.
+Documentation: docs/DEMO_GUIDE.md provides the exact onboarding/intake/result walkthrough, clinician
+and administrator checks, offline P18-P24 replays, honest synthetic limitations, status command and
+safe shutdown procedure.
+Verification: launcher plan/state unit tests, full backend/frontend regression, all three production
+builds, migration head, Compose configuration, browser journeys and security CI cover the packaged
+path. No dependency, lockfile, schema or migration changed.
+Next: use the launcher and guide for the college demonstration. Real clinical, institutional,
+provider, pilot and production work remains governed by the canonical readiness restrictions.
+```
