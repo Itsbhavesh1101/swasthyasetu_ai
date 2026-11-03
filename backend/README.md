@@ -460,6 +460,26 @@ Staging, pilot, and production are rejected before fixture construction. The com
 patient or clinical data and adds no API, database, migration, module registration, feature flag,
 network call, care policy, or runtime activation.
 
+## Offline synthetic admin-governance demonstration
+
+The detached P21 authorization, review-queue, maker-checker, and audit evidence can be replayed
+together with fixed, content-free engineering fixtures:
+
+```powershell
+py -m uv run python -m app.modules.admin_governance.demo --environment test
+```
+
+Fail-closed MFA and self-review states are independently demonstrable:
+
+```powershell
+py -m uv run python -m app.modules.admin_governance.demo --environment local --mfa-unverified --self-review
+```
+
+These parallel receipts do not form an executable approval workflow. They grant no administrative,
+review, publication, policy, or audit authority. Staging, pilot, and production are rejected before
+fixture construction. The command adds no real identity, patient or clinical data, API, database,
+migration, module registration, network call, feature flag, or runtime activation.
+
 ## Quality checks
 
 ```powershell
