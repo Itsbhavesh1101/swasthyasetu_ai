@@ -122,7 +122,6 @@ class PostgresEncounterRepository:
                 select(EncounterRecord)
                 .where(
                     EncounterRecord.session_id == session_id.value,
-                    EncounterRecord.patient_id.is_(None),
                     EncounterRecord.encounter_type == EncounterType.GENERAL_INTAKE.value,
                     EncounterRecord.status.in_(
                         (EncounterStatus.CREATED.value, EncounterStatus.IN_PROGRESS.value)

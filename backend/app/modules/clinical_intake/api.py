@@ -35,11 +35,16 @@ from app.modules.clinical_intake.engine import (
     Incomplete,
     NextQuestion,
 )
-from app.modules.consent.domain import ConsentPurpose, ConsentScope, ConsentSubjectType
+from app.modules.consent.domain import (
+    ConsentPurpose,
+    ConsentScope,
+    ConsentSubjectType,
+    NoticeVersion,
+)
 from app.modules.consent.public import CONSENT_CHECK
 from app.modules.encounters.domain import EncounterStatus, EncounterType
 from app.modules.encounters.public import ENCOUNTERS_READ
-from app.modules.sessions.domain import Session
+from app.modules.sessions.domain import Session, SessionType
 from app.modules.sessions.public import SESSIONS_VALIDATE
 from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.types import OpaqueId
@@ -314,11 +319,19 @@ async def _authorize_encounter(
         subject_id=session.session_id,
         purpose=ConsentPurpose.GENERAL_PRODUCT_USE,
         required_scope=ConsentScope(("clinical_intake",)),
+        required_notice_version=NoticeVersion("privacy-v1"),
     )
-    if encounter.patient_id is not None:
+    if session.session_type is SessionType.AUTHENTICATED and (
+        encounter.patient_id != session.patient_id or session.patient_id is None
+    ):
         raise ApplicationError(
             code=ErrorCode.AUTHORIZATION_DENIED,
-            message="Patient-linked intake is not available in this phase.",
+            message="The encounter patient does not match the authenticated session.",
+        )
+    if session.session_type is SessionType.PSEUDONYMOUS and encounter.patient_id is not None:
+        raise ApplicationError(
+            code=ErrorCode.AUTHORIZATION_DENIED,
+            message="A pseudonymous encounter cannot be linked to a patient.",
         )
     if encounter.encounter_type not in {
         EncounterType.GENERAL_INTAKE,

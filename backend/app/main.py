@@ -223,7 +223,10 @@ def create_app(
                 authenticator=patient_account_service,
             ),
             build_encounters_registration(service=encounter_service),
-            build_provenance_registration(service=provenance_service),
+            build_provenance_registration(
+                service=provenance_service,
+                authenticator=patient_account_service,
+            ),
             build_clinical_intake_registration(
                 database=resolved_database,
                 engineering_content_enabled=engineering_content_enabled,

@@ -145,9 +145,9 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
 
         bound = await client.post(
             "/api/v1/encounters",
-            headers=bearer,
+            headers=account_bearer,
             json={
-                "session_id": session["session_id"],
+                "session_id": account.json()["session_id"],
                 "patient_id": str(patient_id),
                 "encounter_type": "MENTAL_HEALTH",
             },
@@ -204,7 +204,10 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
         assert facts.status_code == 200
         assert facts.json()["items"][0]["canonical_label"] == "synthetic condition"
         assert "source_ref" not in facts.text
-        timeline = await client.get(f"/api/v1/patients/{patient_id}/timeline?limit=1")
+        timeline = await client.get(
+            f"/api/v1/patients/{patient_id}/timeline?limit=1",
+            headers=account_bearer,
+        )
         assert timeline.status_code == 200
         assert len(timeline.json()["items"]) == 1
         assert timeline.json()["items"][0]["entry_type"] == "CLINICAL_FACT"
@@ -212,6 +215,7 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
         page_two = await client.get(
             f"/api/v1/patients/{patient_id}/timeline",
             params={"limit": 1, "cursor": timeline.json()["next_cursor"]},
+            headers=account_bearer,
         )
         assert page_two.status_code == 200
         assert page_two.json()["items"][0]["entry_id"] != timeline.json()["items"][0]["entry_id"]
@@ -222,12 +226,14 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
                 "from": "2026-10-12T00:00:00Z",
                 "to": "2026-10-12T23:59:59Z",
             },
+            headers=account_bearer,
         )
         assert fact_timeline.status_code == 200
         assert [item["entry_type"] for item in fact_timeline.json()["items"]] == ["CLINICAL_FACT"]
         invalid_timestamp = await client.get(
             f"/api/v1/patients/{patient_id}/timeline",
             params={"from": "2026-10-12T08:00:00+05:30"},
+            headers=account_bearer,
         )
         assert invalid_timestamp.status_code == 422
         assert (await client.post(f"/api/v1/encounters/{bound_id}/complete")).status_code == 200

@@ -41,6 +41,12 @@ export function DashboardOverview() {
           <ActionLink href="/history">Open history</ActionLink>
         </Panel>
         <Panel>
+          <p className="card-kicker">Over time</p>
+          <h2>Medical timeline</h2>
+          <p>See history entries and health journeys together in chronological order.</p>
+          <ActionLink href="/timeline">Open timeline</ActionLink>
+        </Panel>
+        <Panel>
           <p className="card-kicker">Private vault</p>
           <h2>Documents</h2>
           <p>Keep reports and prescriptions with the rest of your health record.</p>
@@ -51,6 +57,12 @@ export function DashboardOverview() {
           <h2>Ayurvedic home-care guidance</h2>
           <p>Ask a general wellness question and review source-backed educational information.</p>
           <ActionLink href="/guidance">Open guidance</ActionLink>
+        </Panel>
+        <Panel>
+          <p className="card-kicker">Structured intake</p>
+          <h2>Health journey</h2>
+          <p>Start or resume a guided intake draft linked to your private patient record.</p>
+          <ActionLink href="/encounter">Open health journey</ActionLink>
         </Panel>
       </div>
     </section>

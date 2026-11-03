@@ -41,3 +41,13 @@ class Session:
     updated_at: datetime
     actor_id: OpaqueId | None = None
     patient_id: OpaqueId | None = None
+
+    def __post_init__(self) -> None:
+        if self.session_type is SessionType.AUTHENTICATED and (
+            self.actor_id is None or self.patient_id is None
+        ):
+            raise ValueError("authenticated sessions require actor and patient bindings")
+        if self.session_type is SessionType.PSEUDONYMOUS and (
+            self.actor_id is not None or self.patient_id is not None
+        ):
+            raise ValueError("pseudonymous sessions cannot carry identity bindings")

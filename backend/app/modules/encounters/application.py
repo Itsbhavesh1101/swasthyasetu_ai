@@ -55,6 +55,19 @@ class EncounterService:
                 code=ErrorCode.VALIDATION_ERROR,
                 message="The encounter type is not available for this session.",
             )
+        if session.session_type is SessionType.AUTHENTICATED:
+            if patient_id != session.patient_id or created_by != session.actor_id:
+                raise ApplicationError(
+                    code=ErrorCode.AUTHORIZATION_DENIED,
+                    message="The encounter identity does not match the authenticated session.",
+                )
+        elif session.session_type is SessionType.PSEUDONYMOUS and (
+            patient_id is not None or created_by is not None
+        ):
+            raise ApplicationError(
+                code=ErrorCode.AUTHORIZATION_DENIED,
+                message="Pseudonymous encounters cannot claim an authenticated identity.",
+            )
         if patient_id is not None:
             await self._patients.get_patient(patient_id)
         elif created_by is not None:
@@ -79,11 +92,17 @@ class EncounterService:
         return encounter
 
     async def find_or_create_general_intake(self, *, session: Session) -> Encounter:
-        if session.session_type is not SessionType.PSEUDONYMOUS:
+        if session.session_type not in {SessionType.PSEUDONYMOUS, SessionType.AUTHENTICATED}:
             raise ApplicationError(
                 code=ErrorCode.VALIDATION_ERROR,
                 message="A general intake encounter is unavailable for this session.",
             )
+        patient_id = (
+            session.patient_id if session.session_type is SessionType.AUTHENTICATED else None
+        )
+        actor_id = session.actor_id if session.session_type is SessionType.AUTHENTICATED else None
+        if patient_id is not None:
+            await self._patients.get_patient(patient_id)
         database = self._require_database()
         async with database.transaction() as transaction:
             await self._repository.acquire_session_start_lock(transaction, session.session_id)
@@ -95,13 +114,13 @@ class EncounterService:
             now = self._now()
             encounter = Encounter(
                 encounter_id=OpaqueId.new(),
-                patient_id=None,
+                patient_id=patient_id,
                 session_id=session.session_id,
                 encounter_type=EncounterType.GENERAL_INTAKE,
                 status=EncounterStatus.CREATED,
                 started_at=now,
                 language_context=session.language_preference,
-                created_by=None,
+                created_by=actor_id,
             )
             await self._repository.add(transaction, encounter)
             return encounter
@@ -181,7 +200,7 @@ class EncounterService:
         return (
             session_type is SessionType.KIOSK and encounter_type is EncounterType.KIOSK_INTAKE
         ) or (
-            session_type is SessionType.PSEUDONYMOUS
+            session_type in {SessionType.PSEUDONYMOUS, SessionType.AUTHENTICATED}
             and encounter_type in {EncounterType.GENERAL_INTAKE, EncounterType.MENTAL_HEALTH}
         )
 

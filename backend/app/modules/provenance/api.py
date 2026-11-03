@@ -6,10 +6,11 @@ from datetime import UTC, datetime
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Header, Query, Request, Response
 from pydantic import BaseModel, ConfigDict
 
 from app.api.security.authorization import require_self_subject
+from app.api.security.patient_authentication import PatientAuthenticator, authenticate_patient
 from app.modules.encounters.domain import EncounterStatus, EncounterType
 from app.modules.identity.authorization import PATIENT_READ_SELF
 from app.modules.patients.api import ProvenanceSummary, fact_view
@@ -149,8 +150,20 @@ def _view(entry: TimelineEntry) -> TimelineEntryResponse:
     )
 
 
-def build_timeline_router(*, timeline: ReadTimelineCapability) -> APIRouter:
-    router = APIRouter(prefix="/patients", tags=["patients"])
+def build_timeline_router(
+    *, timeline: ReadTimelineCapability, authenticator: PatientAuthenticator
+) -> APIRouter:
+    async def require_patient(
+        request: Request,
+        authorization: Annotated[str | None, Header()] = None,
+    ) -> None:
+        await authenticate_patient(request, authorization, authenticator=authenticator)
+
+    router = APIRouter(
+        prefix="/patients",
+        tags=["patients"],
+        dependencies=[Depends(require_patient)],
+    )
 
     @router.get(
         "/{patient_id}/timeline",

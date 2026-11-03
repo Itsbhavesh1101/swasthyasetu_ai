@@ -36,8 +36,10 @@ async def intake_client() -> AsyncIterator[tuple[AsyncClient, DatabaseRuntime, F
         pytest.skip("SWASTHYASETU_TEST_DATABASE_URL is not configured")
     database = DatabaseRuntime(DatabaseSettings(enabled=True, url=url))
     truncate = text(
-        "TRUNCATE TABLE intake_answers, questionnaire_instances, clinical_intakes, "
-        "encounters, consent_records, sessions, outbox_events CASCADE"
+        "TRUNCATE TABLE patient_accounts, intake_answers, questionnaire_instances, "
+        "clinical_intakes, encounters, clinical_fact_provenance, clinical_facts, "
+        "patient_identifiers, patient_demographics, patients, consent_records, sessions, "
+        "actor_roles, actors, outbox_events CASCADE"
     )
     async with database.engine.begin() as connection:
         await connection.execute(truncate)
@@ -98,6 +100,56 @@ async def _start(client: AsyncClient, token: str, encounter_id: str) -> dict[str
     )
     assert response.status_code in {200, 201}, response.text
     return cast(dict[str, object], response.json())
+
+
+async def test_authenticated_session_creates_patient_bound_resumable_intake(
+    intake_client: tuple[AsyncClient, DatabaseRuntime, FastAPI],
+) -> None:
+    client, _, _ = intake_client
+    registration = await client.post(
+        "/api/v1/accounts/register",
+        json={
+            "email": "intake-account@example.com",
+            "display_name": "Intake Patient",
+            "password": "correct horse battery staple",
+        },
+    )
+    assert registration.status_code == 201
+    session = registration.json()
+    headers = {"Authorization": f"Bearer {session['session_token']}"}
+    account = await client.get("/api/v1/accounts/me", headers=headers)
+    assert account.status_code == 200
+    patient_id = account.json()["patient_id"]
+
+    consent = await client.post(
+        "/api/v1/consents",
+        headers=headers,
+        json={
+            "subject_type": "SESSION",
+            "subject_id": session["session_id"],
+            "purpose": "GENERAL_PRODUCT_USE",
+            "scope": ["clinical_intake"],
+            "notice_version": "privacy-v1",
+        },
+    )
+    assert consent.status_code == 201
+    first = await client.post(
+        "/api/v1/encounters/general-intake",
+        headers=headers,
+        json={"session_id": session["session_id"]},
+    )
+    second = await client.post(
+        "/api/v1/encounters/general-intake",
+        headers=headers,
+        json={"session_id": session["session_id"]},
+    )
+    assert first.status_code == second.status_code == 200
+    assert first.json()["encounter_id"] == second.json()["encounter_id"]
+    assert first.json()["patient_id"] == patient_id
+
+    intake = await _start(client, session["session_token"], first.json()["encounter_id"])
+    assert intake["status"] == "IN_PROGRESS"
+    assert intake["encounter_id"] == first.json()["encounter_id"]
 
 
 async def test_intake_reads_do_not_reveal_resource_existence_across_sessions(
