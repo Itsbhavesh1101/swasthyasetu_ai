@@ -3928,3 +3928,34 @@ bounded engineering path.
 Next: preserve this offline symbolic replay. Do not connect it to patient data, clinical policy,
 cross-module reads, UI or runtime activation until every applicable P20 prerequisite is approved.
 ```
+
+---
+
+# 135. College Demo Wave 12 — Offline Synthetic Admin-Governance Replay
+
+```text
+Status: COMPLETE for the explicitly offline LOCAL/TEST college demonstration subset; canonical P21
+remains PARTIAL/BLOCKED and every live FR-ADMIN, FR-AUDIT and AC-P21 outcome remains unverified.
+Implementation: python -m app.modules.admin_governance.demo constructs independent, fixed P21-A/C/D
+engineering evidence in one deterministic replay. It evaluates an exact synthetic authorization
+contract, builds a canonical one-item review snapshot, evaluates metadata-only maker/checker
+independence, and binds the receipt into an immutable audit snapshot. Explicit MFA-unverified and
+self-review options demonstrate separate fail-closed abstentions.
+Safety boundary: STAGING, PILOT and PRODUCTION are denied before option or fixture validation. Every
+identity, object, scope, source, purpose, queue item and governance change remains a closed synthetic
+machine identifier; authority is ENGINEERING_ONLY, classification is ENGINEERING_SYNTHETIC and
+verification is UNVERIFIED. The parallel receipts do not create a workflow, grant, approval, audit
+record or executable change.
+Scope: no real actor, credential, MFA ceremony, role/permission, institution/source authority,
+patient/clinical content, assignment, disposition, publication, policy mutation, audit store/viewer,
+persistence, migration, route/API/UI, event/job, dependency, telemetry, network, feature flag,
+module registration, runtime activation, pilot or release behavior. Alembic remains p7a_0007 and all
+P21 readiness restrictions remain unchanged.
+Verification: deterministic exact-match replay, review and audit fingerprints, MFA and self-review
+abstention paths, strict type boundaries, protected-environment preflight, canonical content-free
+CLI output, full backend/frontend regression, PostgreSQL/Docker, browser and security CI cover the
+bounded engineering path.
+Next: preserve this offline structural replay. Do not connect it to real identities, administrative
+operations, clinical review, persistent audit, UI or runtime activation until every applicable P21
+prerequisite is approved.
+```
