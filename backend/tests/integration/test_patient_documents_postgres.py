@@ -16,7 +16,7 @@ from app.main import create_app
 from app.modules.identity.infrastructure import PostgresActorRepository
 from app.modules.patient_accounts.application import PatientAccountService
 from app.modules.patient_accounts.contracts import RegisterPatient
-from app.modules.patient_accounts.domain import DisplayName, EmailAddress, RawPassword
+from app.modules.patient_accounts.domain import EmailAddress, RawPassword
 from app.modules.patient_accounts.infrastructure import PostgresPatientAccountRepository
 from app.modules.patient_accounts.passwords import Argon2PasswordHasher
 from app.modules.patient_documents.application import PatientDocumentService
@@ -73,7 +73,6 @@ async def patient_account(runtime: DatabaseRuntime) -> tuple[OpaqueId, OpaqueId]
     registered = await accounts.register(
         RegisterPatient(
             email=EmailAddress("documents@example.com"),
-            display_name=DisplayName("Document Patient"),
             password=RawPassword("correct horse battery staple"),
             preferred_language="en",
         )
@@ -174,7 +173,6 @@ async def test_document_http_authentication_upload_download_idor_and_delete(
             "/api/v1/accounts/register",
             json={
                 "email": "http-documents@example.com",
-                "display_name": "HTTP Document Patient",
                 "password": "correct horse battery staple",
             },
         )

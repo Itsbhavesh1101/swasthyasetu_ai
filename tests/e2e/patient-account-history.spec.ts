@@ -13,7 +13,7 @@ test("patient account preserves profile, all history categories, correction, tim
   await page.getByLabel("Date of birth").fill("1998-04-12");
   await page.getByLabel("City or location (optional)").fill("Synthetic City");
   await page.getByRole("button", { name: "Save details" }).click();
-  await expect(page.getByText("Your details have been saved.")).toBeVisible();
+  await expect(page).toHaveURL(/\/dashboard$/);
 
   await page.goto("/history");
   const form = page.locator("form.history-form").last();
@@ -75,7 +75,6 @@ test("backend rejects cross-account patient access", async ({ request }) => {
     const response = await request.post(`${backend}/api/v1/accounts/register`, {
       data: {
         email: `idor-${number}-${crypto.randomUUID()}@example.test`,
-        display_name: `Synthetic IDOR ${number}`,
         password: "Synthetic-demo-passphrase-42",
       },
     });

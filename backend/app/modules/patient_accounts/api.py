@@ -25,6 +25,9 @@ class PatientAccountHttpService(Protocol):
     async def login(self, command: LoginPatient) -> AccountSession: ...
     async def authenticate(self, token: str) -> ActorContext: ...
     async def get_current_account(self, token: str) -> CurrentAccount: ...
+    async def update_display_name(
+        self, token: str, display_name: DisplayName
+    ) -> CurrentAccount: ...
     async def close_session(self, token: str) -> None: ...
 
 
@@ -32,7 +35,6 @@ class RegisterAccountRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     email: str = Field(min_length=3, max_length=320)
-    display_name: str = Field(min_length=1, max_length=120)
     password: SecretStr
     preferred_language: str | None = Field(default=None, min_length=2, max_length=35)
 
@@ -40,11 +42,6 @@ class RegisterAccountRequest(BaseModel):
     @classmethod
     def validate_email(cls, value: str) -> str:
         return EmailAddress(value).display
-
-    @field_validator("display_name")
-    @classmethod
-    def validate_display_name(cls, value: str) -> str:
-        return DisplayName(value).value
 
     @field_validator("password")
     @classmethod
@@ -85,7 +82,18 @@ class CurrentAccountResponse(BaseModel):
     account_id: UUID
     patient_id: UUID
     email: str
-    display_name: str
+    display_name: str | None
+    profile_complete: bool
+
+
+class UpdateCurrentAccountRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    display_name: str = Field(min_length=1, max_length=120)
+
+    @field_validator("display_name")
+    @classmethod
+    def validate_display_name(cls, value: str) -> str:
+        return DisplayName(value).value
 
 
 def _session_response(value: AccountSession) -> AccountSessionResponse:
@@ -102,6 +110,7 @@ def _current_response(value: CurrentAccount) -> CurrentAccountResponse:
         patient_id=value.patient_id.value,
         email=value.email,
         display_name=value.display_name,
+        profile_complete=value.profile_complete,
     )
 
 
@@ -128,7 +137,6 @@ def build_patient_accounts_router(*, service: PatientAccountHttpService) -> APIR
         result = await service.register(
             RegisterPatient(
                 email=EmailAddress(payload.email),
-                display_name=DisplayName(payload.display_name),
                 password=RawPassword(payload.password.get_secret_value()),
                 preferred_language=payload.preferred_language,
             )
@@ -159,6 +167,23 @@ def build_patient_accounts_router(*, service: PatientAccountHttpService) -> APIR
     ) -> CurrentAccountResponse:
         response.headers["Cache-Control"] = "no-store"
         return _current_response(await service.get_current_account(parse_bearer(authorization)))
+
+    @router.patch(
+        "/me",
+        response_model=CurrentAccountResponse,
+        dependencies=[Depends(patient_dependency)],
+    )
+    async def update_current_account(
+        payload: UpdateCurrentAccountRequest,
+        response: Response,
+        authorization: Annotated[str | None, Header()] = None,
+    ) -> CurrentAccountResponse:
+        response.headers["Cache-Control"] = "no-store"
+        return _current_response(
+            await service.update_display_name(
+                parse_bearer(authorization), DisplayName(payload.display_name)
+            )
+        )
 
     @router.post(
         "/logout",

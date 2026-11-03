@@ -8,7 +8,7 @@ from httpx import ASGITransport, AsyncClient
 from app.api.errors import register_error_handlers
 from app.modules.patient_accounts.api import build_patient_accounts_router
 from app.modules.patient_accounts.contracts import AccountSession, CurrentAccount
-from app.modules.patient_accounts.domain import AccountStatus
+from app.modules.patient_accounts.domain import AccountStatus, DisplayName
 from app.modules.sessions.domain import Session, SessionStatus, SessionType
 from app.shared.security import ActorContext
 from app.shared.types import OpaqueId
@@ -48,18 +48,24 @@ class FakeAccountService:
         assert token == TOKEN
         return _current_account()
 
+    async def update_display_name(self, token: str, display_name: DisplayName) -> CurrentAccount:
+        assert token == TOKEN
+        assert display_name.value == "Updated Patient"
+        return _current_account(display_name="Updated Patient")
+
     async def close_session(self, token: str) -> None:
         assert token == TOKEN
         self.closed = True
 
 
-def _current_account() -> CurrentAccount:
+def _current_account(display_name: str = "Patient Demo") -> CurrentAccount:
     return CurrentAccount(
         account_id=ACCOUNT_ID,
         actor_id=ACTOR_ID,
         patient_id=PATIENT_ID,
         email="Patient@Example.com",
-        display_name="Patient Demo",
+        display_name=display_name,
+        profile_complete=True,
         status=AccountStatus.ACTIVE,
     )
 
@@ -99,7 +105,6 @@ async def test_register_and_login_return_only_minimized_session_credentials() ->
             "/api/v1/accounts/register",
             json={
                 "email": " Patient@Example.com ",
-                "display_name": " Patient Demo ",
                 "password": secret,
                 "preferred_language": "en",
             },
@@ -141,11 +146,26 @@ async def test_me_and_logout_require_bearer_and_install_trusted_context() -> Non
         "patient_id": str(PATIENT_ID),
         "email": "Patient@Example.com",
         "display_name": "Patient Demo",
+        "profile_complete": True,
     }
     assert service.authenticated is True
     assert logout.status_code == 204
     assert logout.content == b""
     assert service.closed is True
+
+
+async def test_profile_name_is_completed_through_authenticated_patch() -> None:
+    service = FakeAccountService()
+    transport = ASGITransport(app=_app(service))
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.patch(
+            "/api/v1/accounts/me",
+            headers={"Authorization": f"Bearer {TOKEN}"},
+            json={"display_name": " Updated Patient "},
+        )
+    assert response.status_code == 200
+    assert response.json()["display_name"] == "Updated Patient"
+    assert response.json()["profile_complete"] is True
 
 
 async def test_account_requests_are_strict_and_validation_never_echoes_password() -> None:

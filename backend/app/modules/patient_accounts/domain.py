@@ -102,7 +102,7 @@ class PatientAccount:
     actor_id: OpaqueId
     patient_id: OpaqueId
     email: EmailAddress = field(repr=False)
-    display_name: DisplayName = field(repr=False)
+    display_name: DisplayName | None = field(repr=False)
     password_digest: PasswordDigest = field(repr=False)
     status: AccountStatus
     created_at: datetime

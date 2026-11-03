@@ -110,7 +110,6 @@ async def test_authenticated_session_creates_patient_bound_resumable_intake(
         "/api/v1/accounts/register",
         json={
             "email": "intake-account@example.com",
-            "display_name": "Intake Patient",
             "password": "correct horse battery staple",
         },
     )

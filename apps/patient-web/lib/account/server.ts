@@ -117,13 +117,10 @@ async function authenticate(request: NextRequest, mode: "login" | "register") {
     !record(body) ||
     typeof body.email !== "string" ||
     typeof body.password !== "string" ||
-    (mode === "register" && typeof body.name !== "string")
+    Object.keys(body).some((key) => !["email", "password"].includes(key))
   )
     return safeError(400, "Check the information and try again.");
-  const payload =
-    mode === "register"
-      ? { email: body.email, display_name: body.name, password: body.password }
-      : { email: body.email, password: body.password };
+  const payload = { email: body.email, password: body.password };
   const result = await backend(`/api/v1/accounts/${mode}`, {
     method: "POST",
     headers: { Accept: "application/json", "Content-Type": "application/json" },
@@ -138,7 +135,21 @@ async function authenticate(request: NextRequest, mode: "login" | "register") {
         ? "We could not sign you in with those details."
         : "We could not create the account.",
     );
-  const value = response({ state: "AUTHENTICATED" }, mode === "register" ? 201 : 200);
+  let profileComplete = false;
+  if (mode === "login") {
+    const current = await backend("/api/v1/accounts/me", {
+      method: "GET",
+      headers: { Accept: "application/json", Authorization: `Bearer ${data.session_token}` },
+    });
+    const account = current ? await jsonValue(current) : undefined;
+    if (!current?.ok || !record(account) || typeof account.profile_complete !== "boolean")
+      return safeError(503, "Your account profile is temporarily unavailable.");
+    profileComplete = account.profile_complete;
+  }
+  const value = response(
+    { state: "AUTHENTICATED", profileComplete },
+    mode === "register" ? 201 : 200,
+  );
   const options = sessionCookieOptions(hostname(request));
   value.cookies.set(SESSION_ID_COOKIE, data.session_id, options);
   value.cookies.set(SESSION_TOKEN_COOKIE, data.session_token, options);
@@ -165,13 +176,15 @@ export async function readAccount(request: NextRequest) {
     !record(data) ||
     typeof data.patient_id !== "string" ||
     !UUID.test(data.patient_id) ||
-    typeof data.display_name !== "string"
+    (data.display_name !== null && typeof data.display_name !== "string") ||
+    typeof data.profile_complete !== "boolean"
   )
     return safeError(502, "The account could not be loaded.");
   return response({
     state: "AUTHENTICATED",
     displayName: data.display_name,
     patientId: data.patient_id,
+    profileComplete: data.profile_complete,
   });
 }
 

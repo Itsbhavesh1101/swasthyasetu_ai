@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
+from decimal import Decimal
 from enum import StrEnum
 
 from app.shared.types import OpaqueId
@@ -65,6 +66,8 @@ class PatientDemographics:
     gender_identity: str | None = None
     pregnancy_status: str | None = None
     location_context: str | None = None
+    height_cm: Decimal | None = None
+    weight_kg: Decimal | None = None
 
     def __post_init__(self) -> None:
         if self.date_of_birth is not None and type(self.date_of_birth) is not date:
@@ -82,6 +85,17 @@ class PatientDemographics:
             "location_context",
         ):
             _validate_optional_text(name, getattr(self, name), 256)
+        if self.height_cm is not None and not Decimal("30") <= self.height_cm <= Decimal("275"):
+            raise ValueError("height_cm must be between 30 and 275")
+        if self.weight_kg is not None and not Decimal("1") <= self.weight_kg <= Decimal("700"):
+            raise ValueError("weight_kg must be between 1 and 700")
+
+    @property
+    def bmi(self) -> Decimal | None:
+        if self.height_cm is None or self.weight_kg is None:
+            return None
+        metres = self.height_cm / Decimal("100")
+        return (self.weight_kg / (metres * metres)).quantize(Decimal("0.1"))
 
 
 @dataclass(frozen=True, slots=True)

@@ -53,6 +53,8 @@ class DemographicsRequest(BaseModel):
     gender_identity: str | None = Field(default=None, min_length=1, max_length=256)
     pregnancy_status: str | None = Field(default=None, min_length=1, max_length=256)
     location_context: str | None = Field(default=None, min_length=1, max_length=256)
+    height_cm: Decimal | None = Field(default=None, ge=30, le=275, max_digits=5, decimal_places=2)
+    weight_kg: Decimal | None = Field(default=None, ge=1, le=700, max_digits=6, decimal_places=2)
 
     @field_validator(
         "administrative_sex",
@@ -102,6 +104,9 @@ class DemographicsResponse(BaseModel):
     gender_identity: str | None
     pregnancy_status: str | None
     location_context: str | None
+    height_cm: float | None
+    weight_kg: float | None
+    bmi: float | None
 
 
 class PatientResponse(BaseModel):
@@ -263,7 +268,19 @@ def patient_view(patient: Patient) -> PatientResponse:
             None
             if demographics is None
             else DemographicsResponse(
-                **{name: getattr(demographics, name) for name in DemographicsResponse.model_fields}
+                date_of_birth=demographics.date_of_birth,
+                age_years=demographics.age_years,
+                administrative_sex=demographics.administrative_sex,
+                gender_identity=demographics.gender_identity,
+                pregnancy_status=demographics.pregnancy_status,
+                location_context=demographics.location_context,
+                height_cm=(
+                    None if demographics.height_cm is None else float(demographics.height_cm)
+                ),
+                weight_kg=(
+                    None if demographics.weight_kg is None else float(demographics.weight_kg)
+                ),
+                bmi=None if demographics.bmi is None else float(demographics.bmi),
             )
         ),
         created_at=patient.created_at,

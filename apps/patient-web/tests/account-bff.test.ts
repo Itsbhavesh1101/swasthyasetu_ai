@@ -61,7 +61,6 @@ describe("account BFF", () => {
         method: "POST",
         headers: { origin: "http://localhost:3000", "content-type": "application/json" },
         body: JSON.stringify({
-          name: "Patient Demo",
           email: "patient@example.com",
           password: "correct horse battery staple",
         }),
@@ -69,7 +68,7 @@ describe("account BFF", () => {
     );
     expect(response.status).toBe(201);
     const body = await response.json();
-    expect(body).toEqual({ state: "AUTHENTICATED" });
+    expect(body).toEqual({ state: "AUTHENTICATED", profileComplete: false });
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(JSON.stringify(body)).not.toContain(bearer);
     const cookies = response.headers.getSetCookie().join(";");
@@ -89,6 +88,7 @@ describe("account BFF", () => {
           patient_id: patientId,
           email: "patient@example.com",
           display_name: "Patient Demo",
+          profile_complete: true,
         }),
       )
       .mockResolvedValueOnce(
@@ -101,6 +101,7 @@ describe("account BFF", () => {
       state: "AUTHENTICATED",
       displayName: "Patient Demo",
       patientId,
+      profileComplete: true,
     });
     expect(backend).toHaveBeenCalledWith(
       "http://127.0.0.1:8000/api/v1/accounts/me",

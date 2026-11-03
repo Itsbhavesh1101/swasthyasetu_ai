@@ -16,7 +16,6 @@ from app.modules.identity.infrastructure import ActorRecord, PostgresActorReposi
 from app.modules.patient_accounts.application import PatientAccountService
 from app.modules.patient_accounts.contracts import LoginPatient, RegisterPatient
 from app.modules.patient_accounts.domain import (
-    DisplayName,
     EmailAddress,
     PatientAccount,
     RawPassword,
@@ -64,7 +63,6 @@ async def database_runtime() -> AsyncIterator[DatabaseRuntime]:
 def _register(email: str = "Patient@Example.com") -> RegisterPatient:
     return RegisterPatient(
         email=EmailAddress(email),
-        display_name=DisplayName("Patient Demo"),
         password=RawPassword("correct horse battery staple"),
         preferred_language="en",
     )
@@ -145,7 +143,6 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
             "/api/v1/accounts/register",
             json={
                 "email": "profile@example.com",
-                "display_name": "Profile Patient",
                 "password": "correct horse battery staple",
                 "preferred_language": "en",
             },

@@ -21,7 +21,6 @@ it("registers with labeled fields and blocks password mismatch", async () => {
   expect(
     screen.getByRole("heading", { level: 1, name: /create your patient account/i }),
   ).toBeVisible();
-  await user.type(screen.getByLabelText(/full name/i), "Patient Demo");
   await user.type(screen.getByLabelText(/^email/i), "patient@example.com");
   await user.type(screen.getByLabelText(/^password/i), "correct horse battery staple");
   await user.type(screen.getByLabelText(/confirm password/i), "different password here");
@@ -36,7 +35,6 @@ it("submits registration once, clears secrets, and navigates", async () => {
   const fetchSpy = vi.fn(() => new Promise<Response>((done) => (resolve = done)));
   vi.stubGlobal("fetch", fetchSpy);
   render(<RegisterPage />);
-  await user.type(screen.getByLabelText(/full name/i), "Patient Demo");
   await user.type(screen.getByLabelText(/^email/i), "patient@example.com");
   await user.type(screen.getByLabelText(/^password/i), "correct horse battery staple");
   await user.type(screen.getByLabelText(/confirm password/i), "correct horse battery staple");
@@ -44,9 +42,9 @@ it("submits registration once, clears secrets, and navigates", async () => {
   await user.click(submit);
   expect(submit).toBeDisabled();
   expect(fetchSpy).toHaveBeenCalledTimes(1);
-  resolve(Response.json({ state: "AUTHENTICATED" }, { status: 201 }));
+  resolve(Response.json({ state: "AUTHENTICATED", profileComplete: false }, { status: 201 }));
   expect(await screen.findByText(/account created/i)).toBeVisible();
-  expect(push).toHaveBeenCalledWith("/dashboard");
+  expect(push).toHaveBeenCalledWith("/profile?setup=1");
   expect(screen.getByLabelText(/^password/i)).toHaveValue("");
 });
 

@@ -23,6 +23,15 @@ export function DashboardOverview() {
         <ActionLink href="/login">Sign in</ActionLink>
       </Panel>
     );
+  if (!account.profileComplete)
+    return (
+      <Panel>
+        <p className="card-kicker">One step left</p>
+        <h2>Create your base profile</h2>
+        <p>Add your name and basic health details before opening your dashboard.</p>
+        <ActionLink href="/profile?setup=1">Continue profile setup</ActionLink>
+      </Panel>
+    );
 
   return (
     <section aria-label="Your health record" className="page-stack">

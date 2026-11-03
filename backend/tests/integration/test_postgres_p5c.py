@@ -80,7 +80,6 @@ async def test_p5c_http_patient_encounter_fact_timeline_and_authorization(
             "/api/v1/accounts/register",
             json={
                 "email": "p5c@example.com",
-                "display_name": "P5C Patient",
                 "password": "correct horse battery staple",
                 "preferred_language": "en",
             },
