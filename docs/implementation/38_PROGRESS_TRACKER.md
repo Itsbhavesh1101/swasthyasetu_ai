@@ -3868,3 +3868,32 @@ Next: preserve the offline synthetic demonstration; do not interpret exact-match
 performance or activate real dataset access, governed training, artifact loading, clinical
 inference, P18-E, or P19 comparison without the unresolved P18 readiness decisions.
 ```
+
+---
+
+# 133. College Demo Wave 10 — Offline Synthetic Quantum Planning Replay
+
+```text
+Status: COMPLETE for the explicitly offline LOCAL/TEST college demonstration subset; canonical P19
+remains PARTIAL/BLOCKED, P19-C/D/E remain unimplemented, and every live FR-QML/AC-P19 outcome
+remains unverified.
+Implementation: python -m ml.quantum.demo reuses the exact Wave 9 synthetic candidate/card evidence,
+builds the reviewed P19-A metadata-only request, validates it through the deterministic no-quantum
+backend gateway, and builds the reviewed P19-B non-executable experiment plan. Request, gateway
+receipt, plan, candidate, card, dataset, split and preprocessing fingerprints remain exactly bound.
+Safety boundary: all code remains isolated under /ml. STAGING, PILOT and PRODUCTION are denied
+before fixture construction. Gateway and plan states remain NOT_EXECUTED, TEST_ONLY_UNAPPROVED and
+NO_COMPARATIVE_CLAIM; activation remains NOT_ACTIVATED. Encoding, circuit, optimizer, shots,
+framework and executable backend remain explicitly NOT_SELECTED/NOT_DESIGNED/NO_BACKEND_SELECTED.
+Scope: no quantum dependency, PennyLane/Qiskit, encoding value, qubit, gate, circuit, ansatz,
+optimizer, shot count, simulator, statevector, noise model, QPU/provider/credential/network,
+experiment execution, training, inference, metric/result/comparison, advantage claim, artifact,
+API/UI, persistence, migration, worker, patient data, production activation or P19-C/D/E behavior.
+Alembic remains p7a_0007 and all P18/P19 readiness restrictions remain unchanged.
+Verification: deterministic exact-evidence replay, unselected state enforcement, direct-constructor
+and forced-mutation rejection, protected-environment denial, canonical content-free CLI output,
+no-quantum/network import checks, full regression/build, PostgreSQL/Docker, browser and security CI
+cover the bounded engineering path.
+Next: preserve this no-run demonstration. Do not select or execute a quantum experiment or claim a
+comparison until an approved real P18 benchmark and every P19 readiness prerequisite exist.
+```
