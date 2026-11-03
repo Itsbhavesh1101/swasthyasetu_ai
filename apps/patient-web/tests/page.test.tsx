@@ -6,24 +6,21 @@ import PatientHomePage from "../app/page";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 describe("patient landing page", () => {
-  it("presents one clear heading and honest product language", () => {
+  it("presents one focused login heading", () => {
     render(<PatientHomePage />);
 
-    expect(
-      screen.getByRole("heading", { level: 1, name: "Your health history, kept together" }),
-    ).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "Welcome back" })).toBeVisible();
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
-    expect(screen.getByText(/does not provide a diagnosis/i)).toBeVisible();
   });
 
-  it("puts sign-in and registration forms first and keeps urgent help visible", () => {
+  it("shows one sign-in form and links to registration", () => {
     render(<PatientHomePage />);
 
-    expect(screen.getByRole("button", { name: /create account/i })).toBeVisible();
     expect(screen.getByRole("button", { name: /sign in/i })).toBeVisible();
-    expect(screen.getByRole("link", { name: /urgent help/i })).toHaveAttribute(
+    expect(screen.queryByRole("button", { name: /create account/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create account/i })).toHaveAttribute(
       "href",
-      "/urgent-help",
+      "/register",
     );
   });
 });

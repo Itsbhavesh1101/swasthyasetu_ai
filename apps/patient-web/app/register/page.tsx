@@ -1,18 +1,17 @@
 import Link from "next/link";
 import { AccountForm } from "../../components/account-form";
-import { PageHeader } from "../../components/ui-primitives";
 export default function RegisterPage() {
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Private patient record"
-        title="Create your patient account"
-        description="Use your email and a secure password first. You will create your personal profile next."
-      />
+    <section aria-labelledby="register-title" className="auth-card">
+      <header className="auth-card-header">
+        <p className="page-eyebrow">Start your private record</p>
+        <h1 id="register-title">Create your patient account</h1>
+        <p>Use your email and a secure password. Your personal details are collected next.</p>
+      </header>
       <AccountForm mode="register" />
-      <p>
-        Already registered? <Link href="/login">Sign in</Link>.
+      <p className="auth-switch">
+        Already registered? <Link href="/login">Sign in</Link>
       </p>
-    </div>
+    </section>
   );
 }

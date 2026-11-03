@@ -34,21 +34,22 @@ function contrast(first: string, second: string): number {
 }
 
 describe("P6-C deterministic accessibility baseline", () => {
-  it("uses the approved patient green palette", () => {
+  it("uses the approved patient indigo palette", () => {
     expect([
       cssVariable("--patient-canvas"),
       cssVariable("--patient-sidebar"),
       cssVariable("--patient-surface"),
       cssVariable("--patient-surface-strong"),
       cssVariable("--patient-primary"),
+      cssVariable("--patient-muted"),
       cssVariable("--patient-text"),
-    ]).toEqual(["#051F20", "#0B2B26", "#163832", "#235347", "#8EB69B", "#DAF1DE"]);
+    ]).toEqual(["#12141F", "#232739", "#383E5C", "#4F5580", "#7B81A8", "#AFB4CE", "#E4E6F0"]);
   });
 
   it.each([
     ["main text on canvas", "--patient-text", "--patient-canvas", 4.5],
     ["main text on surface", "--patient-text", "--patient-surface", 4.5],
-    ["muted text on sidebar", "--patient-primary", "--patient-sidebar", 4.5],
+    ["muted text on sidebar", "--patient-muted", "--patient-sidebar", 4.5],
     ["primary button", "--patient-canvas", "--patient-primary", 4.5],
     ["critical button", "#ffffff", "#a52a2a", 4.5],
     ["focus indicator", "--patient-text", "--patient-surface-strong", 3],
