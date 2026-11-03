@@ -85,7 +85,10 @@ it("starts a correction for the current entry and never offers correction on old
   render(<HistoryPage />);
   expect(await screen.findByText("Synthetic current")).toBeVisible();
   expect(screen.getAllByRole("button", { name: /correct entry/i })).toHaveLength(1);
+  await user.selectOptions(screen.getByLabelText(/category/i), "INVESTIGATION");
+  expect(screen.getByLabelText(/investigation or test name/i)).toBeVisible();
   await user.click(screen.getByRole("button", { name: /correct entry/i }));
   expect(screen.getByRole("heading", { name: /replace “synthetic current”/i })).toBeVisible();
+  expect(screen.getByLabelText(/condition name/i)).toHaveValue("Synthetic current");
   expect(screen.getByRole("button", { name: /save correction/i })).toBeVisible();
 });

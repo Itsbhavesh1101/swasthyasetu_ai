@@ -98,6 +98,7 @@ export function HistoryList() {
       {correction ? (
         <HistoryForm
           correction={correction}
+          key={correction.factId}
           onCancel={() => setCorrection(undefined)}
           onSaved={() => {
             setCorrection(undefined);
@@ -105,7 +106,7 @@ export function HistoryList() {
           }}
         />
       ) : (
-        <HistoryForm onSaved={() => setRevision((value) => value + 1)} />
+        <HistoryForm key="new-history-entry" onSaved={() => setRevision((value) => value + 1)} />
       )}
     </div>
   );

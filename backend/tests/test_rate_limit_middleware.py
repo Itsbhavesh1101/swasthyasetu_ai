@@ -120,6 +120,8 @@ def test_container_entrypoint_disables_uvicorn_proxy_header_rewriting() -> None:
     ).read_text(encoding="utf-8")
 
     assert '"--no-proxy-headers"' in dockerfile
+    assert "mkdir -p /var/lib/swasthyasetu/documents" in dockerfile
+    assert "chown -R 10001:10001 /var/lib/swasthyasetu" in dockerfile
 
 
 @pytest.mark.asyncio

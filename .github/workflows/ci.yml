@@ -271,6 +271,8 @@ jobs:
       SWASTHYASETU_DATABASE__ENABLED: "true"
       SWASTHYASETU_DATABASE__URL: postgresql+psycopg://swasthyasetu_dev:ci-only-synthetic-password@127.0.0.1:5432/swasthyasetu
       SWASTHYASETU_BACKEND_URL: http://127.0.0.1:8000
+      SWASTHYASETU_PATIENT_DOCUMENTS__ENABLED: "true"
+      SWASTHYASETU_PATIENT_DOCUMENTS__ROOT: /tmp/swasthyasetu-e2e-documents
       SWASTHYASETU_FEATURES__ENABLED: '["engineering_clinical_intake","engineering_demo_wave1","engineering_document_demo_wave2","engineering_summary_demo_wave3","engineering_referral_demo_wave4","engineering_mannsetu_demo_wave5","engineering_self_care_demo_wave6","engineering_fhir_demo_wave7","engineering_abdm_demo_wave8"]'
     steps:
       - name: Check out repository
@@ -331,7 +333,7 @@ jobs:
         shell: bash
         run: |
           cd backend
-          nohup uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 > ../backend-playwright.log 2>&1 &
+          nohup uv run uvicorn e2e_app:app --host 127.0.0.1 --port 8000 > ../backend-playwright.log 2>&1 &
           cd ..
           for attempt in {1..30}; do
             if curl --fail --silent http://127.0.0.1:8000/health/ready > /tmp/ready.json; then

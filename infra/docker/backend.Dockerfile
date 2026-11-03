@@ -26,7 +26,9 @@ ENV PATH="/opt/venv/bin:${PATH}" \
     PYTHONUNBUFFERED=1
 
 RUN addgroup -S -g 10001 app \
-    && adduser -S -D -u 10001 -G app -h /home/app app
+    && adduser -S -D -u 10001 -G app -h /home/app app \
+    && mkdir -p /var/lib/swasthyasetu/documents \
+    && chown -R 10001:10001 /var/lib/swasthyasetu
 
 WORKDIR /app
 
