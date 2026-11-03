@@ -18,26 +18,22 @@ async function activateServiceWorker(page: Page) {
     .toBe(true);
 }
 
-test("patient shell exposes only the working patient product", async ({ page }) => {
+test("patient landing focuses on account access before exposing the product shell", async ({
+  page,
+}) => {
   const response = await page.goto("/");
   expect(response?.headers()).toMatchObject({
     "referrer-policy": "no-referrer",
     "x-content-type-options": "nosniff",
     "x-frame-options": "DENY",
   });
-  await expect(page.getByRole("heading", { level: 1 })).toContainText(/health history/i);
-  const navigation = page.getByRole("navigation", { name: "Patient navigation" });
-  for (const label of [
-    "Dashboard",
-    "Profile",
-    "History",
-    "Timeline",
-    "Documents",
-    "Health journey",
-    "Home guidance",
-  ])
-    await expect(navigation.getByRole("link", { name: label, exact: true })).toBeVisible();
-  await expect(navigation).not.toContainText("MannSetu");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/welcome back/i);
+  await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /create account/i })).toHaveAttribute(
+    "href",
+    "/register",
+  );
+  await expect(page.getByRole("navigation", { name: "Patient navigation" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Urgent help" }).first()).toBeVisible();
 });
 
