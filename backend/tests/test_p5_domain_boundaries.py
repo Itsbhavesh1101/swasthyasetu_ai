@@ -55,6 +55,7 @@ def test_p5c_registers_runtime_modules_and_capabilities() -> None:
         "patient_documents",
         "patients",
         "provenance",
+        "self_care",
         "sessions",
     )
     assert {

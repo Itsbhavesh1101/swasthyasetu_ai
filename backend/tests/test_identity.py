@@ -208,6 +208,7 @@ def test_identity_manifest_and_default_composition_are_explicit_and_router_free(
         "patient_documents",
         "patients",
         "provenance",
+        "self_care",
         "sessions",
     )
     assert app.state.module_registry.is_sealed

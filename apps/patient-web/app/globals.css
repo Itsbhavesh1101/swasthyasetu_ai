@@ -564,6 +564,21 @@ a {
   color: var(--patient-muted);
 }
 
+.guidance-form textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.question-preview,
+.safety-note {
+  border-left: 0.25rem solid var(--patient-primary);
+  padding-left: 0.9rem;
+}
+
+.guidance-result a {
+  overflow-wrap: anywhere;
+}
+
 .form-message,
 .welcome-line {
   margin: 0;

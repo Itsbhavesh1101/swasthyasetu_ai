@@ -133,6 +133,7 @@ def test_default_application_registers_sessions_and_seals_capabilities() -> None
         "patient_documents",
         "patients",
         "provenance",
+        "self_care",
         "sessions",
     )
     assert application.state.module_registry.is_sealed is True

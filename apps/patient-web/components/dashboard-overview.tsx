@@ -46,6 +46,12 @@ export function DashboardOverview() {
           <p>Keep reports and prescriptions with the rest of your health record.</p>
           <ActionLink href="/documents">Open documents</ActionLink>
         </Panel>
+        <Panel>
+          <p className="card-kicker">Grounded education</p>
+          <h2>Ayurvedic home-care guidance</h2>
+          <p>Ask a general wellness question and review source-backed educational information.</p>
+          <ActionLink href="/guidance">Open guidance</ActionLink>
+        </Panel>
       </div>
     </section>
   );

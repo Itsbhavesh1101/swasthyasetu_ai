@@ -159,6 +159,7 @@ def _record(
     scope: tuple[str, ...] = ("clinical_intake",),
     status: ConsentStatus = ConsentStatus.GRANTED,
     expires_at: datetime | None = None,
+    notice_version: str = "privacy-v1",
 ) -> ConsentRecord:
     revoked = status is ConsentStatus.REVOKED
     return ConsentRecord(
@@ -168,7 +169,7 @@ def _record(
         actor_id=None,
         purpose=purpose,
         scope=ConsentScope(scope),
-        notice_version=NoticeVersion("privacy-v1"),
+        notice_version=NoticeVersion(notice_version),
         status=status,
         granted_at=NOW - timedelta(hours=1),
         revoked_at=NOW - timedelta(minutes=1) if revoked else None,
@@ -288,6 +289,30 @@ async def test_checker_requires_exact_purpose_subset_scope_granted_and_unexpired
             required_scope=ConsentScope(("clinical_intake",)),
         )
     assert error.value.code is ErrorCode.CONSENT_REQUIRED
+
+
+async def test_checker_can_require_the_exact_notice_version() -> None:
+    actor_id = OpaqueId.new()
+    record = _record(
+        subject_id=actor_id,
+        purpose=ConsentPurpose.EXTERNAL_AI_PROCESSING,
+        scope=("ayurvedic_guidance",),
+        notice_version="external-ai-v0",
+    )
+    service = ConsentService(
+        database=FakeDatabase(),  # type: ignore[arg-type]
+        repository=FakeConsentRepository((record,)),
+        outbox=CapturingOutbox(),  # type: ignore[arg-type]
+        clock=lambda: NOW,
+    )
+
+    assert not await service.has_active_consent(
+        subject_type=ConsentSubjectType.SESSION,
+        subject_id=actor_id,
+        purpose=ConsentPurpose.EXTERNAL_AI_PROCESSING,
+        required_scope=ConsentScope(("ayurvedic_guidance",)),
+        notice_version=NoticeVersion("external-ai-v1"),
+    )
 
 
 async def test_revoke_locks_one_grant_and_failed_repeat_emits_no_second_event() -> None:
