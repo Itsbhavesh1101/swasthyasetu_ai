@@ -29,6 +29,12 @@ from app.modules.identity.infrastructure import (  # noqa: F401 - registers Alem
     ActorRecord,
     ActorRoleRecord,
 )
+from app.modules.patient_accounts.infrastructure import (  # noqa: F401
+    PatientAccountRecord,
+)
+from app.modules.patient_documents.infrastructure import (  # noqa: F401
+    PatientDocumentRecord,
+)
 from app.modules.patients.infrastructure import (  # noqa: F401 - registers Alembic metadata
     AllergyRecordProjection,
     ClinicalFactProvenanceRecord,

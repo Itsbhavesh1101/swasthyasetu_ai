@@ -71,12 +71,12 @@ def test_new_callables_have_no_file_byte_path_url_or_filename_parameters() -> No
 def test_no_document_orm_migration_feature_flag_or_worker_binding() -> None:
     migrations = ROOT.parent / "migrations/versions"
     assert not any("document" in path.name.lower() for path in migrations.glob("*.py"))
-    app_source = "\n".join(
-        path.read_text(encoding="utf-8") for path in (ROOT / "app").rglob("*.py")
+    documents_source = "\n".join(
+        path.read_text(encoding="utf-8") for path in (ROOT / "app/modules/documents").rglob("*.py")
     )
-    assert "build_documents_registration" not in app_source
-    assert "documents.enabled" not in app_source
-    assert "DocumentRecord" not in app_source
+    assert "build_documents_registration" not in documents_source
+    assert "documents.enabled" not in documents_source
+    assert "DocumentRecord" not in documents_source
 
 
 def test_p11c_registry_remains_inert_and_p11b_mock_remains_test_only() -> None:

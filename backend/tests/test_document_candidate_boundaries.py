@@ -65,9 +65,12 @@ def test_no_executable_or_value_extraction_surface() -> None:
         assert ".text" not in source
 
 
-def test_no_schema_or_dependency_change() -> None:
+def test_p11_candidate_contracts_add_no_candidate_schema() -> None:
     versions = tuple((ROOT / "migrations/versions").glob("*.py"))
-    assert len(versions) == 7
+    migration_source = "\n".join(item.read_text(encoding="utf-8") for item in versions)
+
+    assert "document_candidates" not in migration_source
+    assert "detached_evidence" not in migration_source
     assert "p7a_0007" in (ROOT / "alembic.ini").read_text(encoding="utf-8") or any(
         "p7a_0007" in item.read_text(encoding="utf-8") for item in versions
     )
