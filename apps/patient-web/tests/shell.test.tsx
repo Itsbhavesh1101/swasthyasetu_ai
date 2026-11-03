@@ -1,14 +1,20 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PatientShell } from "../components/patient-shell";
 
+let pathname = "/dashboard";
+
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: () => pathname,
   useRouter: () => ({ push: vi.fn() }),
 }));
 
 describe("patient shell", () => {
+  beforeEach(() => {
+    pathname = "/dashboard";
+  });
+
   it("provides landmarks, navigation, skip target, and persistent urgent help", () => {
     render(
       <PatientShell>
@@ -52,4 +58,28 @@ describe("patient shell", () => {
     expect(navigation).not.toHaveTextContent("Results");
     expect(navigation).not.toHaveTextContent("MannSetu");
   });
+
+  it.each(["/", "/login", "/register"])(
+    "keeps the patient product menu off the authentication route %s",
+    (route) => {
+      pathname = route;
+      render(
+        <PatientShell>
+          <h1>Authentication</h1>
+        </PatientShell>,
+      );
+
+      expect(
+        screen.queryByRole("navigation", { name: "Patient navigation" }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("complementary", { name: "Patient workspace" }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole("main")).toHaveClass("auth-main");
+      expect(screen.getByRole("link", { name: "SwasthyaSetu patient home" })).toHaveAttribute(
+        "href",
+        "/",
+      );
+    },
+  );
 });

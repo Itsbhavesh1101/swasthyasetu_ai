@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { PatientNavigation } from "./patient-navigation";
@@ -6,6 +9,36 @@ import { AccountMenu } from "./account-menu";
 import { UrgentHelpLink } from "./urgent-help-link";
 
 export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
+  const pathname = usePathname();
+  const isAuthenticationRoute =
+    pathname === "/" || pathname === "/login" || pathname === "/register";
+
+  if (isAuthenticationRoute) {
+    return (
+      <div className="auth-shell">
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
+        <main className="auth-main" id="main-content" tabIndex={-1}>
+          <Link aria-label="SwasthyaSetu patient home" className="auth-brand" href="/">
+            <span aria-hidden="true" className="brand-mark">
+              <span>S</span>
+            </span>
+            <span>
+              <strong>SwasthyaSetu</strong>
+              <small>Private patient space</small>
+            </span>
+          </Link>
+          {children}
+          <div className="auth-support">
+            <p>Your account protects your personal health record.</p>
+            <UrgentHelpLink />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="patient-shell">
       <a className="skip-link" href="#main-content">

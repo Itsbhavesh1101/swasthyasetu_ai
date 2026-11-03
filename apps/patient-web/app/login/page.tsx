@@ -1,18 +1,17 @@
 import Link from "next/link";
 import { AccountForm } from "../../components/account-form";
-import { PageHeader } from "../../components/ui-primitives";
 export default function LoginPage() {
   return (
-    <div className="page-stack">
-      <PageHeader
-        eyebrow="Welcome back"
-        title="Sign in to your health record"
-        description="Your password stays private and is never shown after submission."
-      />
+    <section aria-labelledby="login-title" className="auth-card">
+      <header className="auth-card-header">
+        <p className="page-eyebrow">Your private health record</p>
+        <h1 id="login-title">Welcome back</h1>
+        <p>Sign in to continue to your medical history, documents, and personal health profile.</p>
+      </header>
       <AccountForm mode="login" />
-      <p>
-        New here? <Link href="/register">Create an account</Link>.
+      <p className="auth-switch">
+        New to SwasthyaSetu? <Link href="/register">Create account</Link>
       </p>
-    </div>
+    </section>
   );
 }
