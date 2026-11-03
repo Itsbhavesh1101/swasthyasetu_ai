@@ -35,6 +35,7 @@ from app.modules.patients.contracts import (
     ReadFactCapability,
     ReadPatientCapability,
     UpdatePatientCapability,
+    WritePatientFactCapability,
 )
 from app.modules.patients.domain import (
     Patient,
@@ -54,6 +55,9 @@ PATIENTS_CREATE = CapabilityKey[CreatePatientCapability](CapabilityIdentifier("p
 PATIENTS_READ = CapabilityKey[ReadPatientCapability](CapabilityIdentifier("patients.read"))
 PATIENTS_UPDATE = CapabilityKey[UpdatePatientCapability](CapabilityIdentifier("patients.update"))
 PATIENTS_FACT_READ = CapabilityKey[ReadFactCapability](CapabilityIdentifier("patients.fact.read"))
+PATIENTS_FACT_WRITE = CapabilityKey[WritePatientFactCapability](
+    CapabilityIdentifier("patients.fact.write")
+)
 PATIENTS_FACTS_LIST = CapabilityKey[ListFactsCapability](
     CapabilityIdentifier("patients.facts.list")
 )
@@ -68,6 +72,7 @@ PATIENTS_MANIFEST = ModuleManifest(
             PATIENTS_READ,
             PATIENTS_UPDATE,
             PATIENTS_FACT_READ,
+            PATIENTS_FACT_WRITE,
             PATIENTS_FACTS_LIST,
         )
     ),
@@ -110,6 +115,7 @@ def build_patients_registration(
                 reader=service,
                 updater=service,
                 facts=service,
+                fact_writer=service,
                 authenticator=authenticator,
             ),
         ),
@@ -118,6 +124,7 @@ def build_patients_registration(
             PATIENTS_READ.bind(service),
             PATIENTS_UPDATE.bind(service),
             PATIENTS_FACT_READ.bind(service),
+            PATIENTS_FACT_WRITE.bind(service),
             PATIENTS_FACTS_LIST.bind(service),
         ),
     )
@@ -153,6 +160,7 @@ __all__ = [
     "ReferenceRange",
     "PATIENTS_CREATE",
     "PATIENTS_FACT_READ",
+    "PATIENTS_FACT_WRITE",
     "PATIENTS_FACTS_LIST",
     "PATIENTS_MANIFEST",
     "PATIENTS_READ",

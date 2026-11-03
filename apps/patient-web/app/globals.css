@@ -486,7 +486,10 @@ a {
 
 .profile-form input,
 .profile-form select,
-.account-form input {
+.account-form input,
+.history-form input,
+.history-form select,
+.history-form textarea {
   width: 100%;
   min-height: var(--patient-touch);
   border: 1px solid var(--patient-border);
@@ -495,6 +498,43 @@ a {
   color: var(--patient-text);
   padding: 0.7rem 0.8rem;
   font: inherit;
+}
+
+.history-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.history-form label {
+  display: grid;
+  gap: 0.4rem;
+  font-weight: 750;
+}
+
+.history-list {
+  display: grid;
+  gap: 0;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-top: 1px solid var(--patient-border);
+  padding-block: 1rem;
+}
+
+.history-item h3,
+.history-item p {
+  margin: 0;
+}
+
+.history-item--previous {
+  color: var(--patient-muted);
 }
 
 .form-message,

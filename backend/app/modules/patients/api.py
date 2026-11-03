@@ -4,23 +4,38 @@ import base64
 import json
 from datetime import UTC, date, datetime
 from decimal import Decimal
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.api.security.authorization import get_actor_context, require_self_subject
 from app.api.security.patient_authentication import PatientAuthenticator, authenticate_patient
 from app.modules.identity.authorization import PATIENT_READ_SELF, PATIENT_WRITE_SELF
 from app.modules.identity.public import IDENTITY_AUTHORIZE
-from app.modules.patients.clinical import ClinicalFact, FactType, clinical_fact_label
+from app.modules.patients.clinical import (
+    AllergyRecord,
+    ClinicalFact,
+    ClinicalValue,
+    FactSupersession,
+    FactType,
+    InvestigationRecord,
+    MedicationRecord,
+    MedicationStatus,
+    Observation,
+    Problem,
+    ProblemStatus,
+    ProcedureRecord,
+    clinical_fact_label,
+)
 from app.modules.patients.contracts import (
     CreatePatientCapability,
     FactCursor,
     ListFactsCapability,
     ReadPatientCapability,
     UpdatePatientCapability,
+    WritePatientFactCapability,
 )
 from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
 from app.modules.provenance.domain import ProvenanceSourceType, VerificationState
@@ -114,8 +129,122 @@ class FactSummary(BaseModel):
     effective_time: datetime | None
     recorded_at: datetime
     verification_state: VerificationState
+    status: str | None
     superseded_by_fact_id: UUID | None
     provenance: ProvenanceSummary
+
+
+class PatientFactRequestBase(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    effective_time: datetime | None = None
+
+    @field_validator("*", mode="after", check_fields=False)
+    @classmethod
+    def validate_trimmed_strings(cls, value: object) -> object:
+        if isinstance(value, str) and value != value.strip():
+            raise ValueError("text values must be trimmed")
+        return value
+
+    @field_validator("effective_time")
+    @classmethod
+    def validate_effective_time(cls, value: datetime | None) -> datetime | None:
+        if value is None:
+            return None
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("effective_time must be timezone-aware")
+        return value.astimezone(UTC)
+
+
+class ProblemFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.PROBLEM]
+    label: str = Field(min_length=1, max_length=256)
+    status: ProblemStatus
+    onset: date | None = None
+    resolution: date | None = None
+
+
+class MedicationFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.MEDICATION]
+    name: str = Field(min_length=1, max_length=256)
+    status: MedicationStatus
+    dose: Decimal | None = Field(default=None, ge=0)
+    dose_unit: str | None = Field(default=None, min_length=1, max_length=128)
+    route: str | None = Field(default=None, min_length=1, max_length=128)
+    frequency: str | None = Field(default=None, min_length=1, max_length=128)
+    start_date: date | None = None
+    end_date: date | None = None
+    indication: str | None = Field(default=None, min_length=1, max_length=512)
+
+
+class AllergyFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.ALLERGY]
+    substance: str = Field(min_length=1, max_length=256)
+    status: str = Field(min_length=1, max_length=64)
+    reaction: str | None = Field(default=None, min_length=1, max_length=512)
+    severity: str | None = Field(default=None, min_length=1, max_length=128)
+
+
+class ProcedureFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.PROCEDURE]
+    name: str = Field(min_length=1, max_length=256)
+    performed_at: datetime | None = None
+    facility: str | None = Field(default=None, min_length=1, max_length=256)
+    notes: str | None = Field(default=None, min_length=1, max_length=2000)
+
+    @field_validator("performed_at")
+    @classmethod
+    def validate_performed_at(cls, value: datetime | None) -> datetime | None:
+        return PatientFactRequestBase.validate_effective_time(value)
+
+
+class ObservationFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.OBSERVATION]
+    observation_type: str = Field(min_length=1, max_length=256)
+    numeric_value: Decimal | None = None
+    text_value: str | None = Field(default=None, min_length=1, max_length=2000)
+    unit: str | None = Field(default=None, min_length=1, max_length=128)
+
+    @model_validator(mode="after")
+    def validate_single_value(self) -> "ObservationFactRequest":
+        if (self.numeric_value is None) == (self.text_value is None):
+            raise ValueError("exactly one observation value is required")
+        return self
+
+
+class InvestigationFactRequest(PatientFactRequestBase):
+    fact_type: Literal[FactType.INVESTIGATION]
+    investigation_type: str = Field(min_length=1, max_length=256)
+    status: str = Field(min_length=1, max_length=64)
+    performed_at: datetime | None = None
+    result_summary: str | None = Field(default=None, min_length=1, max_length=2000)
+
+    @field_validator("performed_at")
+    @classmethod
+    def validate_performed_at(cls, value: datetime | None) -> datetime | None:
+        return PatientFactRequestBase.validate_effective_time(value)
+
+
+PatientFactRequest = Annotated[
+    ProblemFactRequest
+    | MedicationFactRequest
+    | AllergyFactRequest
+    | ProcedureFactRequest
+    | ObservationFactRequest
+    | InvestigationFactRequest,
+    Field(discriminator="fact_type"),
+]
+
+
+class SupersedeFactRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_current_id: UUID
+    replacement: PatientFactRequest
+
+
+class FactSupersessionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    superseded: FactSummary
+    replacement: FactSummary
 
 
 class FactListResponse(BaseModel):
@@ -143,6 +272,7 @@ def patient_view(patient: Patient) -> PatientResponse:
 
 
 def fact_view(fact: ClinicalFact) -> FactSummary:
+    status_value = getattr(fact.value, "status", None)
     return FactSummary(
         fact_id=fact.fact_id.value,
         fact_type=fact.fact_type,
@@ -150,6 +280,7 @@ def fact_view(fact: ClinicalFact) -> FactSummary:
         effective_time=fact.effective_time,
         recorded_at=fact.recorded_at,
         verification_state=fact.verification_state,
+        status=None if status_value is None else str(status_value),
         superseded_by_fact_id=(
             None if fact.superseded_by_fact_id is None else fact.superseded_by_fact_id.value
         ),
@@ -158,6 +289,75 @@ def fact_view(fact: ClinicalFact) -> FactSummary:
             confidence=fact.provenance.confidence,
             created_at=fact.provenance.created_at,
         ),
+    )
+
+
+def patient_fact_value(payload: PatientFactRequest) -> ClinicalValue:
+    state = VerificationState.PATIENT_CONFIRMED
+    if isinstance(payload, ProblemFactRequest):
+        return Problem(
+            label=payload.label,
+            status=payload.status,
+            onset=payload.onset,
+            resolution=payload.resolution,
+            verification_state=state,
+        )
+    if isinstance(payload, MedicationFactRequest):
+        return MedicationRecord(
+            name=payload.name,
+            status=payload.status,
+            dose=payload.dose,
+            dose_unit=payload.dose_unit,
+            route=payload.route,
+            frequency=payload.frequency,
+            start_date=payload.start_date,
+            end_date=payload.end_date,
+            indication=payload.indication,
+            verification_state=state,
+        )
+    if isinstance(payload, AllergyFactRequest):
+        return AllergyRecord(
+            substance=payload.substance,
+            status=payload.status,
+            reaction=payload.reaction,
+            severity=payload.severity,
+            verification_state=state,
+        )
+    if isinstance(payload, ProcedureFactRequest):
+        return ProcedureRecord(
+            name=payload.name,
+            performed_at=payload.performed_at,
+            facility=payload.facility,
+            notes=payload.notes,
+            verification_state=state,
+        )
+    if isinstance(payload, ObservationFactRequest):
+        return Observation(
+            observation_type=payload.observation_type,
+            value=(
+                payload.numeric_value
+                if payload.numeric_value is not None
+                else payload.text_value or ""
+            ),
+            unit=payload.unit,
+            effective_at=payload.effective_time,
+            verification_state=state,
+        )
+    if isinstance(payload, InvestigationFactRequest):
+        return InvestigationRecord(
+            investigation_type=payload.investigation_type,
+            status=payload.status,
+            performed_at=payload.performed_at,
+            result_summary=payload.result_summary,
+            verification_state=state,
+        )
+    raise ValueError("unsupported patient fact request")
+
+
+def supersession_view(value: FactSupersession) -> FactSupersessionResponse:
+    return FactSupersessionResponse(
+        superseded=fact_view(value.superseded),
+        replacement=fact_view(value.replacement),
     )
 
 
@@ -201,6 +401,7 @@ def build_patients_router(
     reader: ReadPatientCapability,
     facts: ListFactsCapability,
     updater: UpdatePatientCapability,
+    fact_writer: WritePatientFactCapability,
     authenticator: PatientAuthenticator | None = None,
 ) -> APIRouter:
     router_dependencies: list[Any] = []
@@ -309,6 +510,73 @@ def build_patients_router(
             next_cursor=(
                 encode_fact_cursor(page.items[-1]) if page.has_more and page.items else None
             ),
+        )
+
+    @router.post(
+        "/{patient_id}/facts",
+        response_model=FactSummary,
+        status_code=status.HTTP_201_CREATED,
+        dependencies=[Depends(require_self_subject(PATIENT_WRITE_SELF, "patient_id"))],
+    )
+    async def add_patient_fact(
+        patient_id: UUID,
+        payload: PatientFactRequest,
+        request: Request,
+        response: Response,
+    ) -> FactSummary:
+        response.headers["Cache-Control"] = "no-store"
+        context = get_actor_context(request)
+        if context.actor_id is None:
+            raise ApplicationError(
+                code=ErrorCode.AUTHORIZATION_DENIED,
+                message="The authenticated actor is not permitted to update this history.",
+            )
+        return fact_view(
+            await fact_writer.add_patient_fact(
+                patient_id=OpaqueId(patient_id),
+                actor_id=context.actor_id,
+                fact_type=payload.fact_type,
+                value=patient_fact_value(payload),
+                effective_time=payload.effective_time,
+            )
+        )
+
+    @router.post(
+        "/{patient_id}/facts/{fact_id}/supersede",
+        response_model=FactSupersessionResponse,
+        dependencies=[Depends(require_self_subject(PATIENT_WRITE_SELF, "patient_id"))],
+    )
+    async def supersede_patient_fact(
+        patient_id: UUID,
+        fact_id: UUID,
+        payload: SupersedeFactRequest,
+        request: Request,
+        response: Response,
+    ) -> FactSupersessionResponse:
+        response.headers["Cache-Control"] = "no-store"
+        if payload.expected_current_id != fact_id:
+            raise ApplicationError(
+                code=ErrorCode.RESOURCE_CONFLICT,
+                message=(
+                    "The medical-history entry changed or is unavailable. Reload and try again."
+                ),
+            )
+        context = get_actor_context(request)
+        if context.actor_id is None:
+            raise ApplicationError(
+                code=ErrorCode.AUTHORIZATION_DENIED,
+                message="The authenticated actor is not permitted to update this history.",
+            )
+        replacement = payload.replacement
+        return supersession_view(
+            await fact_writer.supersede_patient_fact(
+                patient_id=OpaqueId(patient_id),
+                actor_id=context.actor_id,
+                expected_current_id=OpaqueId(fact_id),
+                fact_type=replacement.fact_type,
+                value=patient_fact_value(replacement),
+                effective_time=replacement.effective_time,
+            )
         )
 
     return router

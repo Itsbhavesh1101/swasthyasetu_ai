@@ -6,7 +6,7 @@ from typing import Protocol
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.patients.clinical import ClinicalFact, FactType
+from app.modules.patients.clinical import ClinicalFact, ClinicalValue, FactSupersession, FactType
 from app.modules.patients.domain import Patient, PatientDemographics
 from app.modules.provenance.domain import VerificationState
 from app.shared.types import OpaqueId
@@ -57,6 +57,29 @@ class UpdatePatientCapability(Protocol):
     ) -> Patient: ...
 
 
+class WritePatientFactCapability(Protocol):
+    async def add_patient_fact(
+        self,
+        *,
+        patient_id: OpaqueId,
+        actor_id: OpaqueId,
+        fact_type: FactType,
+        value: ClinicalValue,
+        effective_time: datetime | None,
+    ) -> ClinicalFact: ...
+
+    async def supersede_patient_fact(
+        self,
+        *,
+        patient_id: OpaqueId,
+        actor_id: OpaqueId,
+        expected_current_id: OpaqueId,
+        fact_type: FactType,
+        value: ClinicalValue,
+        effective_time: datetime | None,
+    ) -> FactSupersession: ...
+
+
 class ReadFactCapability(Protocol):
     async def get_fact(self, fact_id: OpaqueId) -> ClinicalFact: ...
 
@@ -88,7 +111,11 @@ class PatientRepository(Protocol):
 
 
 class ClinicalFactRepository(Protocol):
+    async def add(self, session: AsyncSession, fact: ClinicalFact) -> object: ...
     async def get(self, session: AsyncSession, fact_id: OpaqueId) -> ClinicalFact | None: ...
+    async def persist_supersession(
+        self, session: AsyncSession, supersession: FactSupersession
+    ) -> FactSupersession: ...
     async def list_for_patient(
         self,
         session: AsyncSession,
