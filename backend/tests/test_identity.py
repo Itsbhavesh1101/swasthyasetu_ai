@@ -204,6 +204,7 @@ def test_identity_manifest_and_default_composition_are_explicit_and_router_free(
         "consent",
         "encounters",
         "identity",
+        "patient_accounts",
         "patients",
         "provenance",
         "sessions",

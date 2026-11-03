@@ -51,6 +51,7 @@ def test_p5c_registers_runtime_modules_and_capabilities() -> None:
         "consent",
         "encounters",
         "identity",
+        "patient_accounts",
         "patients",
         "provenance",
         "sessions",

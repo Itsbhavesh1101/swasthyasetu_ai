@@ -93,7 +93,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 subjects.append(
                     RateLimitSubject(rule=self._rules["mutation_credential"], key=credential_key)
                 )
-        if request.method == "POST" and request.url.path == f"{self._api_v1_prefix}/sessions":
+        credential_creation_paths = {
+            f"{self._api_v1_prefix}/sessions",
+            f"{self._api_v1_prefix}/accounts/register",
+            f"{self._api_v1_prefix}/accounts/login",
+        }
+        if request.method == "POST" and request.url.path in credential_creation_paths:
             subjects.append(
                 RateLimitSubject(rule=self._rules["session_creation_peer"], key=peer_key)
             )

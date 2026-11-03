@@ -129,6 +129,7 @@ def test_default_application_registers_sessions_and_seals_capabilities() -> None
         "consent",
         "encounters",
         "identity",
+        "patient_accounts",
         "patients",
         "provenance",
         "sessions",

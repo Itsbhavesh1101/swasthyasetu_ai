@@ -57,6 +57,10 @@ from app.modules.engineering_summary_demo.public import (
     build_engineering_summary_demo_registration,
 )
 from app.modules.identity.public import build_identity_registration
+from app.modules.patient_accounts.public import (
+    build_patient_account_service,
+    build_patient_accounts_registration,
+)
 from app.modules.patients.public import build_patient_service, build_patients_registration
 from app.modules.provenance.public import build_provenance_registration, build_provenance_service
 from app.modules.sessions.public import build_sessions_registration
@@ -120,6 +124,10 @@ def create_app(
     resolved_module_registrations: Sequence[ModuleRegistration[APIRouter]]
     if module_registrations is None:
         patient_service = build_patient_service(database=resolved_database)
+        patient_account_service = build_patient_account_service(
+            database=resolved_database,
+            settings=resolved_settings.patient_accounts,
+        )
         encounter_service = build_encounter_service(
             database=resolved_database, patients=patient_service
         )
@@ -177,6 +185,7 @@ def create_app(
                 provider=llm_provider,
             ),
             build_identity_registration(database=resolved_database),
+            build_patient_accounts_registration(service=patient_account_service),
             build_sessions_registration(
                 settings=resolved_settings.sessions,
                 database=resolved_database,

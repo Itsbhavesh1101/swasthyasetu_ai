@@ -150,6 +150,8 @@ async def test_mutation_and_session_creation_add_stricter_layers() -> None:
     async with await client_for(limiter) as client:
         await client.post("/api/v1/probe", headers={"Authorization": "Bearer opaque"})
         await client.post("/api/v1/sessions")
+        await client.post("/api/v1/accounts/register")
+        await client.post("/api/v1/accounts/login")
 
     assert [item.rule.name for item in limiter.calls[0]] == [
         "process",
@@ -164,6 +166,13 @@ async def test_mutation_and_session_creation_add_stricter_layers() -> None:
         "mutation_peer",
         "session_creation_peer",
     ]
+    for captured in limiter.calls[2:]:
+        assert [item.rule.name for item in captured] == [
+            "process",
+            "peer",
+            "mutation_peer",
+            "session_creation_peer",
+        ]
 
 
 @pytest.mark.asyncio
