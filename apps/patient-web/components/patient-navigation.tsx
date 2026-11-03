@@ -4,14 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navigationItems = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/profile", label: "Profile" },
-  { href: "/history", label: "History" },
-  { href: "/timeline", label: "Timeline" },
-  { href: "/documents", label: "Documents" },
-  { href: "/encounter", label: "Health journey" },
-  { href: "/guidance", label: "Home guidance" },
+  { href: "/", icon: "H", label: "Home" },
+  { href: "/dashboard", icon: "D", label: "Dashboard" },
+  { href: "/profile", icon: "P", label: "Profile" },
+  { href: "/history", icon: "+", label: "History" },
+  { href: "/timeline", icon: "T", label: "Timeline" },
+  { href: "/documents", icon: "F", label: "Documents" },
+  { href: "/encounter", icon: "J", label: "Health journey" },
+  { href: "/guidance", icon: "G", label: "Home guidance" },
 ] as const;
 
 export function PatientNavigation() {
@@ -26,7 +26,10 @@ export function PatientNavigation() {
           href={item.href}
           key={item.href}
         >
-          {item.label}
+          <span aria-hidden="true" className="navigation-icon">
+            {item.icon}
+          </span>
+          <span>{item.label}</span>
         </Link>
       ))}
     </nav>

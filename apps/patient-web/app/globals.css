@@ -3,26 +3,29 @@
 @source "../../../packages/ui/src";
 
 :root {
-  --patient-canvas: #f5f7f2;
-  --patient-surface: #ffffff;
-  --patient-surface-soft: #eaf3ed;
-  --patient-text: #17221d;
-  --patient-muted: #526159;
-  --patient-border: #c8d4cd;
-  --patient-primary: #176448;
-  --patient-primary-strong: #0c4833;
+  --patient-canvas: #051f20;
+  --patient-sidebar: #0b2b26;
+  --patient-surface: #163832;
+  --patient-surface-strong: #235347;
+  --patient-surface-soft: #0b2b26;
+  --patient-text: #daf1de;
+  --patient-muted: #8eb69b;
+  --patient-border: #235347;
+  --patient-primary: #8eb69b;
+  --patient-primary-strong: #daf1de;
   --patient-critical: #a52a2a;
-  --patient-critical-strong: #7d1f1f;
-  --patient-critical-soft: #fff0ed;
-  --patient-focus: #7a4b00;
+  --patient-critical-strong: #ffd8d2;
+  --patient-critical-soft: #3a1717;
+  --patient-focus: #daf1de;
   --patient-radius-sm: 0.75rem;
   --patient-radius: 1.25rem;
   --patient-radius-lg: 2rem;
-  --patient-shadow: 0 1.25rem 3rem rgb(22 65 48 / 10%);
+  --patient-shadow: 0 1.5rem 4rem rgb(0 8 7 / 38%);
+  --patient-glow: 0 0 0 1px rgb(142 182 155 / 8%), 0 0 2.75rem rgb(142 182 155 / 10%);
   --patient-content: 72rem;
   --patient-readable: 46rem;
   --patient-touch: 2.75rem;
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 .intake-form textarea,
@@ -97,17 +100,40 @@ html {
 }
 
 body {
+  min-width: 20rem;
+  min-height: 100vh;
   margin: 0;
   background:
-    radial-gradient(circle at 12% 8%, rgb(154 203 175 / 26%), transparent 24rem),
-    var(--patient-canvas);
+    radial-gradient(circle at 4% 0%, rgb(142 182 155 / 22%), transparent 28rem),
+    radial-gradient(circle at 96% 16%, rgb(35 83 71 / 42%), transparent 30rem),
+    linear-gradient(145deg, #051f20 0%, #0b2b26 46%, #051f20 100%), var(--patient-canvas);
   color: var(--patient-text);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   line-height: 1.6;
 }
 
 a {
   color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 button,
@@ -121,9 +147,11 @@ a {
 }
 
 .patient-shell {
-  display: flex;
+  display: grid;
+  grid-template-columns: 17.5rem minmax(0, 1fr);
+  gap: 1rem;
   min-height: 100vh;
-  flex-direction: column;
+  padding: 1rem;
   overflow-x: clip;
 }
 
@@ -141,7 +169,7 @@ a {
   transform: translateY(-180%);
   border-radius: var(--patient-radius-sm);
   background: var(--patient-text);
-  color: white;
+  color: var(--patient-canvas);
   padding: 0.65rem 1rem;
   font-weight: 700;
   text-decoration: none;
@@ -152,17 +180,56 @@ a {
   transform: translateY(0);
 }
 
+.patient-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  height: calc(100vh - 2rem);
+  min-height: 38rem;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 1px solid rgb(142 182 155 / 20%);
+  border-radius: var(--patient-radius-lg);
+  background:
+    radial-gradient(circle at 15% 4%, rgb(142 182 155 / 17%), transparent 12rem),
+    linear-gradient(165deg, rgb(22 56 50 / 95%), rgb(5 31 32 / 97%));
+  box-shadow: var(--patient-shadow), var(--patient-glow);
+  padding: 1.35rem;
+}
+
+.sidebar-primary {
+  min-height: 0;
+}
+
+.patient-workspace {
+  display: flex;
+  min-width: 0;
+  min-height: calc(100vh - 2rem);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgb(142 182 155 / 16%);
+  border-radius: var(--patient-radius-lg);
+  background: rgb(5 31 32 / 68%);
+  box-shadow: var(--patient-shadow);
+}
+
 .site-header {
-  border-bottom: 1px solid var(--patient-border);
-  background: rgb(255 255 255 / 92%);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid rgb(142 182 155 / 16%);
+  background: rgb(5 31 32 / 84%);
+  backdrop-filter: blur(1.25rem);
 }
 
 .header-primary {
   display: flex;
+  min-height: 5.25rem;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding-block: 1rem;
+  padding: 1rem clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .brand {
@@ -175,21 +242,90 @@ a {
 }
 
 .brand-mark {
+  position: relative;
   display: grid;
   width: 2.75rem;
   height: 2.75rem;
   place-items: center;
-  border-radius: 0.9rem 0.9rem 0.9rem 0.2rem;
-  background: var(--patient-primary);
-  color: white;
+  border: 1px solid rgb(218 241 222 / 42%);
+  border-radius: 1rem;
+  background: linear-gradient(145deg, var(--patient-primary), var(--patient-surface-strong));
+  color: var(--patient-canvas);
   font-size: 1.15rem;
   font-weight: 800;
+  box-shadow: 0 0 1.8rem rgb(142 182 155 / 24%);
+}
+
+.brand-mark::after {
+  position: absolute;
+  inset: 0.3rem;
+  border: 1px solid rgb(5 31 32 / 32%);
+  border-radius: 0.7rem;
+  content: "";
 }
 
 .brand strong,
 .brand small {
   display: block;
   line-height: 1.2;
+}
+
+.privacy-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1.5rem 0 1rem;
+  color: var(--patient-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.privacy-dot,
+.workspace-pulse {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--patient-primary);
+  box-shadow:
+    0 0 0 0.25rem rgb(142 182 155 / 12%),
+    0 0 1rem var(--patient-primary);
+}
+
+.workspace-title,
+.workspace-title > span:last-child {
+  display: flex;
+  align-items: center;
+}
+
+.workspace-title {
+  gap: 0.8rem;
+}
+
+.workspace-title > span:last-child {
+  align-items: flex-start;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.workspace-title small {
+  color: var(--patient-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.workspace-title strong {
+  font-size: 0.98rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .brand strong {
@@ -211,16 +347,16 @@ a {
   min-height: var(--patient-touch);
   align-items: center;
   gap: 0.55rem;
-  border: 2px solid var(--patient-critical);
+  border: 1px solid rgb(255 176 166 / 40%);
   border-radius: 999px;
-  color: var(--patient-critical-strong);
+  color: #ffd8d2;
   padding: 0.55rem 1rem;
   font-weight: 800;
   text-decoration: none;
 }
 
 .urgent-help-link:hover {
-  background: var(--patient-critical-soft);
+  background: rgb(165 42 42 / 28%);
 }
 
 .urgent-help-dot {
@@ -232,19 +368,19 @@ a {
 }
 
 .patient-navigation {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  padding-bottom: 0.65rem;
+  display: grid;
+  gap: 0.4rem;
 }
 
 .navigation-link {
-  display: inline-flex;
+  display: flex;
   min-height: var(--patient-touch);
   align-items: center;
-  border-radius: var(--patient-radius-sm);
+  gap: 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.9rem;
   color: var(--patient-muted);
-  padding: 0.5rem 0.85rem;
+  padding: 0.58rem 0.7rem;
   font-weight: 700;
   text-decoration: none;
   white-space: nowrap;
@@ -252,12 +388,62 @@ a {
 
 .navigation-link:hover,
 .navigation-link[aria-current="page"] {
-  background: var(--patient-surface-soft);
-  color: var(--patient-primary-strong);
+  border-color: rgb(142 182 155 / 28%);
+  background: linear-gradient(90deg, rgb(142 182 155 / 18%), rgb(35 83 71 / 24%));
+  color: var(--patient-text);
+  box-shadow:
+    inset 0 0 1.5rem rgb(142 182 155 / 5%),
+    0 0 1.5rem rgb(142 182 155 / 8%);
+}
+
+.navigation-icon {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(142 182 155 / 24%);
+  border-radius: 0.6rem;
+  background: rgb(5 31 32 / 48%);
+  color: var(--patient-primary);
+  font-size: 0.73rem;
+  font-weight: 900;
+}
+
+.navigation-link[aria-current="page"] .navigation-icon {
+  background: var(--patient-primary);
+  color: var(--patient-canvas);
+}
+
+.sidebar-support {
+  display: grid;
+  gap: 0.85rem;
+  border-top: 1px solid rgb(142 182 155 / 14%);
+  padding-top: 1rem;
+}
+
+.sidebar-support p {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  color: var(--patient-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.sidebar-support p strong {
+  color: var(--patient-text);
+  font-size: 0.86rem;
+}
+
+.sidebar-support .urgent-help-link {
+  justify-content: center;
 }
 
 .main-content {
   flex: 1;
+  width: min(100% - clamp(2rem, 5vw, 5rem), var(--patient-content));
+  margin-inline: auto;
   padding-block: clamp(2.5rem, 7vw, 6rem);
 }
 
@@ -272,6 +458,14 @@ a {
 
 .page-header {
   max-width: var(--patient-readable);
+}
+
+.welcome-line {
+  width: fit-content;
+  border: 1px solid rgb(142 182 155 / 20%);
+  border-radius: 999px;
+  background: rgb(142 182 155 / 9%);
+  padding: 0.55rem 0.9rem;
 }
 
 .page-eyebrow,
@@ -292,6 +486,7 @@ a {
   font-weight: 750;
   letter-spacing: -0.055em;
   line-height: 1.02;
+  text-wrap: balance;
 }
 
 .page-description {
@@ -314,12 +509,17 @@ a {
   align-items: center;
   justify-content: center;
   gap: 0.8rem;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   border-radius: var(--patient-radius-sm);
   padding: 0.7rem 1.15rem;
   font: inherit;
   font-weight: 800;
   text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
 }
 
 .action-link {
@@ -329,12 +529,14 @@ a {
 .action-link--primary,
 .button--primary {
   background: var(--patient-primary);
-  color: white;
+  color: var(--patient-canvas);
+  box-shadow: 0 0.75rem 2rem rgb(142 182 155 / 14%);
 }
 
 .action-link--primary:hover,
 .button--primary:hover {
   background: var(--patient-primary-strong);
+  transform: translateY(-1px);
 }
 
 .action-link--secondary {
@@ -362,17 +564,50 @@ a {
   gap: 1rem;
 }
 
+.feature-grid .panel {
+  min-height: 15rem;
+}
+
+.feature-grid .panel .action-link {
+  margin-top: 0.65rem;
+}
+
 .panel,
 .state-panel {
   min-width: 0;
   border: 1px solid var(--patient-border);
   border-radius: var(--patient-radius);
-  background: var(--patient-surface);
-  box-shadow: var(--patient-shadow);
+  background:
+    linear-gradient(145deg, rgb(35 83 71 / 68%), rgb(11 43 38 / 82%)), var(--patient-surface);
+  box-shadow:
+    var(--patient-shadow),
+    inset 0 1px rgb(218 241 222 / 4%);
 }
 
 .panel {
+  position: relative;
+  overflow: hidden;
   padding: clamp(1.25rem, 3vw, 2rem);
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.panel::before {
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 45%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--patient-primary), transparent);
+  content: "";
+  opacity: 0.65;
+}
+
+.panel:hover {
+  border-color: rgb(142 182 155 / 42%);
+  box-shadow: var(--patient-shadow), var(--patient-glow);
+  transform: translateY(-2px);
 }
 
 .panel h2,
@@ -397,7 +632,8 @@ a {
   border: 1px solid var(--patient-border);
   border-left: 0.35rem solid var(--patient-primary);
   border-radius: var(--patient-radius);
-  background: var(--patient-surface-soft);
+  background: rgb(11 43 38 / 84%);
+  box-shadow: inset 0 1px rgb(218 241 222 / 4%);
   padding: 1.25rem;
 }
 
@@ -415,12 +651,17 @@ a {
   place-items: center;
   border-radius: 50%;
   background: var(--patient-primary);
-  color: white;
+  color: var(--patient-canvas);
   font-weight: 900;
 }
 
 .status-banner--critical .status-symbol {
   background: var(--patient-critical);
+  color: white;
+}
+
+.status-banner--critical p {
+  color: var(--patient-critical-strong);
 }
 
 .state-panel {
@@ -450,8 +691,8 @@ a {
 .button:disabled {
   cursor: not-allowed;
   border-color: var(--patient-border);
-  background: #e6eae7;
-  color: #5c665f;
+  background: var(--patient-canvas);
+  color: var(--patient-muted);
   opacity: 1;
 }
 
@@ -463,6 +704,17 @@ a {
 
 .button--secondary:hover:not(:disabled) {
   border-color: var(--patient-primary);
+}
+
+.button--account {
+  border-color: rgb(142 182 155 / 24%);
+  background: rgb(22 56 50 / 78%);
+  color: var(--patient-text);
+}
+
+.button--account:hover {
+  border-color: var(--patient-primary);
+  background: var(--patient-surface-strong);
 }
 
 .onboarding-form,
@@ -496,15 +748,42 @@ a {
   min-height: var(--patient-touch);
   border: 1px solid var(--patient-border);
   border-radius: var(--patient-radius-sm);
-  background: white;
+  background: rgb(5 31 32 / 76%);
   color: var(--patient-text);
   padding: 0.7rem 0.8rem;
   font: inherit;
 }
 
+.profile-form input:hover,
+.profile-form select:hover,
+.account-form input:hover,
+.history-form input:hover,
+.history-form select:hover,
+.history-form textarea:hover,
+.profile-form input:focus,
+.profile-form select:focus,
+.account-form input:focus,
+.history-form input:focus,
+.history-form select:focus,
+.history-form textarea:focus {
+  border-color: var(--patient-primary);
+  box-shadow: 0 0 0 0.2rem rgb(142 182 155 / 10%);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgb(142 182 155 / 72%);
+}
+
 .history-form {
   display: grid;
   gap: 1.25rem;
+}
+
+input,
+select,
+textarea {
+  color-scheme: dark;
 }
 
 .history-form label {
@@ -613,7 +892,7 @@ a {
   gap: 0.9rem;
   border: 2px solid var(--patient-border);
   border-radius: var(--patient-radius-sm);
-  background: var(--patient-surface);
+  background: rgb(11 43 38 / 76%);
   padding: 1rem;
   min-height: var(--patient-touch);
   cursor: pointer;
@@ -622,7 +901,7 @@ a {
 .choice-card:has(input:checked),
 .agreement-control:has(input:checked) {
   border-color: var(--patient-primary);
-  background: var(--patient-surface-soft);
+  background: rgb(35 83 71 / 78%);
 }
 
 .choice-card input,
@@ -683,7 +962,7 @@ a {
 
 .site-footer {
   border-top: 1px solid var(--patient-border);
-  background: #e8eee9;
+  background: rgb(5 31 32 / 72%);
 }
 
 .footer-content {
@@ -693,6 +972,7 @@ a {
   padding-block: 2rem;
   color: var(--patient-muted);
   font-size: 0.9rem;
+  padding-inline: clamp(1.25rem, 3vw, 2.5rem);
 }
 
 .footer-content strong {
@@ -706,6 +986,68 @@ a {
 @keyframes patient-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 64rem) {
+  .patient-shell {
+    grid-template-columns: 1fr;
+    padding: 0.75rem;
+  }
+
+  .patient-sidebar {
+    position: relative;
+    top: auto;
+    z-index: 30;
+    display: grid;
+    height: auto;
+    min-height: 0;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    border-radius: var(--patient-radius);
+    padding: 1rem;
+  }
+
+  .sidebar-primary {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .privacy-label,
+  .sidebar-support p {
+    display: none;
+  }
+
+  .patient-navigation {
+    display: flex;
+    min-width: 0;
+    gap: 0.35rem;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    padding: 0.2rem 0 0.35rem;
+    scrollbar-width: thin;
+  }
+
+  .navigation-link {
+    flex: 0 0 auto;
+  }
+
+  .sidebar-support {
+    border: 0;
+    padding: 0;
+  }
+
+  .sidebar-support .urgent-help-link {
+    white-space: nowrap;
+  }
+
+  .patient-workspace {
+    min-height: calc(100vh - 1.5rem);
+    border-radius: var(--patient-radius);
   }
 }
 
@@ -756,6 +1098,16 @@ a {
 .account-entry-grid > section {
   display: grid;
   gap: 0.65rem;
+  overflow: hidden;
+  border: 1px solid rgb(142 182 155 / 22%);
+  border-radius: var(--patient-radius);
+  background:
+    radial-gradient(circle at 100% 0%, rgb(142 182 155 / 12%), transparent 15rem),
+    linear-gradient(145deg, rgb(35 83 71 / 64%), rgb(11 43 38 / 86%));
+  box-shadow:
+    var(--patient-shadow),
+    inset 0 1px rgb(218 241 222 / 5%);
+  padding: clamp(1.25rem, 3vw, 2rem);
 }
 
 .form-heading {
@@ -778,6 +1130,53 @@ a {
 @media (max-width: 760px) {
   .account-entry-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 40rem) {
+  .patient-shell {
+    gap: 0.65rem;
+    padding: 0.5rem;
+  }
+
+  .patient-sidebar {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 0.85rem;
+  }
+
+  .sidebar-primary {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .sidebar-support .urgent-help-link {
+    width: 100%;
+  }
+
+  .brand {
+    padding-inline: 0.25rem;
+  }
+
+  .site-header {
+    position: relative;
+  }
+
+  .header-primary {
+    min-height: 4.4rem;
+    padding: 0.8rem 1rem;
+  }
+
+  .workspace-title small {
+    display: none;
+  }
+
+  .workspace-title strong {
+    font-size: 0.88rem;
+  }
+
+  .main-content {
+    width: min(100% - 1.5rem, var(--patient-content));
   }
 }
 
