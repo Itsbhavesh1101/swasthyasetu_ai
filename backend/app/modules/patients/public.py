@@ -38,6 +38,7 @@ from app.modules.patients.contracts import (
     WritePatientFactCapability,
 )
 from app.modules.patients.domain import (
+    BloodGroup,
     Patient,
     PatientDemographics,
     PatientId,
@@ -132,6 +133,7 @@ def build_patients_registration(
 
 __all__ = [
     "AllergyRecord",
+    "BloodGroup",
     "ClinicalFact",
     "ClinicalFactId",
     "ClinicalTime",

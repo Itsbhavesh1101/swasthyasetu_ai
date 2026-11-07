@@ -7,6 +7,7 @@ from decimal import Decimal
 import pytest
 
 from app.modules.patients.public import (
+    BloodGroup,
     Patient,
     PatientDemographics,
     PatientIdentifier,
@@ -175,3 +176,73 @@ def test_demographics_validates_measurements_and_derives_bmi() -> None:
         PatientDemographics(height_cm=Decimal("29.9"))
     with pytest.raises(ValueError, match="weight_kg"):
         PatientDemographics(weight_kg=Decimal("700.1"))
+
+
+def test_demographics_accepts_closed_blood_groups_and_synthetic_contact_details() -> None:
+    assert {value.value for value in BloodGroup} == {
+        "A+",
+        "A-",
+        "B+",
+        "B-",
+        "AB+",
+        "AB-",
+        "O+",
+        "O-",
+        "UNKNOWN",
+    }
+    minimum = PatientDemographics(
+        mobile_number="+1234567",
+        blood_group=BloodGroup.UNKNOWN,
+        demo_aadhaar_reference="DEMO-AADHAAR-0001",
+    )
+    maximum = PatientDemographics(
+        mobile_number="+123456789012345",
+        blood_group=BloodGroup.AB_POSITIVE,
+        demo_aadhaar_reference="DEMO-AADHAAR-9999",
+    )
+
+    assert minimum.mobile_number == "+1234567"
+    assert minimum.blood_group is BloodGroup.UNKNOWN
+    assert maximum.mobile_number == "+123456789012345"
+    assert maximum.blood_group is BloodGroup.AB_POSITIVE
+
+
+@pytest.mark.parametrize(
+    "mobile_number",
+    [
+        "1234567890",
+        "+123456",
+        "+1234567890123456",
+        "+01234567",
+        "+12 34567",
+        "+12-34567",
+        " +1234567",
+        "+1234567 ",
+        "+१२३४५६७",
+    ],
+)
+def test_demographics_rejects_non_e164_mobile_numbers(mobile_number: str) -> None:
+    with pytest.raises(ValueError, match="mobile_number"):
+        PatientDemographics(mobile_number=mobile_number)
+
+
+def test_demographics_rejects_arbitrary_blood_group() -> None:
+    with pytest.raises((TypeError, ValueError), match="blood_group"):
+        PatientDemographics(blood_group="A positive")  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "reference",
+    [
+        "123456789012",
+        "DEMO-AADHAAR-123",
+        "DEMO-AADHAAR-12345",
+        "demo-aadhaar-1234",
+        "DEMO-AADHAAR-१२३४",
+        " DEMO-AADHAAR-1234",
+        "DEMO-AADHAAR-1234 ",
+    ],
+)
+def test_demographics_rejects_real_or_malformed_aadhaar_values(reference: str) -> None:
+    with pytest.raises(ValueError, match="demo_aadhaar_reference"):
+        PatientDemographics(demo_aadhaar_reference=reference)

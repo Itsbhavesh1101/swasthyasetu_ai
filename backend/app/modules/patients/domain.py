@@ -1,5 +1,6 @@
 """Framework-independent patient profile domain values."""
 
+import re
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from decimal import Decimal
@@ -17,6 +18,24 @@ class PatientStatus(StrEnum):
     INACTIVE = "INACTIVE"
     MERGED = "MERGED"
     DELETED_PENDING = "DELETED_PENDING"
+
+
+class BloodGroup(StrEnum):
+    """Closed self-reported blood-group values."""
+
+    A_POSITIVE = "A+"
+    A_NEGATIVE = "A-"
+    B_POSITIVE = "B+"
+    B_NEGATIVE = "B-"
+    AB_POSITIVE = "AB+"
+    AB_NEGATIVE = "AB-"
+    O_POSITIVE = "O+"
+    O_NEGATIVE = "O-"
+    UNKNOWN = "UNKNOWN"
+
+
+_E164_MOBILE = re.compile(r"^\+[1-9][0-9]{6,14}$", flags=re.ASCII)
+_DEMO_AADHAAR_REFERENCE = re.compile(r"^DEMO-AADHAAR-[0-9]{4}$", flags=re.ASCII)
 
 
 def _normalize_utc(name: str, value: datetime) -> datetime:
@@ -68,6 +87,9 @@ class PatientDemographics:
     location_context: str | None = None
     height_cm: Decimal | None = None
     weight_kg: Decimal | None = None
+    mobile_number: str | None = None
+    blood_group: BloodGroup | None = None
+    demo_aadhaar_reference: str | None = None
 
     def __post_init__(self) -> None:
         if self.date_of_birth is not None and type(self.date_of_birth) is not date:
@@ -89,6 +111,16 @@ class PatientDemographics:
             raise ValueError("height_cm must be between 30 and 275")
         if self.weight_kg is not None and not Decimal("1") <= self.weight_kg <= Decimal("700"):
             raise ValueError("weight_kg must be between 1 and 700")
+        if self.mobile_number is not None and not _E164_MOBILE.fullmatch(self.mobile_number):
+            raise ValueError("mobile_number must be a valid E.164 number")
+        if self.blood_group is not None and not isinstance(self.blood_group, BloodGroup):
+            raise TypeError("blood_group must be a BloodGroup")
+        if self.demo_aadhaar_reference is not None and not _DEMO_AADHAAR_REFERENCE.fullmatch(
+            self.demo_aadhaar_reference
+        ):
+            raise ValueError(
+                "demo_aadhaar_reference must use the synthetic DEMO-AADHAAR-0000 format"
+            )
 
     @property
     def bmi(self) -> Decimal | None:
