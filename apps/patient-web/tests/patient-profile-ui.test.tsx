@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -31,6 +31,24 @@ it("shows the signed-in patient dashboard and core health-record actions", async
   expect(screen.getByRole("link", { name: /open profile/i })).toHaveAttribute("href", "/profile");
   expect(screen.getByRole("link", { name: /open history/i })).toHaveAttribute("href", "/history");
   expect(screen.getByRole("link", { name: /open documents/i })).toBeVisible();
+  const setup = screen.getByRole("region", { name: /complete your health record/i });
+  expect(within(setup).getByRole("link", { name: /review personal details/i })).toHaveAttribute(
+    "href",
+    "/profile",
+  );
+  for (const label of ["Add conditions", "Add medicines", "Add allergies", "Add procedures"]) {
+    expect(within(setup).getByRole("link", { name: label })).toHaveAttribute("href", "/history");
+  }
+  expect(within(setup).getByRole("link", { name: /add documents/i })).toHaveAttribute(
+    "href",
+    "/documents",
+  );
+  expect(within(setup).getByRole("link", { name: /start guided intake/i })).toHaveAttribute(
+    "href",
+    "/encounter",
+  );
+  expect(setup).toHaveTextContent(/optional/i);
+  expect(setup).not.toHaveTextContent(/✓|completed|\d+%/i);
 });
 
 it("loads and saves the editable patient profile with an optimistic version", async () => {

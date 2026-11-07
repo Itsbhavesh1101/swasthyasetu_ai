@@ -8,6 +8,21 @@ test("patient account preserves profile, all history categories, correction, tim
   test.slow();
   const credentials = await registerPatient(page, "Synthetic History Patient");
 
+  const setup = page.getByRole("region", { name: "Complete your health record" });
+  await expect(setup).toContainText("Optional next steps");
+  for (const action of [
+    "Review personal details",
+    "Add conditions",
+    "Add medicines",
+    "Add allergies",
+    "Add procedures",
+    "Add documents",
+    "Start guided intake",
+  ]) {
+    await expect(setup.getByRole("link", { name: action })).toBeVisible();
+  }
+  await expect(setup).not.toContainText(/✓|completed|\d+%/i);
+
   await page.goto("/profile");
   await page.getByLabel("Preferred language").selectOption("en");
   await page.getByLabel("Date of birth").fill("1998-04-12");

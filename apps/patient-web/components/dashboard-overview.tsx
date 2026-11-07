@@ -5,6 +5,16 @@ import { useEffect, useState } from "react";
 import type { AccountState } from "../lib/account/contracts";
 import { ActionLink, LoadingState, Panel } from "./ui-primitives";
 
+const setupActions = [
+  ["Review personal details", "/profile"],
+  ["Add conditions", "/history"],
+  ["Add medicines", "/history"],
+  ["Add allergies", "/history"],
+  ["Add procedures", "/history"],
+  ["Add documents", "/documents"],
+  ["Start guided intake", "/encounter"],
+] as const;
+
 export function DashboardOverview() {
   const [account, setAccount] = useState<AccountState | undefined>();
 
@@ -36,6 +46,23 @@ export function DashboardOverview() {
   return (
     <section aria-label="Your health record" className="page-stack">
       <p className="welcome-line">Welcome back, {account.displayName ?? "patient"}.</p>
+      <section aria-labelledby="health-record-setup-heading" className="setup-checklist panel">
+        <header>
+          <p className="card-kicker">Optional next steps</p>
+          <h2 id="health-record-setup-heading">Complete your health record</h2>
+          <p>Add only the information you want to keep in your private patient record.</p>
+        </header>
+        <ul className="setup-action-list">
+          {setupActions.map(([label, href]) => (
+            <li key={label}>
+              <ActionLink href={href}>{label}</ActionLink>
+            </li>
+          ))}
+        </ul>
+        <p className="setup-checklist-note">
+          These are optional actions, not a medical assessment or measure of care quality.
+        </p>
+      </section>
       <div className="feature-grid">
         <Panel>
           <p className="card-kicker">Your details</p>
