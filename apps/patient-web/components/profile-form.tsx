@@ -5,11 +5,14 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
 import type {
+  BloodGroup,
   PatientDemographics,
   PatientProfile,
   PatientProfileState,
   PatientProfileSubmission,
 } from "../lib/patient/contracts";
+import { bloodGroupOptions } from "./profile-fields";
+import { ProfileSetupWizard } from "./profile-setup-wizard";
 import { ErrorState, LoadingState } from "./ui-primitives";
 
 const emptyDemographics: PatientDemographics = {
@@ -104,9 +107,9 @@ export function ProfileForm() {
         locationContext: optional(data, "locationContext"),
         heightCm: Number(data.get("heightCm")),
         weightKg: Number(data.get("weightKg")),
-        mobileNumber: demographics.mobileNumber,
-        bloodGroup: demographics.bloodGroup,
-        demoAadhaarReference: demographics.demoAadhaarReference,
+        mobileNumber: optional(data, "mobileNumber"),
+        bloodGroup: optional(data, "bloodGroup") as BloodGroup | null,
+        demoAadhaarReference: optional(data, "demoAadhaarReference"),
       },
     };
     setBusy(true);
@@ -157,6 +160,7 @@ export function ProfileForm() {
       />
     );
   if (!profile) return <LoadingState label="Loading your personal details." />;
+  if (!profile.profileComplete) return <ProfileSetupWizard profile={profile} />;
   const demographics = profile.demographics ?? emptyDemographics;
   const parsedHeight = Number(heightCm);
   const parsedWeight = Number(weightKg);
@@ -267,6 +271,47 @@ export function ProfileForm() {
           BMI (calculated)
           <output className="calculated-field">{bmi === null ? "—" : bmi.toFixed(1)}</output>
           <small>For profile context only; this is not a diagnosis.</small>
+        </label>
+        <label>
+          Mobile number
+          <input
+            autoComplete="tel"
+            defaultValue={demographics.mobileNumber ?? ""}
+            inputMode="tel"
+            maxLength={16}
+            name="mobileNumber"
+            pattern="\+[1-9][0-9]{6,14}"
+            placeholder="+919876543210"
+            required
+            type="tel"
+          />
+          <small>Include the country code. This is not used for login or OTP.</small>
+        </label>
+        <label>
+          Blood group
+          <select defaultValue={demographics.bloodGroup ?? ""} name="bloodGroup" required>
+            <option disabled value="">
+              Choose a blood group
+            </option>
+            {bloodGroupOptions.map(({ label, value }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+          <small>Self-reported only. Do not rely on this for emergency decisions.</small>
+        </label>
+        <label>
+          Aadhaar demonstration reference
+          <input
+            defaultValue={demographics.demoAadhaarReference ?? ""}
+            maxLength={17}
+            name="demoAadhaarReference"
+            pattern="DEMO-AADHAAR-[0-9]{4}"
+            placeholder="DEMO-AADHAAR-1234"
+            required
+          />
+          <small>Synthetic college-demo value only. Never enter a real Aadhaar number.</small>
         </label>
         <label>
           Gender identity (optional)
