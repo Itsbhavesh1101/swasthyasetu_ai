@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.patients.application import PatientService
 from app.modules.patients.clinical import ClinicalFact, FactSupersession
-from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
+from app.modules.patients.domain import BloodGroup, Patient, PatientDemographics, PatientStatus
 from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.persistence import DatabaseRuntime
 from app.shared.types import OpaqueId
@@ -85,7 +85,13 @@ async def test_profile_update_is_optimistic_and_normalizes_clock_to_utc() -> Non
         facts=FakeFacts(),
         clock=lambda: NOW.astimezone(timezone(timedelta(hours=5, minutes=30))),
     )
-    demographics = PatientDemographics(date_of_birth=date(2000, 1, 2), location_context="Delhi")
+    demographics = PatientDemographics(
+        date_of_birth=date(2000, 1, 2),
+        location_context="Delhi",
+        mobile_number="+919876543210",
+        blood_group=BloodGroup.B_POSITIVE,
+        demo_aadhaar_reference="DEMO-AADHAAR-2301",
+    )
 
     updated = await service.update_profile(
         patient_id=existing.patient_id,

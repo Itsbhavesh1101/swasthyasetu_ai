@@ -21,6 +21,9 @@ const emptyDemographics: PatientDemographics = {
   heightCm: null,
   weightKg: null,
   bmi: null,
+  mobileNumber: null,
+  bloodGroup: null,
+  demoAadhaarReference: null,
 };
 
 function optional(data: FormData, name: string) {
@@ -101,6 +104,9 @@ export function ProfileForm() {
         locationContext: optional(data, "locationContext"),
         heightCm: Number(data.get("heightCm")),
         weightKg: Number(data.get("weightKg")),
+        mobileNumber: demographics.mobileNumber,
+        bloodGroup: demographics.bloodGroup,
+        demoAadhaarReference: demographics.demoAadhaarReference,
       },
     };
     setBusy(true);

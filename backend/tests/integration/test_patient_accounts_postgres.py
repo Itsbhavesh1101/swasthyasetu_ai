@@ -178,6 +178,9 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
                 "date_of_birth": "2000-01-02",
                 "administrative_sex": "female",
                 "location_context": "Delhi",
+                "mobile_number": "+919876543210",
+                "blood_group": "B+",
+                "demo_aadhaar_reference": "DEMO-AADHAAR-2301",
             },
         }
         updated = await client.patch(
@@ -189,8 +192,26 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
         assert updated.status_code == 200
         assert updated.json()["preferred_language"] == "hi"
         assert updated.json()["demographics"]["location_context"] == "Delhi"
+        assert updated.json()["demographics"]["mobile_number"] == "+919876543210"
+        assert updated.json()["demographics"]["blood_group"] == "B+"
+        assert (
+            updated.json()["demographics"]["demo_aadhaar_reference"]
+            == "DEMO-AADHAAR-2301"
+        )
         assert stale.status_code == 409
         assert stale.json()["error"]["code"] == "RESOURCE_CONFLICT"
+
+        for invalid_demographics in (
+            {**update_payload["demographics"], "mobile_number": "9876543210"},
+            {**update_payload["demographics"], "blood_group": "X"},
+            {**update_payload["demographics"], "demo_aadhaar_reference": "123456789012"},
+        ):
+            invalid = await client.patch(
+                f"/api/v1/patients/{patient_id}",
+                headers=bearer,
+                json={**update_payload, "demographics": invalid_demographics},
+            )
+            assert invalid.status_code == 422
 
 
 async def test_duplicate_email_and_bad_credentials_are_generic(
