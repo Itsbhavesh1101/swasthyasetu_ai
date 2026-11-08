@@ -1,3 +1,5 @@
+export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-" | "UNKNOWN";
+
 export type PatientDemographics = {
   dateOfBirth: string | null;
   administrativeSex: string | null;
@@ -7,6 +9,9 @@ export type PatientDemographics = {
   heightCm: number | null;
   weightKg: number | null;
   bmi: number | null;
+  mobileNumber: string | null;
+  bloodGroup: BloodGroup | null;
+  demoAadhaarReference: string | null;
 };
 
 export type PatientProfile = {

@@ -49,6 +49,9 @@ function profile(updatedAt = "2026-11-03T10:00:00Z") {
       height_cm: 165,
       weight_kg: 60,
       bmi: 22,
+      mobile_number: "+919876543210",
+      blood_group: "B+",
+      demo_aadhaar_reference: "DEMO-AADHAAR-2301",
     },
     created_at: "2026-11-03T09:00:00Z",
     updated_at: updatedAt,
@@ -102,6 +105,9 @@ describe("patient profile BFF", () => {
           locationContext: null,
           heightCm: null,
           weightKg: null,
+          mobileNumber: null,
+          bloodGroup: null,
+          demoAadhaarReference: null,
         },
         patientId: "attacker-controlled",
       }),
@@ -131,6 +137,9 @@ describe("patient profile BFF", () => {
           locationContext: "Delhi",
           heightCm: 165,
           weightKg: 60,
+          mobileNumber: "+919876543210",
+          bloodGroup: "B+",
+          demoAadhaarReference: "DEMO-AADHAAR-2301",
         },
         displayName: "Patient Demo",
       }),
@@ -144,7 +153,45 @@ describe("patient profile BFF", () => {
       unknown
     >;
     expect(forwarded).not.toHaveProperty("patient_id");
-    expect(forwarded).toMatchObject({ preferred_language: "hi" });
+    expect(forwarded).toMatchObject({
+      preferred_language: "hi",
+      demographics: {
+        mobile_number: "+919876543210",
+        blood_group: "B+",
+        demo_aadhaar_reference: "DEMO-AADHAAR-2301",
+      },
+    });
+  });
+
+  it.each([
+    ["mobileNumber", "9876543210"],
+    ["bloodGroup", "X"],
+    ["demoAadhaarReference", "123456789012"],
+  ])("rejects invalid %s before backend access", async (field, value) => {
+    const backend = vi.fn();
+    vi.stubGlobal("fetch", backend);
+    const response = await PATCH(
+      request("PATCH", {
+        expectedUpdatedAt: "2026-11-03T10:00:00Z",
+        preferredLanguage: "en",
+        displayName: "Patient Demo",
+        demographics: {
+          dateOfBirth: "2000-01-02",
+          administrativeSex: "female",
+          genderIdentity: null,
+          pregnancyStatus: null,
+          locationContext: "Delhi",
+          heightCm: 165,
+          weightKg: 60,
+          mobileNumber: "+919876543210",
+          bloodGroup: "B+",
+          demoAadhaarReference: "DEMO-AADHAAR-2301",
+          [field]: value,
+        },
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(backend).not.toHaveBeenCalled();
   });
 
   it("returns anonymous without backend access when credentials are absent", async () => {

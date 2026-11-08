@@ -69,4 +69,12 @@ describe("P6-C deterministic accessibility baseline", () => {
     expect(styles).toContain(".agreement-control");
     expect(styles).toContain(".choice-card");
   });
+
+  it("keeps first-time profile tiles keyboard, motion, and small-screen safe", () => {
+    expect(styles).toContain(".profile-wizard-card");
+    expect(styles).toContain(".wizard-field input");
+    expect(styles).toContain("min-height: 3.35rem");
+    expect(styles).toContain("@media (max-width: 30rem)");
+    expect(styles).toContain("transition: width 220ms ease");
+  });
 });

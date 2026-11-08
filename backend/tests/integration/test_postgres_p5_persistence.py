@@ -26,6 +26,7 @@ from app.modules.patients.infrastructure import (
     ClinicalFactRecord,
     MedicationRecordProjection,
     ObservationRecordProjection,
+    PatientDemographicsRecord,
     PatientIdentifierRecord,
     PatientRecord,
     PostgresClinicalFactRepository,
@@ -33,6 +34,7 @@ from app.modules.patients.infrastructure import (
 )
 from app.modules.patients.public import (
     AllergyRecord,
+    BloodGroup,
     ClinicalFact,
     FactSupersession,
     FactType,
@@ -101,6 +103,9 @@ def _patient(*, identifier_value: str = "synthetic-identifier") -> Patient:
             gender_identity=None,
             pregnancy_status="unknown",
             location_context="synthetic-location",
+            mobile_number="+919876543210",
+            blood_group=BloodGroup.O_POSITIVE,
+            demo_aadhaar_reference="DEMO-AADHAAR-1001",
         ),
         identifiers=(
             PatientIdentifier(
@@ -191,6 +196,56 @@ async def test_patient_demographics_identifiers_round_trip_and_are_atomic(
             raise RuntimeError("synthetic patient rollback")
     async with database_runtime.session_factory() as session:
         assert await repository.get(session, rolled_back.patient_id) is None
+
+
+async def test_legacy_patient_demographics_with_null_profile_details_round_trip(
+    database_runtime: DatabaseRuntime,
+) -> None:
+    repository = PostgresPatientRepository()
+    patient = _patient()
+    assert patient.demographics is not None
+    legacy = replace(
+        patient,
+        demographics=replace(
+            patient.demographics,
+            mobile_number=None,
+            blood_group=None,
+            demo_aadhaar_reference=None,
+        ),
+    )
+
+    async with database_runtime.transaction() as session:
+        await repository.add(session, legacy)
+    async with database_runtime.session_factory() as session:
+        assert await repository.get(session, legacy.patient_id) == legacy
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("mobile_number", "9876543210"),
+        ("blood_group", "X"),
+        ("demo_aadhaar_reference", "123456789012"),
+    ],
+)
+async def test_database_rejects_invalid_private_profile_details(
+    database_runtime: DatabaseRuntime,
+    field: str,
+    invalid_value: str,
+) -> None:
+    repository = PostgresPatientRepository()
+    patient = _patient()
+    async with database_runtime.transaction() as session:
+        await repository.add(session, patient)
+
+    async with database_runtime.session_factory() as session:
+        with pytest.raises(IntegrityError):
+            await session.execute(
+                update(PatientDemographicsRecord)
+                .where(PatientDemographicsRecord.patient_id == patient.patient_id.value)
+                .values({field: invalid_value})
+            )
+            await session.commit()
 
 
 async def test_identifier_namespace_is_not_globally_unique(

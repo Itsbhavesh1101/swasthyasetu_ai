@@ -735,6 +735,45 @@ a {
   margin-top: 0.65rem;
 }
 
+.setup-checklist {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.setup-checklist h2,
+.setup-checklist p {
+  margin-block: 0;
+}
+
+.setup-action-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.setup-action-list .action-link {
+  width: 100%;
+  min-height: 100%;
+  justify-content: space-between;
+  border-color: rgb(175 180 206 / 28%);
+  background: rgb(18 20 31 / 48%);
+  color: var(--patient-text);
+  text-align: left;
+}
+
+.setup-action-list .action-link:hover {
+  border-color: var(--patient-primary);
+  background: rgb(79 85 128 / 50%);
+}
+
+.setup-checklist-note {
+  color: var(--patient-muted);
+  font-size: 0.84rem;
+}
+
 .panel,
 .state-panel {
   min-width: 0;
@@ -931,6 +970,263 @@ a {
 .history-form textarea:focus {
   border-color: var(--patient-primary);
   box-shadow: 0 0 0 0.2rem rgb(123 129 168 / 14%);
+}
+
+.profile-setup-active .patient-shell {
+  display: block;
+  padding: 0;
+}
+
+.profile-setup-active .patient-sidebar,
+.profile-setup-active .site-header,
+.profile-setup-active .site-footer,
+.profile-setup-active .page-header {
+  display: none;
+}
+
+.profile-setup-active .patient-workspace {
+  min-height: 100svh;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.profile-setup-active .main-content {
+  display: grid;
+  width: min(100% - 2rem, 42rem);
+  min-height: 100svh;
+  place-items: center;
+  padding-block: clamp(2rem, 8vh, 5rem);
+}
+
+.profile-setup-active .page-stack--narrow {
+  width: 100%;
+  max-width: none;
+}
+
+.profile-wizard-shell {
+  display: grid;
+  width: 100%;
+  gap: 1rem;
+}
+
+.wizard-progress {
+  display: grid;
+  gap: 0.55rem;
+  color: var(--patient-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.wizard-progress-track {
+  display: block;
+  height: 0.38rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(79 85 128 / 44%);
+}
+
+.wizard-progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--patient-primary), var(--patient-text));
+  box-shadow: 0 0 1.25rem rgb(123 129 168 / 70%);
+  transition: width 220ms ease;
+}
+
+.profile-wizard-card {
+  position: relative;
+  display: grid;
+  min-height: 27rem;
+  gap: clamp(1.25rem, 4vw, 2rem);
+  overflow: hidden;
+  border: 1px solid rgb(228 230 240 / 24%);
+  border-radius: clamp(1.4rem, 5vw, 2.25rem);
+  background:
+    radial-gradient(circle at 82% 8%, rgb(123 129 168 / 30%), transparent 16rem),
+    linear-gradient(145deg, rgb(56 62 92 / 88%), rgb(18 20 31 / 94%));
+  box-shadow:
+    0 2rem 5rem rgb(0 0 0 / 45%),
+    inset 0 1px rgb(228 230 240 / 12%),
+    0 0 3rem rgb(123 129 168 / 20%);
+  padding: clamp(1.4rem, 5vw, 2.5rem);
+  backdrop-filter: blur(1.5rem);
+}
+
+.profile-wizard-card::before {
+  position: absolute;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 50%;
+  background: rgb(123 129 168 / 13%);
+  content: "";
+  filter: blur(2rem);
+  inset: auto -4rem -5rem auto;
+  pointer-events: none;
+}
+
+.wizard-heading {
+  align-self: start;
+}
+
+.wizard-heading h2 {
+  max-width: 22ch;
+  margin: 0;
+  font-size: clamp(1.75rem, 5vw, 2.65rem);
+  line-height: 1.12;
+  letter-spacing: -0.04em;
+}
+
+.wizard-heading h2:focus {
+  outline: none;
+}
+
+.wizard-field {
+  align-self: center;
+}
+
+.wizard-field label {
+  display: grid;
+  gap: 0.65rem;
+  color: var(--patient-text);
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.wizard-field input,
+.wizard-field select {
+  width: 100%;
+  min-height: 3.35rem;
+  border: 1px solid rgb(175 180 206 / 38%);
+  border-radius: 1rem;
+  background: rgb(18 20 31 / 70%);
+  color: var(--patient-text);
+  padding: 0.85rem 1rem;
+  font: inherit;
+  font-size: 1rem;
+}
+
+.wizard-field input:hover,
+.wizard-field select:hover,
+.wizard-field input:focus,
+.wizard-field select:focus {
+  border-color: var(--patient-primary);
+  box-shadow: 0 0 0 0.22rem rgb(123 129 168 / 18%);
+}
+
+.wizard-field small {
+  color: var(--patient-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.wizard-actions,
+.wizard-actions-next {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.wizard-actions {
+  align-self: end;
+  justify-content: space-between;
+}
+
+.button--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--patient-muted);
+}
+
+.button--quiet:hover {
+  color: var(--patient-text);
+}
+
+.wizard-privacy-note {
+  margin: 0;
+  color: var(--patient-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.wizard-review {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.wizard-review > div {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  border-bottom: 1px solid rgb(175 180 206 / 18%);
+  padding-block: 0.65rem;
+}
+
+.wizard-review dt {
+  color: var(--patient-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.wizard-review dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.wizard-review button {
+  min-height: 2.5rem;
+  border: 0;
+  background: transparent;
+  color: var(--patient-text);
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 30rem) {
+  .profile-setup-active .main-content {
+    width: min(100% - 1rem, 42rem);
+    padding-block: 1rem;
+  }
+
+  .profile-wizard-card {
+    min-height: 30rem;
+    padding: 1.25rem;
+  }
+
+  .wizard-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .wizard-actions > span,
+  .wizard-actions > .button,
+  .wizard-actions-next,
+  .wizard-actions-next > .button {
+    width: 100%;
+  }
+
+  .wizard-actions-next {
+    flex-direction: column-reverse;
+  }
+
+  .wizard-review > div {
+    grid-template-columns: 1fr auto;
+  }
+
+  .wizard-review dt {
+    grid-column: 1 / -1;
+  }
 }
 
 input::placeholder,
@@ -1224,6 +1520,10 @@ textarea {
   .page-header h1 {
     font-size: clamp(2.25rem, 12vw, 3.5rem);
   }
+
+  .setup-action-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 25rem) {
@@ -1248,6 +1548,10 @@ textarea {
 
   .inline-actions > * {
     width: 100%;
+  }
+
+  .setup-action-list {
+    grid-template-columns: 1fr;
   }
 }
 

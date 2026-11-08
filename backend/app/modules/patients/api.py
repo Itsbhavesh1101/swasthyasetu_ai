@@ -37,7 +37,7 @@ from app.modules.patients.contracts import (
     UpdatePatientCapability,
     WritePatientFactCapability,
 )
-from app.modules.patients.domain import Patient, PatientDemographics, PatientStatus
+from app.modules.patients.domain import BloodGroup, Patient, PatientDemographics, PatientStatus
 from app.modules.provenance.domain import ProvenanceSourceType, VerificationState
 from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.types import OpaqueId
@@ -55,6 +55,9 @@ class DemographicsRequest(BaseModel):
     location_context: str | None = Field(default=None, min_length=1, max_length=256)
     height_cm: Decimal | None = Field(default=None, ge=30, le=275, max_digits=5, decimal_places=2)
     weight_kg: Decimal | None = Field(default=None, ge=1, le=700, max_digits=6, decimal_places=2)
+    mobile_number: str | None = Field(default=None, pattern=r"^\+[1-9][0-9]{6,14}$")
+    blood_group: BloodGroup | None = None
+    demo_aadhaar_reference: str | None = Field(default=None, pattern=r"^DEMO-AADHAAR-[0-9]{4}$")
 
     @field_validator(
         "administrative_sex",
@@ -107,6 +110,9 @@ class DemographicsResponse(BaseModel):
     height_cm: float | None
     weight_kg: float | None
     bmi: float | None
+    mobile_number: str | None
+    blood_group: BloodGroup | None
+    demo_aadhaar_reference: str | None
 
 
 class PatientResponse(BaseModel):
@@ -281,6 +287,9 @@ def patient_view(patient: Patient) -> PatientResponse:
                     None if demographics.weight_kg is None else float(demographics.weight_kg)
                 ),
                 bmi=None if demographics.bmi is None else float(demographics.bmi),
+                mobile_number=demographics.mobile_number,
+                blood_group=demographics.blood_group,
+                demo_aadhaar_reference=demographics.demo_aadhaar_reference,
             )
         ),
         created_at=patient.created_at,

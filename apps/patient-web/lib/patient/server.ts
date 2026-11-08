@@ -20,6 +20,9 @@ const demographicKeys = new Set([
   "locationContext",
   "heightCm",
   "weightKg",
+  "mobileNumber",
+  "bloodGroup",
+  "demoAadhaarReference",
 ]);
 const backendDemographicKeys = new Set([
   "date_of_birth",
@@ -31,7 +34,11 @@ const backendDemographicKeys = new Set([
   "height_cm",
   "weight_kg",
   "bmi",
+  "mobile_number",
+  "blood_group",
+  "demo_aadhaar_reference",
 ]);
+const bloodGroups = new Set(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "UNKNOWN"]);
 type RecordValue = Record<string, unknown>;
 
 function record(value: unknown): value is RecordValue {
@@ -150,7 +157,14 @@ function validDemographics(value: unknown): value is PatientDemographics {
     (value.heightCm === null ||
       (typeof value.heightCm === "number" && value.heightCm >= 30 && value.heightCm <= 275)) &&
     (value.weightKg === null ||
-      (typeof value.weightKg === "number" && value.weightKg >= 1 && value.weightKg <= 700))
+      (typeof value.weightKg === "number" && value.weightKg >= 1 && value.weightKg <= 700)) &&
+    nullableText(value.mobileNumber, 16) &&
+    (value.mobileNumber === null || /^\+[1-9][0-9]{6,14}$/.test(value.mobileNumber)) &&
+    (value.bloodGroup === null ||
+      (typeof value.bloodGroup === "string" && bloodGroups.has(value.bloodGroup))) &&
+    nullableText(value.demoAadhaarReference, 17) &&
+    (value.demoAadhaarReference === null ||
+      /^DEMO-AADHAAR-[0-9]{4}$/.test(value.demoAadhaarReference))
   );
 }
 
@@ -198,7 +212,14 @@ function profile(value: unknown, account: CurrentAccount): PatientProfile | unde
       !nullableText(raw.location_context, 256) ||
       (raw.height_cm !== null && typeof raw.height_cm !== "number") ||
       (raw.weight_kg !== null && typeof raw.weight_kg !== "number") ||
-      (raw.bmi !== null && typeof raw.bmi !== "number"))
+      (raw.bmi !== null && typeof raw.bmi !== "number") ||
+      !nullableText(raw.mobile_number, 16) ||
+      (raw.mobile_number !== null && !/^\+[1-9][0-9]{6,14}$/.test(raw.mobile_number)) ||
+      (raw.blood_group !== null &&
+        (typeof raw.blood_group !== "string" || !bloodGroups.has(raw.blood_group))) ||
+      !nullableText(raw.demo_aadhaar_reference, 17) ||
+      (raw.demo_aadhaar_reference !== null &&
+        !/^DEMO-AADHAAR-[0-9]{4}$/.test(raw.demo_aadhaar_reference)))
   )
     return undefined;
   const demographics =
@@ -213,6 +234,9 @@ function profile(value: unknown, account: CurrentAccount): PatientProfile | unde
           heightCm: raw.height_cm as number | null,
           weightKg: raw.weight_kg as number | null,
           bmi: raw.bmi as number | null,
+          mobileNumber: raw.mobile_number as string | null,
+          bloodGroup: raw.blood_group as PatientDemographics["bloodGroup"],
+          demoAadhaarReference: raw.demo_aadhaar_reference as string | null,
         };
   return {
     patientId: value.patient_id,
@@ -275,6 +299,9 @@ export async function updatePatientProfile(request: NextRequest) {
         location_context: body.demographics.locationContext,
         height_cm: body.demographics.heightCm,
         weight_kg: body.demographics.weightKg,
+        mobile_number: body.demographics.mobileNumber,
+        blood_group: body.demographics.bloodGroup,
+        demo_aadhaar_reference: body.demographics.demoAadhaarReference,
       },
     }),
   });
