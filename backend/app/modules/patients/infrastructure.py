@@ -108,8 +108,8 @@ class PatientDemographicsRecord(Base):
             name="blood_group_supported",
         ),
         CheckConstraint(
-            "demo_aadhaar_reference IS NULL OR demo_aadhaar_reference ~ '^DEMO-AADHAAR-[0-9]{4}$'",
-            name="demo_aadhaar_reference_synthetic",
+            "aadhaar_last_four IS NULL OR aadhaar_last_four ~ '^[0-9]{4}$'",
+            name="aadhaar_last_four_ascii_digits",
         ),
     )
 
@@ -128,7 +128,7 @@ class PatientDemographicsRecord(Base):
     weight_kg: Mapped[Decimal | None] = mapped_column(Numeric(6, 2), nullable=True)
     mobile_number: Mapped[str | None] = mapped_column(String(16), nullable=True)
     blood_group: Mapped[str | None] = mapped_column(String(7), nullable=True)
-    demo_aadhaar_reference: Mapped[str | None] = mapped_column(String(17), nullable=True)
+    aadhaar_last_four: Mapped[str | None] = mapped_column(String(4), nullable=True)
     demographics_metadata: Mapped[dict[str, object] | None] = mapped_column(JSONB, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     patient: Mapped[PatientRecord] = relationship(back_populates="demographics_record")
@@ -387,7 +387,7 @@ def _demographics_record(patient: Patient) -> PatientDemographicsRecord | None:
         weight_kg=value.weight_kg,
         mobile_number=value.mobile_number,
         blood_group=None if value.blood_group is None else value.blood_group.value,
-        demo_aadhaar_reference=value.demo_aadhaar_reference,
+        aadhaar_last_four=value.aadhaar_last_four,
         demographics_metadata=None,
         updated_at=patient.updated_at,
     )
@@ -495,7 +495,7 @@ class PostgresPatientRepository:
                         if demographics.blood_group is None
                         else BloodGroup(demographics.blood_group)
                     ),
-                    demo_aadhaar_reference=demographics.demo_aadhaar_reference,
+                    aadhaar_last_four=demographics.aadhaar_last_four,
                 )
             ),
             identifiers=tuple(

@@ -105,7 +105,7 @@ def _patient(*, identifier_value: str = "synthetic-identifier") -> Patient:
             location_context="synthetic-location",
             mobile_number="+919876543210",
             blood_group=BloodGroup.O_POSITIVE,
-            demo_aadhaar_reference="DEMO-AADHAAR-1001",
+            aadhaar_last_four="1001",
         ),
         identifiers=(
             PatientIdentifier(
@@ -210,7 +210,7 @@ async def test_legacy_patient_demographics_with_null_profile_details_round_trip(
             patient.demographics,
             mobile_number=None,
             blood_group=None,
-            demo_aadhaar_reference=None,
+            aadhaar_last_four=None,
         ),
     )
 
@@ -225,7 +225,7 @@ async def test_legacy_patient_demographics_with_null_profile_details_round_trip(
     [
         ("mobile_number", "9876543210"),
         ("blood_group", "X"),
-        ("demo_aadhaar_reference", "123456789012"),
+        ("aadhaar_last_four", "12A4"),
     ],
 )
 async def test_database_rejects_invalid_private_profile_details(

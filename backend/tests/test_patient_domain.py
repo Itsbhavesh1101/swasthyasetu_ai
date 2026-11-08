@@ -178,7 +178,7 @@ def test_demographics_validates_measurements_and_derives_bmi() -> None:
         PatientDemographics(weight_kg=Decimal("700.1"))
 
 
-def test_demographics_accepts_closed_blood_groups_and_synthetic_contact_details() -> None:
+def test_demographics_accepts_closed_blood_groups_and_private_profile_details() -> None:
     assert {value.value for value in BloodGroup} == {
         "A+",
         "A-",
@@ -193,12 +193,12 @@ def test_demographics_accepts_closed_blood_groups_and_synthetic_contact_details(
     minimum = PatientDemographics(
         mobile_number="+1234567",
         blood_group=BloodGroup.UNKNOWN,
-        demo_aadhaar_reference="DEMO-AADHAAR-0001",
+        aadhaar_last_four="0001",
     )
     maximum = PatientDemographics(
         mobile_number="+123456789012345",
         blood_group=BloodGroup.AB_POSITIVE,
-        demo_aadhaar_reference="DEMO-AADHAAR-9999",
+        aadhaar_last_four="9999",
     )
 
     assert minimum.mobile_number == "+1234567"
@@ -232,17 +232,16 @@ def test_demographics_rejects_arbitrary_blood_group() -> None:
 
 
 @pytest.mark.parametrize(
-    "reference",
+    "last_four",
     [
-        "123456789012",
-        "DEMO-AADHAAR-123",
-        "DEMO-AADHAAR-12345",
-        "demo-aadhaar-1234",
-        "DEMO-AADHAAR-१२३४",
-        " DEMO-AADHAAR-1234",
-        "DEMO-AADHAAR-1234 ",
+        "123",
+        "12345",
+        "12A4",
+        "१२३४",
+        " 1234",
+        "1234 ",
     ],
 )
-def test_demographics_rejects_real_or_malformed_aadhaar_values(reference: str) -> None:
-    with pytest.raises(ValueError, match="demo_aadhaar_reference"):
-        PatientDemographics(demo_aadhaar_reference=reference)
+def test_demographics_rejects_malformed_aadhaar_suffixes(last_four: str) -> None:
+    with pytest.raises(ValueError, match="aadhaar_last_four"):
+        PatientDemographics(aadhaar_last_four=last_four)

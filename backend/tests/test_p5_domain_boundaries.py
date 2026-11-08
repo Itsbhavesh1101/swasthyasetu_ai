@@ -143,8 +143,9 @@ def test_patient_demographics_metadata_has_private_profile_detail_constraints() 
     assert table.c.mobile_number.nullable is True
     assert str(table.c.blood_group.type) == "VARCHAR(7)"
     assert table.c.blood_group.nullable is True
-    assert str(table.c.demo_aadhaar_reference.type) == "VARCHAR(17)"
-    assert table.c.demo_aadhaar_reference.nullable is True
+    assert str(table.c.aadhaar_last_four.type) == "VARCHAR(4)"
+    assert table.c.aadhaar_last_four.nullable is True
+    assert "demo_aadhaar_reference" not in table.c
     constraint_sql = {
         str(constraint.sqltext)
         for constraint in table.constraints
@@ -152,4 +153,4 @@ def test_patient_demographics_metadata_has_private_profile_detail_constraints() 
     }
     assert any("mobile_number ~ '^\\+[1-9][0-9]{6,14}$'" in sql for sql in constraint_sql)
     assert any("blood_group IN" in sql and "'UNKNOWN'" in sql for sql in constraint_sql)
-    assert any("DEMO-AADHAAR-[0-9]{4}" in sql for sql in constraint_sql)
+    assert any("aadhaar_last_four ~ '^[0-9]{4}$'" in sql for sql in constraint_sql)

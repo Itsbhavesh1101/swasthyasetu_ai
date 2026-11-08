@@ -35,7 +35,7 @@ class BloodGroup(StrEnum):
 
 
 _E164_MOBILE = re.compile(r"^\+[1-9][0-9]{6,14}$", flags=re.ASCII)
-_DEMO_AADHAAR_REFERENCE = re.compile(r"^DEMO-AADHAAR-[0-9]{4}$", flags=re.ASCII)
+_AADHAAR_LAST_FOUR = re.compile(r"^[0-9]{4}$", flags=re.ASCII)
 
 
 def _normalize_utc(name: str, value: datetime) -> datetime:
@@ -89,7 +89,7 @@ class PatientDemographics:
     weight_kg: Decimal | None = None
     mobile_number: str | None = None
     blood_group: BloodGroup | None = None
-    demo_aadhaar_reference: str | None = None
+    aadhaar_last_four: str | None = None
 
     def __post_init__(self) -> None:
         if self.date_of_birth is not None and type(self.date_of_birth) is not date:
@@ -115,12 +115,10 @@ class PatientDemographics:
             raise ValueError("mobile_number must be a valid E.164 number")
         if self.blood_group is not None and not isinstance(self.blood_group, BloodGroup):
             raise TypeError("blood_group must be a BloodGroup")
-        if self.demo_aadhaar_reference is not None and not _DEMO_AADHAAR_REFERENCE.fullmatch(
-            self.demo_aadhaar_reference
+        if self.aadhaar_last_four is not None and not _AADHAAR_LAST_FOUR.fullmatch(
+            self.aadhaar_last_four
         ):
-            raise ValueError(
-                "demo_aadhaar_reference must use the synthetic DEMO-AADHAAR-0000 format"
-            )
+            raise ValueError("aadhaar_last_four must contain exactly four ASCII digits")
 
     @property
     def bmi(self) -> Decimal | None:
