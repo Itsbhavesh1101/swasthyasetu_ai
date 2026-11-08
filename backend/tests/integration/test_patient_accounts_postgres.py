@@ -194,10 +194,7 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
         assert updated.json()["demographics"]["location_context"] == "Delhi"
         assert updated.json()["demographics"]["mobile_number"] == "+919876543210"
         assert updated.json()["demographics"]["blood_group"] == "B+"
-        assert (
-            updated.json()["demographics"]["demo_aadhaar_reference"]
-            == "DEMO-AADHAAR-2301"
-        )
+        assert updated.json()["demographics"]["demo_aadhaar_reference"] == "DEMO-AADHAAR-2301"
         assert stale.status_code == 409
         assert stale.json()["error"]["code"] == "RESOURCE_CONFLICT"
 

@@ -6,7 +6,8 @@ replacement for a qualified professional or emergency service.
 
 ## What works
 
-- Patient registration with name, email, and password, followed by sign-in and sign-out.
+- Patient registration with email and password, followed by a focused first-login profile setup,
+  sign-in, and sign-out.
 - A private patient profile and six structured medical-history categories.
 - Corrections that preserve the earlier record instead of silently overwriting it.
 - A longitudinal timeline of encounters and medical facts.
@@ -78,22 +79,28 @@ confirms that PostgreSQL is reachable.
 
 ## Demonstration walkthrough
 
-1. Select **Create account** and register with a demonstration name, email, and a password of at
-   least 12 characters.
-2. Open **Profile**, enter optional demographic details, and save.
-3. Open **History**. Add demonstration entries across problems, medications, allergies, procedures,
+1. Select **Create account** and register with a synthetic email and a password of at least 12
+   characters.
+2. Complete the floating first-login tiles one detail at a time. Use a synthetic name, an E.164
+   mobile number such as `+919876543210`, a self-reported blood group (or **Unknown**), and a
+   demonstration reference in the exact form `DEMO-AADHAAR-0000`. Never enter a real Aadhaar
+   number or other real identifier. Review the details before the single final save.
+3. On the dashboard, review **Complete your health record**. These are optional links to your
+   profile, conditions, medicines, allergies, procedures, documents, and guided intake; they are
+   not a completion score or medical assessment.
+4. Open **History**. Add demonstration entries across problems, medications, allergies, procedures,
    observations, and investigations. Correct one entry and confirm that the earlier version remains
    in the record as superseded.
-4. Open **Timeline** and confirm the patient-owned encounter and history entries appear in
+5. Open **Timeline** and confirm the patient-owned encounter and history entries appear in
    deterministic newest-first order.
-5. Open **Documents**. Upload a small synthetic PDF, JPEG, or PNG; download it; then remove it. Files
+6. Open **Documents**. Upload a small synthetic PDF, JPEG, or PNG; download it; then remove it. Files
    over 10 MiB or with mismatched content are rejected.
-6. Open **Health journey**, explicitly allow structured intake, answer the neutral questions, review
+7. Open **Health journey**, explicitly allow structured intake, answer the neutral questions, review
    the draft, and complete it. Completion records a patient-provided draft, not a diagnosis.
-7. Open **Home guidance**. If Gemini is configured, read the notice, grant the exact external-AI
+8. Open **Home guidance**. If Gemini is configured, read the notice, grant the exact external-AI
    consent, and ask a low-risk general-wellness question. Confirm that the result has official-source
    citations. High-risk, diagnostic, treatment, dosage, or emergency requests fail closed.
-8. Sign out and sign back in. Confirm that the profile, history, timeline, and document metadata are
+9. Sign out and sign back in. Confirm that the profile, history, timeline, and document metadata are
    still associated only with the same account.
 
 Use only synthetic demonstration content. Do not upload real medical documents or enter real health
@@ -108,6 +115,9 @@ information in this local college setup.
   data.
 - Every private backend operation derives the patient from the authenticated session; browser-sent
   patient identifiers cannot substitute another patient.
+- Mobile number, blood group, and the synthetic identity reference are private profile fields. The
+  blood group is self-reported and must not be relied on for emergency or transfusion decisions;
+  the mobile number is not an OTP, recovery, or emergency-contact channel.
 - Gemini guidance is bounded general information with source validation. It cannot diagnose,
   prescribe, recommend dosage, promise a cure, or replace urgent or professional care.
 - Local PostgreSQL and document volumes are suitable for this controlled demonstration, not a

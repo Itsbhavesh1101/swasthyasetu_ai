@@ -57,9 +57,7 @@ class DemographicsRequest(BaseModel):
     weight_kg: Decimal | None = Field(default=None, ge=1, le=700, max_digits=6, decimal_places=2)
     mobile_number: str | None = Field(default=None, pattern=r"^\+[1-9][0-9]{6,14}$")
     blood_group: BloodGroup | None = None
-    demo_aadhaar_reference: str | None = Field(
-        default=None, pattern=r"^DEMO-AADHAAR-[0-9]{4}$"
-    )
+    demo_aadhaar_reference: str | None = Field(default=None, pattern=r"^DEMO-AADHAAR-[0-9]{4}$")
 
     @field_validator(
         "administrative_sex",

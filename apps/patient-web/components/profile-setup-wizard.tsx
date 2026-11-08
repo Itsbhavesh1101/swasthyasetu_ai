@@ -52,6 +52,15 @@ function summaryValue(value: string, fallback = "Not provided") {
   return value.trim() || fallback;
 }
 
+function reviewDate(value: string) {
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
 export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfile }>) {
   const router = useRouter();
   const [draft, setDraft] = useState(() => profileDraft(profile));
@@ -397,6 +406,41 @@ function renderStep(
         </button>
       </div>
       <div>
+        <dt>Preferred language</dt>
+        <dd>{draft.preferredLanguage === "hi" ? "Hindi" : "English"}</dd>
+        <button onClick={() => setStep(1)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Date of birth</dt>
+        <dd>{reviewDate(draft.dateOfBirth)}</dd>
+        <button onClick={() => setStep(2)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Sex recorded for healthcare</dt>
+        <dd>{draft.administrativeSex[0]?.toUpperCase() + draft.administrativeSex.slice(1)}</dd>
+        <button onClick={() => setStep(3)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Height</dt>
+        <dd>{draft.heightCm} cm</dd>
+        <button onClick={() => setStep(4)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Weight</dt>
+        <dd>{draft.weightKg} kg</dd>
+        <button onClick={() => setStep(5)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
         <dt>Mobile number</dt>
         <dd>{draft.mobileNumber}</dd>
         <button onClick={() => setStep(6)} type="button">
@@ -414,6 +458,20 @@ function renderStep(
         <dt>Aadhaar demo reference</dt>
         <dd>{draft.demoAadhaarReference}</dd>
         <button onClick={() => setStep(8)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Gender identity</dt>
+        <dd>{summaryValue(draft.genderIdentity)}</dd>
+        <button onClick={() => setStep(9)} type="button">
+          Edit
+        </button>
+      </div>
+      <div>
+        <dt>Pregnancy status</dt>
+        <dd>{summaryValue(draft.pregnancyStatus)}</dd>
+        <button onClick={() => setStep(10)} type="button">
           Edit
         </button>
       </div>

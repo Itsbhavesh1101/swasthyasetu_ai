@@ -108,8 +108,7 @@ class PatientDemographicsRecord(Base):
             name="blood_group_supported",
         ),
         CheckConstraint(
-            "demo_aadhaar_reference IS NULL OR "
-            "demo_aadhaar_reference ~ '^DEMO-AADHAAR-[0-9]{4}$'",
+            "demo_aadhaar_reference IS NULL OR demo_aadhaar_reference ~ '^DEMO-AADHAAR-[0-9]{4}$'",
             name="demo_aadhaar_reference_synthetic",
         ),
     )

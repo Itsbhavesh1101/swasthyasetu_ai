@@ -36,8 +36,7 @@ def upgrade() -> None:
     op.create_check_constraint(
         op.f("ck_patient_demographics_demo_aadhaar_reference_synthetic"),
         "patient_demographics",
-        "demo_aadhaar_reference IS NULL OR "
-        "demo_aadhaar_reference ~ '^DEMO-AADHAAR-[0-9]{4}$'",
+        "demo_aadhaar_reference IS NULL OR demo_aadhaar_reference ~ '^DEMO-AADHAAR-[0-9]{4}$'",
     )
 
 

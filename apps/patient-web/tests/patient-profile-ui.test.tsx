@@ -185,8 +185,22 @@ it("collects first-login details one tile at a time and submits only after revie
   await user.click(screen.getByRole("button", { name: /skip/i }));
 
   expect(screen.getByText("Step 13 of 13")).toBeVisible();
-  expect(screen.getByRole("heading", { name: /review your details/i })).toBeVisible();
-  expect(screen.getByText("+919876543210")).toBeVisible();
+  const reviewHeading = screen.getByRole("heading", { name: /review your details/i });
+  expect(reviewHeading).toBeVisible();
+  const review = reviewHeading.closest("form");
+  expect(review).not.toBeNull();
+  expect(review).toHaveTextContent("Asha Demo");
+  expect(review).toHaveTextContent("English");
+  expect(review).toHaveTextContent("2 January 2000");
+  expect(review).toHaveTextContent("Female");
+  expect(review).toHaveTextContent("165 cm");
+  expect(review).toHaveTextContent("60 kg");
+  expect(review).toHaveTextContent("+919876543210");
+  expect(review).toHaveTextContent("B+");
+  expect(review).toHaveTextContent("DEMO-AADHAAR-2301");
+  expect(review).toHaveTextContent("Gender identityNot provided");
+  expect(review).toHaveTextContent("Pregnancy statusNot provided");
+  expect(review).toHaveTextContent("LocationNot provided");
   expect(fetchSpy).toHaveBeenCalledTimes(1);
   expect(localStorage).toHaveLength(0);
   expect(sessionStorage).toHaveLength(0);
