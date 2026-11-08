@@ -47,7 +47,7 @@ deployments must execute the Alembic command once before starting or updating ap
 
 The backend image runs as non-root user `10001:10001` and exposes port 8000 locally.
 It uses the official immutable
-`python:3.12.15-alpine3.23@sha256:1fd55c2f838c4f76262f9eeed899ff9168ea96ac383c61667d6f204325e1f169`
+`python:3.12.15-alpine3.23@sha256:3d0ca66b723a0ff2a7a6e424cc2d01443e1b7c75ffcc110145f75d0f4daf6d63`
 base without mutating its operating-system package set during the build.
 
 ## Run the patient product
