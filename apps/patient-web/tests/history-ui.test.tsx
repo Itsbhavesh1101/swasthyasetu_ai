@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 
@@ -91,4 +91,102 @@ it("starts a correction for the current entry and never offers correction on old
   expect(screen.getByRole("heading", { name: /replace “synthetic current”/i })).toBeVisible();
   expect(screen.getByLabelText(/condition name/i)).toHaveValue("Synthetic current");
   expect(screen.getByRole("button", { name: /save correction/i })).toBeVisible();
+});
+
+it("filters entries by category tabs and search input", async () => {
+  const user = userEvent.setup();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      Response.json({
+        state: "AUTHENTICATED",
+        items: [
+          {
+            factId: "11111111-1111-4111-8111-111111111111",
+            factType: "PROBLEM",
+            label: "Asthma condition",
+            status: "ACTIVE",
+            effectiveTime: null,
+            recordedAt: "2026-11-03T13:00:00Z",
+            verificationState: "PATIENT_CONFIRMED",
+            supersededByFactId: null,
+          },
+          {
+            factId: "22222222-2222-4222-8222-222222222222",
+            factType: "MEDICATION",
+            label: "Albuterol inhaler",
+            status: "ACTIVE",
+            effectiveTime: null,
+            recordedAt: "2026-11-03T13:00:00Z",
+            verificationState: "PATIENT_CONFIRMED",
+            supersededByFactId: null,
+          },
+          {
+            factId: "33333333-3333-4333-8333-333333333333",
+            factType: "ALLERGY",
+            label: "Dust mite allergy",
+            status: "ACTIVE",
+            effectiveTime: null,
+            recordedAt: "2026-11-03T13:00:00Z",
+            verificationState: "PATIENT_CONFIRMED",
+            supersededByFactId: null,
+          },
+        ],
+      }),
+    ),
+  );
+  render(<HistoryPage />);
+
+  expect(await screen.findByText("Asthma condition")).toBeVisible();
+  expect(screen.getByText("Albuterol inhaler")).toBeVisible();
+  expect(screen.getByText("Dust mite allergy")).toBeVisible();
+
+  // Click Medicines category tab
+  const tabs = screen.getByRole("toolbar", { name: /filter entries by type/i });
+  await user.click(within(tabs).getByRole("button", { name: /medicines/i }));
+  expect(screen.getByText("Albuterol inhaler")).toBeVisible();
+  expect(screen.queryByText("Asthma condition")).toBeNull();
+  expect(screen.queryByText("Dust mite allergy")).toBeNull();
+
+  // Switch back to All
+  await user.click(within(tabs).getByRole("button", { name: /^all /i }));
+  expect(screen.getByText("Asthma condition")).toBeVisible();
+
+  // Search filter
+  await user.type(screen.getByLabelText(/search entries/i), "dust");
+  expect(screen.getByText("Dust mite allergy")).toBeVisible();
+  expect(screen.queryByText("Asthma condition")).toBeNull();
+  expect(screen.queryByText("Albuterol inhaler")).toBeNull();
+});
+
+it("navigates quick-add category actions", async () => {
+  const user = userEvent.setup();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      Response.json({
+        state: "AUTHENTICATED",
+        items: [
+          {
+            factId: "11111111-1111-4111-8111-111111111111",
+            factType: "PROBLEM",
+            label: "Existing problem",
+            status: "ACTIVE",
+            effectiveTime: null,
+            recordedAt: "2026-11-03T13:00:00Z",
+            verificationState: "PATIENT_CONFIRMED",
+            supersededByFactId: null,
+          },
+        ],
+      }),
+    ),
+  );
+  render(<HistoryPage />);
+  expect(await screen.findByText("Existing problem")).toBeVisible();
+
+  await user.click(screen.getByRole("button", { name: "+ Medicine" }));
+  expect(screen.getByLabelText(/medicine name/i)).toBeVisible();
+
+  await user.click(screen.getByRole("button", { name: "+ Allergy" }));
+  expect(screen.getByLabelText(/allergy name/i)).toBeVisible();
 });

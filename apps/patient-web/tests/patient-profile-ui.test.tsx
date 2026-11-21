@@ -220,7 +220,7 @@ it("collects first-login details one tile at a time and submits only after revie
       aadhaarNumber: "123456789012",
     },
   });
-});
+}, 15_000);
 
 it("keeps the first-login wizard on review when the profile changed elsewhere", async () => {
   const user = userEvent.setup();

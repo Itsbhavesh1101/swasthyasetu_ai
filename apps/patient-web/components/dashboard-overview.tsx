@@ -17,11 +17,31 @@ const setupActions = [
 
 export function DashboardOverview() {
   const [account, setAccount] = useState<AccountState | undefined>();
+  const [counts, setCounts] = useState<{ history: number; documents: number }>();
 
   useEffect(() => {
     void fetch("/api/account/me", { cache: "no-store" })
       .then(async (result) => setAccount((await result.json()) as AccountState))
       .catch(() => setAccount({ state: "ANONYMOUS" }));
+
+    void Promise.allSettled([
+      fetch("/api/patient/history", { cache: "no-store" }).then(async (r) =>
+        r.ok ? r.json() : null,
+      ),
+      fetch("/api/patient/documents", { cache: "no-store" }).then(async (r) =>
+        r.ok ? r.json() : null,
+      ),
+    ]).then(([historyRes, docsRes]) => {
+      const historyCount =
+        historyRes.status === "fulfilled" && Array.isArray(historyRes.value?.items)
+          ? historyRes.value.items.length
+          : 0;
+      const docsCount =
+        docsRes.status === "fulfilled" && Array.isArray(docsRes.value?.items)
+          ? docsRes.value.items.length
+          : 0;
+      setCounts({ history: historyCount, documents: docsCount });
+    });
   }, []);
 
   if (!account) return <LoadingState label="Opening your private health record." />;
@@ -71,7 +91,9 @@ export function DashboardOverview() {
           <ActionLink href="/profile">Open profile</ActionLink>
         </Panel>
         <Panel>
-          <p className="card-kicker">Your record</p>
+          <p className="card-kicker">
+            {counts && counts.history > 0 ? `${counts.history} entries recorded` : "Your record"}
+          </p>
           <h2>Medical history</h2>
           <p>Record conditions, medicines, allergies, procedures, and observations.</p>
           <ActionLink href="/history">Open history</ActionLink>
@@ -83,7 +105,9 @@ export function DashboardOverview() {
           <ActionLink href="/timeline">Open timeline</ActionLink>
         </Panel>
         <Panel>
-          <p className="card-kicker">Private vault</p>
+          <p className="card-kicker">
+            {counts && counts.documents > 0 ? `${counts.documents} files saved` : "Private vault"}
+          </p>
           <h2>Documents</h2>
           <p>Keep reports and prescriptions with the rest of your health record.</p>
           <ActionLink href="/documents">Open documents</ActionLink>

@@ -12,6 +12,8 @@ export function DocumentVault() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [revision, setRevision] = useState(0);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [docSearch, setDocSearch] = useState("");
   const listHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     let active = true;
@@ -51,6 +53,7 @@ export function DocumentVault() {
         return;
       }
       form.reset();
+      setSelectedFile(null);
       setMessage("Document uploaded securely.");
       setRevision((value) => value + 1);
     } catch {
@@ -90,10 +93,22 @@ export function DocumentVault() {
           <input
             accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
             name="file"
+            onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
             required
             type="file"
           />
         </label>
+        {selectedFile ? (
+          <div className="file-preview-pill">
+            <span>
+              {selectedFile.type.includes("pdf") || selectedFile.name.toLowerCase().endsWith(".pdf")
+                ? "📄"
+                : "🖼️"}
+            </span>
+            <strong>{selectedFile.name}</strong>
+            <small>({Math.ceil(selectedFile.size / 1024)} KB)</small>
+          </div>
+        ) : null}
         {message ? (
           <p aria-live="polite" className="form-message">
             {message}
@@ -104,47 +119,97 @@ export function DocumentVault() {
         </button>
       </form>
       <section className="panel" aria-labelledby="document-list-title">
-        <h2 id="document-list-title" ref={listHeading} tabIndex={-1}>
-          Your documents
-        </h2>
+        <div className="history-header-actions">
+          <h2 id="document-list-title" ref={listHeading} tabIndex={-1}>
+            Your documents
+          </h2>
+          {items.length > 0 ? (
+            <span className="category-tab-count">{items.length} files</span>
+          ) : null}
+        </div>
         {items.length === 0 ? (
           <p>No documents uploaded yet.</p>
         ) : (
-          <ul className="document-list">
-            {items.map((item) => (
-              <li key={item.documentId}>
-                <div>
-                  <strong>{item.displayName}</strong>
-                  <small>{Math.ceil(item.byteSize / 1024)} KB</small>
-                </div>
-                <div className="inline-actions">
-                  <a
-                    className="button button--secondary"
-                    href={`/api/patient/documents/${item.documentId}/content`}
-                  >
-                    Download
-                  </a>
-                  <button
-                    className="button button--secondary"
-                    type="button"
-                    onClick={async () => {
-                      if (!window.confirm(`Delete ${item.displayName}?`)) return;
-                      const response = await fetch(`/api/patient/documents/${item.documentId}`, {
-                        method: "DELETE",
-                      });
-                      if (response.ok) {
-                        setMessage("Document deleted.");
-                        setRevision((value) => value + 1);
-                        listHeading.current?.focus();
-                      } else setMessage("The document could not be deleted.");
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <>
+            {items.length > 3 ? (
+              <div className="history-filter-bar">
+                <input
+                  aria-label="Search documents"
+                  className="history-search-input"
+                  onChange={(e) => setDocSearch(e.target.value)}
+                  placeholder="Search documents by name…"
+                  type="search"
+                  value={docSearch}
+                />
+              </div>
+            ) : null}
+            <ul className="document-list">
+              {items
+                .filter((item) =>
+                  docSearch.trim()
+                    ? item.displayName.toLowerCase().includes(docSearch.toLowerCase().trim())
+                    : true,
+                )
+                .map((item) => (
+                  <li key={item.documentId}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                        <span>
+                          {item.mimeType === "application/pdf" ||
+                          item.displayName.toLowerCase().endsWith(".pdf")
+                            ? "📄"
+                            : "🖼️"}
+                        </span>
+                        <strong>{item.displayName}</strong>
+                      </div>
+                      <div className="badge-row">
+                        <span className="badge badge--confirmed">
+                          {Math.ceil(item.byteSize / 1024)} KB
+                        </span>
+                        <span className="badge badge--historical">
+                          {item.mimeType === "application/pdf"
+                            ? "PDF"
+                            : item.mimeType.includes("jpeg") || item.mimeType.includes("jpg")
+                              ? "JPEG"
+                              : item.mimeType.includes("png")
+                                ? "PNG"
+                                : "File"}
+                        </span>
+                        <small>{Math.ceil(item.byteSize / 1024)} KB</small>
+                      </div>
+                    </div>
+                    <div className="inline-actions">
+                      <a
+                        className="button button--secondary"
+                        href={`/api/patient/documents/${item.documentId}/content`}
+                      >
+                        Download
+                      </a>
+                      <button
+                        className="button button--secondary"
+                        type="button"
+                        onClick={async () => {
+                          if (!window.confirm(`Delete ${item.displayName}?`)) return;
+                          const response = await fetch(
+                            `/api/patient/documents/${item.documentId}`,
+                            {
+                              method: "DELETE",
+                            },
+                          );
+                          if (response.ok) {
+                            setMessage("Document deleted.");
+                            setRevision((value) => value + 1);
+                            listHeading.current?.focus();
+                          } else setMessage("The document could not be deleted.");
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </>
         )}
       </section>
     </div>

@@ -13,6 +13,15 @@ const labels: Record<HistoryFactType, string> = {
   INVESTIGATION: "Investigation or test",
 };
 
+const placeholders: Record<HistoryFactType, string> = {
+  PROBLEM: "e.g. Migraine, Asthma, Hypertension",
+  MEDICATION: "e.g. Paracetamol, Metformin, Cetirizine",
+  ALLERGY: "e.g. Penicillin, Peanuts, Dust mite",
+  PROCEDURE: "e.g. Appendectomy, Wisdom tooth extraction",
+  OBSERVATION: "e.g. Blood Pressure, Fasting Glucose",
+  INVESTIGATION: "e.g. Complete Blood Count, Chest X-Ray",
+};
+
 function text(data: FormData, name: string) {
   const value = String(data.get(name) ?? "").trim();
   return value || undefined;
@@ -65,14 +74,18 @@ function payload(data: FormData, factType: HistoryFactType): HistoryPayload {
 
 export function HistoryForm({
   correction,
+  initialFactType,
   onCancel,
   onSaved,
 }: Readonly<{
   correction?: HistoryItem;
+  initialFactType?: HistoryFactType;
   onCancel?: () => void;
   onSaved: () => void;
 }>) {
-  const [factType, setFactType] = useState<HistoryFactType>(correction?.factType ?? "PROBLEM");
+  const [factType, setFactType] = useState<HistoryFactType>(
+    correction?.factType ?? initialFactType ?? "PROBLEM",
+  );
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -136,7 +149,13 @@ export function HistoryForm({
         </label>
         <label>
           {labels[factType]} name
-          <input defaultValue={correction?.label ?? ""} maxLength={256} name="label" required />
+          <input
+            defaultValue={correction?.label ?? ""}
+            maxLength={256}
+            name="label"
+            placeholder={placeholders[factType]}
+            required
+          />
         </label>
         {needsStatus ? (
           <label>
