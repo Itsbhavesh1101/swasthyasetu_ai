@@ -170,7 +170,7 @@ describe("patient profile BFF", () => {
         aadhaar_number: "123456789012",
       },
     });
-    expect((forwarded.demographics as Record<string, unknown>)).not.toHaveProperty(
+    expect(forwarded.demographics as Record<string, unknown>).not.toHaveProperty(
       "demo_aadhaar_reference",
     );
   });

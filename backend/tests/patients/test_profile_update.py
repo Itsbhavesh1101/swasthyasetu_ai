@@ -3,7 +3,6 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime, timedelta, timezone
-from decimal import Decimal
 from typing import cast
 
 import pytest
@@ -12,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.patients.api import (
     DemographicsRequest,
-    DemographicsResponse,
     patient_view,
     resolve_demographics,
 )
@@ -216,9 +214,9 @@ def test_demographics_response_only_exposes_suffix() -> None:
     view = patient_view(p)
     assert view.demographics is not None
     assert view.demographics.aadhaar_last_four == "4321"
-    # Neither DemographicsResponse nor serialized view contains aadhaar_number or demo_aadhaar_reference
+    # Neither DemographicsResponse nor serialized view contains aadhaar_number
+    # or demo_aadhaar_reference.
     dump = view.demographics.model_dump()
     assert "aadhaar_number" not in dump
     assert "demo_aadhaar_reference" not in dump
     assert dump["aadhaar_last_four"] == "4321"
-

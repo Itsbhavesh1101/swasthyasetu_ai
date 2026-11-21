@@ -142,13 +142,13 @@ jobs:
       - name: Inspect migration revision
         run: |
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
-            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "patient_details_0010"
+            psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc 'SELECT version_num FROM alembic_version')" = "patient_aadhaar_0011"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='patient_demographics' AND column_name IN ('mobile_number','blood_group','demo_aadhaar_reference')")" = "3"
+            "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='patient_demographics' AND column_name IN ('mobile_number','blood_group','aadhaar_last_four')")" = "3"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
-            "SELECT count(*) FROM pg_constraint WHERE conname IN ('ck_patient_demographics_mobile_number_e164','ck_patient_demographics_blood_group_supported','ck_patient_demographics_demo_aadhaar_reference_synthetic')")" = "3"
+            "SELECT count(*) FROM pg_constraint WHERE conname IN ('ck_patient_demographics_mobile_number_e164','ck_patient_demographics_blood_group_supported','ck_patient_demographics_aadhaar_last_four_ascii_digits')")" = "3"
           test "$(docker compose -f deployments/local/compose.yaml exec -T postgres \
             psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atqc \
             "SELECT count(*) FROM information_schema.columns WHERE table_schema='public' AND table_name='outbox_events'")" = "16"

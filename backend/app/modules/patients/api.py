@@ -440,6 +440,7 @@ def resolve_demographics(
     if request_demographics is None:
         return None
     fields = request_demographics.model_dump(exclude={"aadhaar_number"})
+    aadhaar_last_four: str | None
     if request_demographics.aadhaar_number is not None:
         aadhaar_last_four = request_demographics.aadhaar_number.get_secret_value()[-4:]
     elif current_demographics is not None:
