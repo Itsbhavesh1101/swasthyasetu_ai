@@ -83,8 +83,10 @@ confirms that PostgreSQL is reachable.
    characters.
 2. Complete the floating first-login tiles one detail at a time. Use a synthetic name, an E.164
    mobile number such as `+919876543210`, a self-reported blood group (or **Unknown**), and a
-   demonstration reference in the exact form `DEMO-AADHAAR-0000`. Never enter a real Aadhaar
-   number or other real identifier. Review the details before the single final save.
+   fictional 12-digit demonstration number for the Aadhaar field. Never enter a real Aadhaar
+   number or real personal identifier. The application stores only the final four digits,
+   displays only a masked reference (`•••• •••• 1234`), and does not verify identity with UIDAI
+   or government registries. Review the masked details before the single final save.
 3. On the dashboard, review **Complete your health record**. These are optional links to your
    profile, conditions, medicines, allergies, procedures, documents, and guided intake; they are
    not a completion score or medical assessment.

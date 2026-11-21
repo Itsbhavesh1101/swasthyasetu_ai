@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { SESSION_ID_COOKIE, SESSION_TOKEN_COOKIE } from "../onboarding/server";
 import { validateMutationOrigin } from "../security/request-origin";
-import type { PatientDemographics, PatientProfile, PatientProfileSubmission } from "./contracts";
+import type {
+  PatientDemographics,
+  PatientDemographicsSubmission,
+  PatientProfile,
+  PatientProfileSubmission,
+} from "./contracts";
 
 const TIMEOUT_MS = 5_000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -12,7 +17,7 @@ const profileKeys = new Set([
   "displayName",
   "demographics",
 ]);
-const demographicKeys = new Set([
+const demographicSubmissionKeys = new Set([
   "dateOfBirth",
   "administrativeSex",
   "genderIdentity",
@@ -22,7 +27,7 @@ const demographicKeys = new Set([
   "weightKg",
   "mobileNumber",
   "bloodGroup",
-  "demoAadhaarReference",
+  "aadhaarNumber",
 ]);
 const backendDemographicKeys = new Set([
   "date_of_birth",
@@ -36,7 +41,7 @@ const backendDemographicKeys = new Set([
   "bmi",
   "mobile_number",
   "blood_group",
-  "demo_aadhaar_reference",
+  "aadhaar_last_four",
 ]);
 const bloodGroups = new Set(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "UNKNOWN"]);
 type RecordValue = Record<string, unknown>;
@@ -144,10 +149,10 @@ function nullableText(value: unknown, maximum: number): value is string | null {
   );
 }
 
-function validDemographics(value: unknown): value is PatientDemographics {
+function validDemographics(value: unknown): value is PatientDemographicsSubmission {
   return (
     record(value) &&
-    exactKeys(value, demographicKeys) &&
+    exactKeys(value, demographicSubmissionKeys) &&
     nullableText(value.dateOfBirth, 10) &&
     (value.dateOfBirth === null || /^\d{4}-\d{2}-\d{2}$/.test(value.dateOfBirth)) &&
     nullableText(value.administrativeSex, 256) &&
@@ -162,9 +167,8 @@ function validDemographics(value: unknown): value is PatientDemographics {
     (value.mobileNumber === null || /^\+[1-9][0-9]{6,14}$/.test(value.mobileNumber)) &&
     (value.bloodGroup === null ||
       (typeof value.bloodGroup === "string" && bloodGroups.has(value.bloodGroup))) &&
-    nullableText(value.demoAadhaarReference, 17) &&
-    (value.demoAadhaarReference === null ||
-      /^DEMO-AADHAAR-[0-9]{4}$/.test(value.demoAadhaarReference))
+    nullableText(value.aadhaarNumber, 12) &&
+    (value.aadhaarNumber === null || /^[0-9]{12}$/.test(value.aadhaarNumber))
   );
 }
 
@@ -217,9 +221,8 @@ function profile(value: unknown, account: CurrentAccount): PatientProfile | unde
       (raw.mobile_number !== null && !/^\+[1-9][0-9]{6,14}$/.test(raw.mobile_number)) ||
       (raw.blood_group !== null &&
         (typeof raw.blood_group !== "string" || !bloodGroups.has(raw.blood_group))) ||
-      !nullableText(raw.demo_aadhaar_reference, 17) ||
-      (raw.demo_aadhaar_reference !== null &&
-        !/^DEMO-AADHAAR-[0-9]{4}$/.test(raw.demo_aadhaar_reference)))
+      !nullableText(raw.aadhaar_last_four, 4) ||
+      (raw.aadhaar_last_four !== null && !/^[0-9]{4}$/.test(raw.aadhaar_last_four)))
   )
     return undefined;
   const demographics =
@@ -236,7 +239,7 @@ function profile(value: unknown, account: CurrentAccount): PatientProfile | unde
           bmi: raw.bmi as number | null,
           mobileNumber: raw.mobile_number as string | null,
           bloodGroup: raw.blood_group as PatientDemographics["bloodGroup"],
-          demoAadhaarReference: raw.demo_aadhaar_reference as string | null,
+          aadhaarLastFour: raw.aadhaar_last_four as string | null,
         };
   return {
     patientId: value.patient_id,
@@ -301,7 +304,7 @@ export async function updatePatientProfile(request: NextRequest) {
         weight_kg: body.demographics.weightKg,
         mobile_number: body.demographics.mobileNumber,
         blood_group: body.demographics.bloodGroup,
-        demo_aadhaar_reference: body.demographics.demoAadhaarReference,
+        aadhaar_number: body.demographics.aadhaarNumber,
       },
     }),
   });

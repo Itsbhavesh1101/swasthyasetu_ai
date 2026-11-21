@@ -2,13 +2,14 @@
 
 import base64
 import json
+import re
 from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, field_validator, model_validator
 
 from app.api.security.authorization import get_actor_context, require_self_subject
 from app.api.security.patient_authentication import PatientAuthenticator, authenticate_patient
@@ -43,6 +44,7 @@ from app.shared.errors import ApplicationError, ErrorCode
 from app.shared.types import OpaqueId
 
 _FACT_CURSOR_VERSION = "p5c-fact-v1"
+_AADHAAR_NUMBER = re.compile(r"^[0-9]{12}$", flags=re.ASCII)
 
 
 class DemographicsRequest(BaseModel):
@@ -57,7 +59,17 @@ class DemographicsRequest(BaseModel):
     weight_kg: Decimal | None = Field(default=None, ge=1, le=700, max_digits=6, decimal_places=2)
     mobile_number: str | None = Field(default=None, pattern=r"^\+[1-9][0-9]{6,14}$")
     blood_group: BloodGroup | None = None
-    demo_aadhaar_reference: str | None = Field(default=None, pattern=r"^DEMO-AADHAAR-[0-9]{4}$")
+    aadhaar_number: SecretStr | None = None
+
+    @field_validator("aadhaar_number")
+    @classmethod
+    def validate_aadhaar_number(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is None:
+            return None
+        raw = value.get_secret_value()
+        if not _AADHAAR_NUMBER.fullmatch(raw):
+            raise ValueError("aadhaar_number must contain exactly 12 ASCII digits")
+        return value
 
     @field_validator(
         "administrative_sex",
@@ -112,7 +124,7 @@ class DemographicsResponse(BaseModel):
     bmi: float | None
     mobile_number: str | None
     blood_group: BloodGroup | None
-    demo_aadhaar_reference: str | None
+    aadhaar_last_four: str | None
 
 
 class PatientResponse(BaseModel):
@@ -289,7 +301,7 @@ def patient_view(patient: Patient) -> PatientResponse:
                 bmi=None if demographics.bmi is None else float(demographics.bmi),
                 mobile_number=demographics.mobile_number,
                 blood_group=demographics.blood_group,
-                demo_aadhaar_reference=demographics.demo_aadhaar_reference,
+                aadhaar_last_four=demographics.aadhaar_last_four,
             )
         ),
         created_at=patient.created_at,
@@ -421,6 +433,23 @@ def decode_fact_cursor(value: str | None) -> FactCursor | None:
         ) from exc
 
 
+def resolve_demographics(
+    request_demographics: DemographicsRequest | None,
+    current_demographics: PatientDemographics | None = None,
+) -> PatientDemographics | None:
+    if request_demographics is None:
+        return None
+    fields = request_demographics.model_dump(exclude={"aadhaar_number"})
+    aadhaar_last_four: str | None
+    if request_demographics.aadhaar_number is not None:
+        aadhaar_last_four = request_demographics.aadhaar_number.get_secret_value()[-4:]
+    elif current_demographics is not None:
+        aadhaar_last_four = current_demographics.aadhaar_last_four
+    else:
+        aadhaar_last_four = None
+    return PatientDemographics(**fields, aadhaar_last_four=aadhaar_last_four)
+
+
 def build_patients_router(
     *,
     creator: CreatePatientCapability,
@@ -465,11 +494,7 @@ def build_patients_router(
                 message="The authenticated actor has no trusted patient subject.",
             )
         authorization.require_self_subject(context, PATIENT_WRITE_SELF, context.subject_id)
-        demographics = (
-            None
-            if payload.demographics is None
-            else PatientDemographics(**payload.demographics.model_dump())
-        )
+        demographics = resolve_demographics(payload.demographics)
         return patient_view(
             await creator.create_patient(
                 patient_id=context.subject_id,
@@ -496,11 +521,14 @@ def build_patients_router(
         patient_id: UUID, payload: UpdatePatientRequest, response: Response
     ) -> PatientResponse:
         response.headers["Cache-Control"] = "no-store"
-        demographics = (
-            None
-            if payload.demographics is None
-            else PatientDemographics(**payload.demographics.model_dump())
-        )
+        current_demographics: PatientDemographics | None = None
+        if payload.demographics is not None and payload.demographics.aadhaar_number is None:
+            try:
+                current_patient = await reader.get_patient(OpaqueId(patient_id))
+                current_demographics = current_patient.demographics
+            except ApplicationError:
+                current_demographics = None
+        demographics = resolve_demographics(payload.demographics, current_demographics)
         return patient_view(
             await updater.update_profile(
                 patient_id=OpaqueId(patient_id),

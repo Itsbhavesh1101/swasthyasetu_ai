@@ -75,7 +75,7 @@ it("loads and saves the editable patient profile with an optimistic version", as
             bmi: 22,
             mobileNumber: "+919876543210",
             bloodGroup: "B+",
-            demoAadhaarReference: "DEMO-AADHAAR-2301",
+            aadhaarLastFour: "2301",
           },
           updatedAt: "2026-11-03T10:00:00Z",
         },
@@ -102,9 +102,8 @@ it("loads and saves the editable patient profile with an optimistic version", as
   expect(screen.getByLabelText(/bmi \(calculated\)/i)).toHaveTextContent("22.0");
   expect(screen.getByLabelText(/mobile number/i)).toHaveValue("+919876543210");
   expect(screen.getByLabelText(/blood group/i)).toHaveValue("B+");
-  expect(screen.getByLabelText(/aadhaar demonstration reference/i)).toHaveValue(
-    "DEMO-AADHAAR-2301",
-  );
+  expect(screen.getByLabelText(/replace aadhaar number \(optional\)/i)).toHaveValue("");
+  expect(screen.getByText(/current: •••• •••• 2301/i)).toBeVisible();
   await user.click(screen.getByRole("button", { name: /save details/i }));
   expect(await screen.findByText(/profile is ready/i)).toBeVisible();
   expect(push).toHaveBeenCalledWith("/dashboard");
@@ -118,7 +117,7 @@ it("loads and saves the editable patient profile with an optimistic version", as
     demographics: {
       mobileNumber: "+919876543210",
       bloodGroup: "B+",
-      demoAadhaarReference: "DEMO-AADHAAR-2301",
+      aadhaarNumber: null,
     },
   });
   expect(submitted).not.toHaveProperty("patientId");
@@ -170,11 +169,11 @@ it("collects first-login details one tile at a time and submits only after revie
   await user.click(screen.getByRole("button", { name: /next/i }));
   await user.selectOptions(screen.getByLabelText(/blood group/i), "B+");
   await user.click(screen.getByRole("button", { name: /next/i }));
-  await user.type(screen.getByLabelText(/aadhaar demonstration reference/i), "123456789012");
+  await user.type(screen.getByLabelText(/aadhaar number/i), "12345678901");
   await user.click(screen.getByRole("button", { name: /next/i }));
-  expect(screen.getByRole("alert")).toHaveTextContent(/do not enter a real aadhaar/i);
-  await user.clear(screen.getByLabelText(/aadhaar demonstration reference/i));
-  await user.type(screen.getByLabelText(/aadhaar demonstration reference/i), "DEMO-AADHAAR-2301");
+  expect(screen.getByRole("alert")).toHaveTextContent(/enter a 12-digit aadhaar number/i);
+  await user.clear(screen.getByLabelText(/aadhaar number/i));
+  await user.type(screen.getByLabelText(/aadhaar number/i), "123456789012");
   await user.click(screen.getByRole("button", { name: /next/i }));
 
   await user.click(screen.getByRole("button", { name: /skip/i }));
@@ -197,7 +196,9 @@ it("collects first-login details one tile at a time and submits only after revie
   expect(review).toHaveTextContent("60 kg");
   expect(review).toHaveTextContent("+919876543210");
   expect(review).toHaveTextContent("B+");
-  expect(review).toHaveTextContent("DEMO-AADHAAR-2301");
+  expect(review).toHaveTextContent("•••• •••• 9012");
+  expect(review).not.toHaveTextContent("123456789012");
+  expect(review).not.toHaveTextContent("DEMO-AADHAAR");
   expect(review).toHaveTextContent("Gender identityNot provided");
   expect(review).toHaveTextContent("Pregnancy statusNot provided");
   expect(review).toHaveTextContent("LocationNot provided");
@@ -216,7 +217,7 @@ it("collects first-login details one tile at a time and submits only after revie
     demographics: {
       mobileNumber: "+919876543210",
       bloodGroup: "B+",
-      demoAadhaarReference: "DEMO-AADHAAR-2301",
+      aadhaarNumber: "123456789012",
     },
   });
 });
@@ -240,7 +241,7 @@ it("keeps the first-login wizard on review when the profile changed elsewhere", 
       bmi: 22,
       mobileNumber: "+919876543210",
       bloodGroup: "B+",
-      demoAadhaarReference: "DEMO-AADHAAR-2301",
+      aadhaarLastFour: "2301",
     },
     updatedAt: "2026-11-03T10:00:00Z",
   };
@@ -256,6 +257,9 @@ it("keeps the first-login wizard on review when the profile changed elsewhere", 
   render(<ProfilePage />);
   await screen.findByText("Step 1 of 13");
   for (let step = 1; step < 13; step += 1) {
+    if (screen.queryByLabelText(/aadhaar number/i)) {
+      await user.type(screen.getByLabelText(/aadhaar number/i), "123456789012");
+    }
     const next = screen.queryByRole("button", { name: "Next" });
     await user.click(next ?? screen.getByRole("button", { name: "Skip" }));
   }

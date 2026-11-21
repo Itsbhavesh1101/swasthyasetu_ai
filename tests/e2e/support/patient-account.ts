@@ -32,7 +32,7 @@ export async function registerPatient(page: Page, label: string) {
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByLabel("Blood group").selectOption("UNKNOWN");
   await page.getByRole("button", { name: "Next", exact: true }).click();
-  await page.getByLabel("Aadhaar demonstration reference").fill("DEMO-AADHAAR-2301");
+  await page.getByLabel("Aadhaar number").fill("123456789012");
   await page.getByRole("button", { name: "Next", exact: true }).click();
   await page.getByRole("button", { name: "Skip" }).click();
   await page.getByRole("button", { name: "Skip" }).click();

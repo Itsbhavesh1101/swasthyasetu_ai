@@ -8,6 +8,7 @@ import {
   bloodGroupOptions,
   calculatedAge,
   calculatedBmi,
+  maskedAadhaar,
   profileDraft,
   profileSubmission,
   type ProfileDraft,
@@ -37,8 +38,8 @@ function validationMessage(step: number, draft: ProfileDraft): string {
     return "Enter a mobile number in international format, such as +919876543210.";
   if (step === 7 && !bloodGroupOptions.some(({ value }) => value === draft.bloodGroup))
     return "Choose your blood group or Unknown.";
-  if (step === 8 && !/^DEMO-AADHAAR-[0-9]{4}$/.test(draft.demoAadhaarReference))
-    return "Do not enter a real Aadhaar number. Use the synthetic format DEMO-AADHAAR-1234.";
+  if (step === 8 && !/^[0-9]{12}$/.test(draft.aadhaarNumber))
+    return "Enter a 12-digit Aadhaar number.";
   if (step === 9 && draft.genderIdentity.trim().length > 256)
     return "Gender identity must be 256 characters or fewer.";
   if (step === 10 && draft.pregnancyStatus.trim().length > 256)
@@ -351,15 +352,21 @@ function renderStep(
   if (step === 8)
     return (
       <label>
-        Aadhaar demonstration reference
+        Aadhaar number
         <input
-          autoCapitalize="characters"
-          maxLength={17}
-          onChange={(event) => update("demoAadhaarReference", event.target.value.toUpperCase())}
-          placeholder="DEMO-AADHAAR-1234"
-          value={draft.demoAadhaarReference}
+          autoComplete="off"
+          inputMode="numeric"
+          maxLength={12}
+          onChange={(event) => update("aadhaarNumber", event.target.value)}
+          pattern="[0-9]{12}"
+          placeholder="12-digit number"
+          type="text"
+          value={draft.aadhaarNumber}
         />
-        <small>Synthetic college-demo value only. Never enter a real Aadhaar number.</small>
+        <small>
+          Enter your 12-digit Aadhaar number. Only the last four digits are stored to display a
+          masked reference. Identity is not verified.
+        </small>
       </label>
     );
   if (step === 9)
@@ -455,8 +462,8 @@ function renderStep(
         </button>
       </div>
       <div>
-        <dt>Aadhaar demo reference</dt>
-        <dd>{draft.demoAadhaarReference}</dd>
+        <dt>Aadhaar number</dt>
+        <dd>{maskedAadhaar(draft.aadhaarNumber.slice(-4)) || "Not provided"}</dd>
         <button onClick={() => setStep(8)} type="button">
           Edit
         </button>

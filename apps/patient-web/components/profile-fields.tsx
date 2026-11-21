@@ -25,7 +25,7 @@ export type ProfileDraft = {
   weightKg: string;
   mobileNumber: string;
   bloodGroup: BloodGroup | "";
-  demoAadhaarReference: string;
+  aadhaarNumber: string;
   genderIdentity: string;
   pregnancyStatus: string;
   locationContext: string;
@@ -42,11 +42,16 @@ export function profileDraft(profile: PatientProfile): ProfileDraft {
     weightKg: String(demographics?.weightKg ?? ""),
     mobileNumber: demographics?.mobileNumber ?? "",
     bloodGroup: demographics?.bloodGroup ?? "",
-    demoAadhaarReference: demographics?.demoAadhaarReference ?? "",
+    aadhaarNumber: "",
     genderIdentity: demographics?.genderIdentity ?? "",
     pregnancyStatus: demographics?.pregnancyStatus ?? "",
     locationContext: demographics?.locationContext ?? "",
   };
+}
+
+export function maskedAadhaar(lastFour: string | null | undefined): string {
+  if (!lastFour || !/^[0-9]{4}$/.test(lastFour)) return "";
+  return `•••• •••• ${lastFour}`;
 }
 
 function nullable(value: string) {
@@ -72,7 +77,7 @@ export function profileSubmission(
       weightKg: Number(draft.weightKg),
       mobileNumber: nullable(draft.mobileNumber),
       bloodGroup: draft.bloodGroup || null,
-      demoAadhaarReference: nullable(draft.demoAadhaarReference),
+      aadhaarNumber: nullable(draft.aadhaarNumber),
     },
   };
 }

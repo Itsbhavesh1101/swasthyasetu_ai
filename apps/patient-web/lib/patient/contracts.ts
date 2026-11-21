@@ -11,7 +11,20 @@ export type PatientDemographics = {
   bmi: number | null;
   mobileNumber: string | null;
   bloodGroup: BloodGroup | null;
-  demoAadhaarReference: string | null;
+  aadhaarLastFour: string | null;
+};
+
+export type PatientDemographicsSubmission = {
+  dateOfBirth: string | null;
+  administrativeSex: string | null;
+  genderIdentity: string | null;
+  pregnancyStatus: string | null;
+  locationContext: string | null;
+  heightCm: number | null;
+  weightKg: number | null;
+  mobileNumber: string | null;
+  bloodGroup: BloodGroup | null;
+  aadhaarNumber: string | null;
 };
 
 export type PatientProfile = {
@@ -31,5 +44,5 @@ export type PatientProfileSubmission = {
   expectedUpdatedAt: string;
   preferredLanguage: string | null;
   displayName: string;
-  demographics: Omit<PatientDemographics, "bmi">;
+  demographics: PatientDemographicsSubmission;
 };
