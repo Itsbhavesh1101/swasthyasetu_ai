@@ -11,7 +11,7 @@ import type {
   PatientProfileState,
   PatientProfileSubmission,
 } from "../lib/patient/contracts";
-import { bloodGroupOptions } from "./profile-fields";
+import { bloodGroupOptions, maskedAadhaar } from "./profile-fields";
 import { ProfileSetupWizard } from "./profile-setup-wizard";
 import { ErrorState, LoadingState } from "./ui-primitives";
 
@@ -26,7 +26,7 @@ const emptyDemographics: PatientDemographics = {
   bmi: null,
   mobileNumber: null,
   bloodGroup: null,
-  demoAadhaarReference: null,
+  aadhaarLastFour: null,
 };
 
 function optional(data: FormData, name: string) {
@@ -109,7 +109,7 @@ export function ProfileForm() {
         weightKg: Number(data.get("weightKg")),
         mobileNumber: optional(data, "mobileNumber"),
         bloodGroup: optional(data, "bloodGroup") as BloodGroup | null,
-        demoAadhaarReference: optional(data, "demoAadhaarReference"),
+        aadhaarNumber: optional(data, "aadhaarNumber"),
       },
     };
     setBusy(true);
@@ -302,16 +302,23 @@ export function ProfileForm() {
           <small>Self-reported only. Do not rely on this for emergency decisions.</small>
         </label>
         <label>
-          Aadhaar demonstration reference
+          Replace Aadhaar number (optional)
+          {demographics.aadhaarLastFour ? (
+            <small>Current: {maskedAadhaar(demographics.aadhaarLastFour)}</small>
+          ) : null}
           <input
-            defaultValue={demographics.demoAadhaarReference ?? ""}
-            maxLength={17}
-            name="demoAadhaarReference"
-            pattern="DEMO-AADHAAR-[0-9]{4}"
-            placeholder="DEMO-AADHAAR-1234"
-            required
+            autoComplete="off"
+            inputMode="numeric"
+            maxLength={12}
+            name="aadhaarNumber"
+            pattern="[0-9]{12}"
+            placeholder="Enter 12 digits to update"
+            type="text"
           />
-          <small>Synthetic college-demo value only. Never enter a real Aadhaar number.</small>
+          <small>
+            Leave blank to keep your current saved Aadhaar reference. Only the last four digits are
+            stored. Identity is not verified.
+          </small>
         </label>
         <label>
           Gender identity (optional)
