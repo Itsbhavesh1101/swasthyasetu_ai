@@ -180,7 +180,7 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
                 "location_context": "Delhi",
                 "mobile_number": "+919876543210",
                 "blood_group": "B+",
-                "demo_aadhaar_reference": "DEMO-AADHAAR-2301",
+                "aadhaar_number": "123456789012",
             },
         }
         updated = await client.patch(
@@ -194,14 +194,55 @@ async def test_authenticated_profile_update_is_self_scoped_strict_and_optimistic
         assert updated.json()["demographics"]["location_context"] == "Delhi"
         assert updated.json()["demographics"]["mobile_number"] == "+919876543210"
         assert updated.json()["demographics"]["blood_group"] == "B+"
-        assert updated.json()["demographics"]["demo_aadhaar_reference"] == "DEMO-AADHAAR-2301"
+        assert updated.json()["demographics"]["aadhaar_last_four"] == "9012"
+        assert "aadhaar_number" not in updated.json()["demographics"]
+        assert "demo_aadhaar_reference" not in updated.json()["demographics"]
         assert stale.status_code == 409
         assert stale.json()["error"]["code"] == "RESOURCE_CONFLICT"
+
+        # Preservation semantics: omit aadhaar_number on subsequent update
+        preserve_payload = {
+            "expected_updated_at": updated.json()["updated_at"],
+            "preferred_language": "en",
+            "demographics": {
+                "date_of_birth": "2000-01-02",
+                "administrative_sex": "female",
+                "location_context": "Mumbai",
+                "mobile_number": "+919876543210",
+                "blood_group": "B+",
+            },
+        }
+        preserved = await client.patch(
+            f"/api/v1/patients/{patient_id}", headers=bearer, json=preserve_payload
+        )
+        assert preserved.status_code == 200
+        assert preserved.json()["demographics"]["aadhaar_last_four"] == "9012"
+        assert preserved.json()["demographics"]["location_context"] == "Mumbai"
+
+        # Replacement semantics: valid new 12-digit number replaces suffix
+        replace_payload = {
+            "expected_updated_at": preserved.json()["updated_at"],
+            "preferred_language": "en",
+            "demographics": {
+                "date_of_birth": "2000-01-02",
+                "administrative_sex": "female",
+                "location_context": "Mumbai",
+                "mobile_number": "+919876543210",
+                "blood_group": "B+",
+                "aadhaar_number": "987654324321",
+            },
+        }
+        replaced = await client.patch(
+            f"/api/v1/patients/{patient_id}", headers=bearer, json=replace_payload
+        )
+        assert replaced.status_code == 200
+        assert replaced.json()["demographics"]["aadhaar_last_four"] == "4321"
 
         for invalid_demographics in (
             {**update_payload["demographics"], "mobile_number": "9876543210"},
             {**update_payload["demographics"], "blood_group": "X"},
-            {**update_payload["demographics"], "demo_aadhaar_reference": "123456789012"},
+            {**update_payload["demographics"], "aadhaar_number": "1234"},
+            {**update_payload["demographics"], "aadhaar_number": "12345678901a"},
         ):
             invalid = await client.patch(
                 f"/api/v1/patients/{patient_id}",
