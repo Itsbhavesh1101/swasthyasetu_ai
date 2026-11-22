@@ -128,13 +128,20 @@ async function authenticate(request: NextRequest, mode: "login" | "register") {
   });
   if (!result) return safeError(503, "The account service is temporarily unavailable.");
   const data = await jsonValue(result);
-  if (!result.ok || !validSession(data))
+  if (!result.ok || !validSession(data)) {
+    if (result.status === 409) {
+      return safeError(409, "An account with this email address already exists. Try signing in.");
+    }
+    if (result.status === 422) {
+      return safeError(422, "Please check your details. Password must be at least 12 characters.");
+    }
     return safeError(
       result.status === 401 ? 401 : 502,
       mode === "login"
         ? "We could not sign you in with those details."
         : "We could not create the account.",
     );
+  }
   let profileComplete = false;
   if (mode === "login") {
     const current = await backend("/api/v1/accounts/me", {

@@ -29,6 +29,19 @@ it("registers with labeled fields and blocks password mismatch", async () => {
   expect(fetchSpy).not.toHaveBeenCalled();
 });
 
+it("blocks registration when password is less than 12 characters", async () => {
+  const user = userEvent.setup();
+  const fetchSpy = vi.fn();
+  vi.stubGlobal("fetch", fetchSpy);
+  render(<RegisterPage />);
+  await user.type(screen.getByLabelText(/^email/i), "patient@example.com");
+  await user.type(screen.getByLabelText(/^password/i), "shortpass");
+  await user.type(screen.getByLabelText(/confirm password/i), "shortpass");
+  await user.click(screen.getByRole("button", { name: /create account/i }));
+  expect(screen.getByRole("alert")).toHaveTextContent(/at least 12 characters/i);
+  expect(fetchSpy).not.toHaveBeenCalled();
+});
+
 it("submits registration once, clears secrets, and navigates", async () => {
   const user = userEvent.setup();
   let resolve!: (value: Response) => void;

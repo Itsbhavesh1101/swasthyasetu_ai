@@ -16,16 +16,27 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
     if (busy) return;
     const form = event.currentTarget;
     const data = new FormData(form);
+    const email = String(data.get("email") ?? "").trim();
     const password = String(data.get("password") ?? "");
     const confirmation = String(data.get("confirmation") ?? "");
     setError("");
-    if (mode === "register" && password !== confirmation) {
-      setError("Passwords do not match. Please enter them again.");
+    if (!email || !email.includes("@")) {
+      setError("Please enter a valid email address.");
       return;
+    }
+    if (mode === "register") {
+      if (password.length < 12) {
+        setError("Password must be at least 12 characters long.");
+        return;
+      }
+      if (password !== confirmation) {
+        setError("Passwords do not match. Please enter them again.");
+        return;
+      }
     }
     setBusy(true);
     const result = await submitAccount(mode, {
-      email: String(data.get("email") ?? ""),
+      email,
       password,
     });
     const passwordInput = form.elements.namedItem("password") as HTMLInputElement;
@@ -39,9 +50,10 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
       router.push(result.profileComplete ? "/dashboard" : "/profile?setup=1");
     } else {
       setError(
-        mode === "login"
-          ? "We could not sign you in with those details."
-          : "We could not create your account. Check the details and try again.",
+        result?.errorMessage ||
+          (mode === "login"
+            ? "We could not sign you in with those details."
+            : "We could not create your account. Check the details and try again."),
       );
       setBusy(false);
     }
@@ -69,6 +81,14 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
           required
           type="password"
         />
+        {mode === "register" ? (
+          <small
+            className="field-hint"
+            style={{ display: "block", marginTop: "0.25rem", fontSize: "0.8125rem", opacity: 0.8 }}
+          >
+            Must be at least 12 characters
+          </small>
+        ) : null}
       </label>
       {mode === "register" ? (
         <label>
