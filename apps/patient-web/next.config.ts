@@ -20,6 +20,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  experimental: {
+    agentUpgrade: "security",
+  },
   reactStrictMode: true,
   transpilePackages: ["@swasthyasetu/ui"],
 };
