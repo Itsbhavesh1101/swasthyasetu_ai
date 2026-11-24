@@ -26,9 +26,9 @@ export type ProfileDraft = {
   mobileNumber: string;
   bloodGroup: BloodGroup | "";
   aadhaarNumber: string;
-  genderIdentity: string;
   pregnancyStatus: string;
-  locationContext: string;
+  genderIdentity?: string;
+  locationContext?: string;
 };
 
 export function profileDraft(profile: PatientProfile): ProfileDraft {
@@ -43,9 +43,7 @@ export function profileDraft(profile: PatientProfile): ProfileDraft {
     mobileNumber: demographics?.mobileNumber ?? "",
     bloodGroup: demographics?.bloodGroup ?? "",
     aadhaarNumber: "",
-    genderIdentity: demographics?.genderIdentity ?? "",
     pregnancyStatus: demographics?.pregnancyStatus ?? "",
-    locationContext: demographics?.locationContext ?? "",
   };
 }
 
@@ -54,7 +52,18 @@ export function maskedAadhaar(lastFour: string | null | undefined): string {
   return `•••• •••• ${lastFour}`;
 }
 
-function nullable(value: string) {
+export function formatProfileDate(value: string | null | undefined): string {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return "—";
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function nullable(value: string | undefined | null) {
+  if (!value) return null;
   const trimmed = value.trim();
   return trimmed || null;
 }
@@ -70,9 +79,10 @@ export function profileSubmission(
     demographics: {
       dateOfBirth: nullable(draft.dateOfBirth),
       administrativeSex: nullable(draft.administrativeSex),
-      genderIdentity: nullable(draft.genderIdentity),
-      pregnancyStatus: nullable(draft.pregnancyStatus),
-      locationContext: nullable(draft.locationContext),
+      genderIdentity: null,
+      pregnancyStatus:
+        draft.administrativeSex === "female" ? nullable(draft.pregnancyStatus) : null,
+      locationContext: null,
       heightCm: Number(draft.heightCm),
       weightKg: Number(draft.weightKg),
       mobileNumber: nullable(draft.mobileNumber),

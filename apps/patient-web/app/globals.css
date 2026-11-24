@@ -926,6 +926,81 @@ a {
   gap: 1.25rem;
 }
 
+.profile-view {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.profile-view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgb(175 180 206 / 15%);
+  padding-bottom: 1.25rem;
+}
+
+.profile-subtitle {
+  margin-top: 0.25rem;
+  color: var(--patient-muted);
+  font-size: 0.9rem;
+}
+
+.edit-profile-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.profile-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 640px) {
+  .profile-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--patient-border);
+  border-radius: var(--patient-radius-sm);
+  background: rgb(18 20 31 / 55%);
+}
+
+.profile-detail-label {
+  color: var(--patient-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-detail-value {
+  color: var(--patient-text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.profile-edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgb(175 180 206 / 15%);
+  padding-bottom: 1rem;
+}
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

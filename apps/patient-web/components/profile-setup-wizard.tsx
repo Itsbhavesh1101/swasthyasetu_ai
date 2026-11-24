@@ -8,58 +8,90 @@ import {
   bloodGroupOptions,
   calculatedAge,
   calculatedBmi,
+  formatProfileDate,
   maskedAadhaar,
   profileDraft,
   profileSubmission,
   type ProfileDraft,
 } from "./profile-fields";
 
-const totalSteps = 13;
-const optionalSteps = new Set([9, 10, 11]);
+export type WizardStepKey =
+  | "name"
+  | "language"
+  | "dob"
+  | "sex"
+  | "height"
+  | "weight"
+  | "mobile"
+  | "bloodGroup"
+  | "aadhaar"
+  | "pregnancy"
+  | "review";
+
 const supportedSexValues = new Set(["female", "male", "intersex", "other"]);
 
-function validationMessage(step: number, draft: ProfileDraft): string {
-  if (step === 0 && (!draft.displayName.trim() || draft.displayName.trim().length > 120))
+function getWizardSteps(administrativeSex: string): WizardStepKey[] {
+  const steps: WizardStepKey[] = [
+    "name",
+    "language",
+    "dob",
+    "sex",
+    "height",
+    "weight",
+    "mobile",
+    "bloodGroup",
+    "aadhaar",
+  ];
+  if (administrativeSex === "female") {
+    steps.push("pregnancy");
+  }
+  steps.push("review");
+  return steps;
+}
+
+const stepTitles: Record<WizardStepKey, string> = {
+  name: "What should we call you?",
+  language: "Which language do you prefer?",
+  dob: "When were you born?",
+  sex: "What sex is recorded for healthcare?",
+  height: "What is your height?",
+  weight: "What is your weight?",
+  mobile: "What is your mobile number?",
+  bloodGroup: "What is your blood group?",
+  aadhaar: "What is your Aadhaar number?",
+  pregnancy: "Would you like to add pregnancy status?",
+  review: "Review your details",
+};
+
+function validationMessage(stepKey: WizardStepKey, draft: ProfileDraft): string {
+  if (stepKey === "name" && (!draft.displayName.trim() || draft.displayName.trim().length > 120))
     return "Enter your full name.";
-  if (step === 1 && !["en", "hi"].includes(draft.preferredLanguage))
+  if (stepKey === "language" && !["en", "hi"].includes(draft.preferredLanguage))
     return "Choose your preferred language.";
   if (
-    step === 2 &&
+    stepKey === "dob" &&
     (!/^\d{4}-\d{2}-\d{2}$/.test(draft.dateOfBirth) || calculatedAge(draft.dateOfBirth) === null)
   )
     return "Enter a valid date of birth.";
-  if (step === 3 && !supportedSexValues.has(draft.administrativeSex))
+  if (stepKey === "sex" && !supportedSexValues.has(draft.administrativeSex))
     return "Choose the sex recorded for healthcare.";
-  if (step === 4 && !(Number(draft.heightCm) >= 30 && Number(draft.heightCm) <= 275))
+  if (stepKey === "height" && !(Number(draft.heightCm) >= 30 && Number(draft.heightCm) <= 275))
     return "Enter a height between 30 and 275 cm.";
-  if (step === 5 && !(Number(draft.weightKg) >= 1 && Number(draft.weightKg) <= 700))
+  if (stepKey === "weight" && !(Number(draft.weightKg) >= 1 && Number(draft.weightKg) <= 700))
     return "Enter a weight between 1 and 700 kg.";
-  if (step === 6 && !/^\+[1-9][0-9]{6,14}$/.test(draft.mobileNumber))
+  if (stepKey === "mobile" && !/^\+[1-9][0-9]{6,14}$/.test(draft.mobileNumber))
     return "Enter a mobile number in international format, such as +919876543210.";
-  if (step === 7 && !bloodGroupOptions.some(({ value }) => value === draft.bloodGroup))
+  if (stepKey === "bloodGroup" && !bloodGroupOptions.some(({ value }) => value === draft.bloodGroup))
     return "Choose your blood group or Unknown.";
-  if (step === 8 && !/^[0-9]{12}$/.test(draft.aadhaarNumber))
+  if (stepKey === "aadhaar" && !/^[0-9]{12}$/.test(draft.aadhaarNumber))
     return "Enter a 12-digit Aadhaar number.";
-  if (step === 9 && draft.genderIdentity.trim().length > 256)
-    return "Gender identity must be 256 characters or fewer.";
-  if (step === 10 && draft.pregnancyStatus.trim().length > 256)
+  if (stepKey === "pregnancy" && draft.pregnancyStatus.trim().length > 256)
     return "Pregnancy status must be 256 characters or fewer.";
-  if (step === 11 && draft.locationContext.trim().length > 256)
-    return "Location must be 256 characters or fewer.";
   return "";
 }
 
 function summaryValue(value: string, fallback = "Not provided") {
   return value.trim() || fallback;
-}
-
-function reviewDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${value}T00:00:00Z`));
 }
 
 export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfile }>) {
@@ -73,6 +105,10 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
   const age = calculatedAge(draft.dateOfBirth);
   const bmi = calculatedBmi(draft.heightCm, draft.weightKg);
 
+  const steps = getWizardSteps(draft.administrativeSex);
+  const totalSteps = steps.length;
+  const currentStepKey = steps[Math.min(step, totalSteps - 1)] ?? "name";
+
   useEffect(() => {
     document.body.classList.add("profile-setup-active");
     return () => document.body.classList.remove("profile-setup-active");
@@ -83,12 +119,18 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
   }, [step]);
 
   function update<K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) {
-    setDraft((current) => ({ ...current, [key]: value }));
+    setDraft((current) => {
+      const next = { ...current, [key]: value };
+      if (key === "administrativeSex" && value !== "female") {
+        next.pregnancyStatus = "";
+      }
+      return next;
+    });
     setError("");
   }
 
   function advance() {
-    const validation = validationMessage(step, draft);
+    const validation = validationMessage(currentStepKey, draft);
     if (validation) {
       setError(validation);
       return;
@@ -98,10 +140,9 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
   }
 
   function skip() {
-    const optionalKey = (["genderIdentity", "pregnancyStatus", "locationContext"] as const)[
-      step - 9
-    ];
-    if (optionalKey) update(optionalKey, "");
+    if (currentStepKey === "pregnancy") {
+      update("pregnancyStatus", "");
+    }
     setStep((current) => Math.min(current + 1, totalSteps - 1));
   }
 
@@ -139,21 +180,7 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
     }
   }
 
-  const title = [
-    "What should we call you?",
-    "Which language do you prefer?",
-    "When were you born?",
-    "What sex is recorded for healthcare?",
-    "What is your height?",
-    "What is your weight?",
-    "What is your mobile number?",
-    "What is your blood group?",
-    "Add a synthetic Aadhaar demonstration reference",
-    "How do you describe your gender identity?",
-    "Would you like to add pregnancy status?",
-    "Where are you based?",
-    "Review your details",
-  ][step];
+  const title = stepTitles[currentStepKey];
 
   return (
     <section aria-label="First-time profile setup" className="profile-wizard-shell">
@@ -172,7 +199,12 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
             {title}
           </h2>
         </header>
-        <div className="wizard-field">{renderStep(step, draft, update, age, bmi, setStep)}</div>
+        <div className="wizard-field">
+          {renderStep(currentStepKey, draft, update, age, bmi, (targetKey) => {
+            const targetIndex = steps.indexOf(targetKey);
+            if (targetIndex >= 0) setStep(targetIndex);
+          })}
+        </div>
         {error ? (
           <p className="form-summary" role="alert">
             {error}
@@ -189,7 +221,7 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
               className="button button--secondary"
               onClick={() => {
                 setError("");
-                setStep((current) => current - 1);
+                setStep((current) => Math.max(0, current - 1));
               }}
               type="button"
             >
@@ -199,7 +231,7 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
             <span />
           )}
           <div className="wizard-actions-next">
-            {optionalSteps.has(step) ? (
+            {currentStepKey === "pregnancy" ? (
               <button className="button button--quiet" onClick={skip} type="button">
                 Skip
               </button>
@@ -216,14 +248,14 @@ export function ProfileSetupWizard({ profile }: Readonly<{ profile: PatientProfi
 }
 
 function renderStep(
-  step: number,
+  stepKey: WizardStepKey,
   draft: ProfileDraft,
   update: <K extends keyof ProfileDraft>(key: K, value: ProfileDraft[K]) => void,
   age: number | null,
   bmi: number | null,
-  setStep: (step: number) => void,
+  jumpToStep: (stepKey: WizardStepKey) => void,
 ) {
-  if (step === 0)
+  if (stepKey === "name")
     return (
       <label>
         Full name
@@ -235,7 +267,7 @@ function renderStep(
         />
       </label>
     );
-  if (step === 1)
+  if (stepKey === "language")
     return (
       <label>
         Preferred language
@@ -249,7 +281,7 @@ function renderStep(
         </select>
       </label>
     );
-  if (step === 2)
+  if (stepKey === "dob")
     return (
       <label>
         Date of birth
@@ -262,7 +294,7 @@ function renderStep(
         {age === null ? null : <small>{age} years old</small>}
       </label>
     );
-  if (step === 3)
+  if (stepKey === "sex")
     return (
       <label>
         Sex recorded for healthcare
@@ -278,7 +310,7 @@ function renderStep(
         </select>
       </label>
     );
-  if (step === 4)
+  if (stepKey === "height")
     return (
       <label>
         Height (cm)
@@ -293,7 +325,7 @@ function renderStep(
         />
       </label>
     );
-  if (step === 5)
+  if (stepKey === "weight")
     return (
       <label>
         Weight (kg)
@@ -311,7 +343,7 @@ function renderStep(
         )}
       </label>
     );
-  if (step === 6)
+  if (stepKey === "mobile")
     return (
       <label>
         Mobile number
@@ -327,7 +359,7 @@ function renderStep(
         <small>Include the country code. This is not used for login or OTP.</small>
       </label>
     );
-  if (step === 7)
+  if (stepKey === "bloodGroup")
     return (
       <label>
         Blood group
@@ -349,7 +381,7 @@ function renderStep(
         </small>
       </label>
     );
-  if (step === 8)
+  if (stepKey === "aadhaar")
     return (
       <label>
         Aadhaar number
@@ -365,41 +397,19 @@ function renderStep(
         />
         <small>
           Enter your 12-digit Aadhaar number. Only the last four digits are stored to display a
-          masked reference. Identity is not verified.
+          masked reference.
         </small>
       </label>
     );
-  if (step === 9)
-    return (
-      <label>
-        Gender identity (optional)
-        <input
-          maxLength={256}
-          onChange={(event) => update("genderIdentity", event.target.value)}
-          value={draft.genderIdentity}
-        />
-      </label>
-    );
-  if (step === 10)
+  if (stepKey === "pregnancy")
     return (
       <label>
         Pregnancy status (optional)
         <input
           maxLength={256}
           onChange={(event) => update("pregnancyStatus", event.target.value)}
+          placeholder="e.g. Second trimester, postpartum, or leave blank"
           value={draft.pregnancyStatus}
-        />
-      </label>
-    );
-  if (step === 11)
-    return (
-      <label>
-        City or location (optional)
-        <input
-          autoComplete="address-level2"
-          maxLength={256}
-          onChange={(event) => update("locationContext", event.target.value)}
-          value={draft.locationContext}
         />
       </label>
     );
@@ -408,87 +418,79 @@ function renderStep(
       <div>
         <dt>Full name</dt>
         <dd>{draft.displayName}</dd>
-        <button onClick={() => setStep(0)} type="button">
+        <button onClick={() => jumpToStep("name")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Preferred language</dt>
         <dd>{draft.preferredLanguage === "hi" ? "Hindi" : "English"}</dd>
-        <button onClick={() => setStep(1)} type="button">
+        <button onClick={() => jumpToStep("language")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Date of birth</dt>
-        <dd>{reviewDate(draft.dateOfBirth)}</dd>
-        <button onClick={() => setStep(2)} type="button">
+        <dd>{formatProfileDate(draft.dateOfBirth)}</dd>
+        <button onClick={() => jumpToStep("dob")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Sex recorded for healthcare</dt>
-        <dd>{draft.administrativeSex[0]?.toUpperCase() + draft.administrativeSex.slice(1)}</dd>
-        <button onClick={() => setStep(3)} type="button">
+        <dd>
+          {draft.administrativeSex
+            ? draft.administrativeSex[0]?.toUpperCase() + draft.administrativeSex.slice(1)
+            : "—"}
+        </dd>
+        <button onClick={() => jumpToStep("sex")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Height</dt>
         <dd>{draft.heightCm} cm</dd>
-        <button onClick={() => setStep(4)} type="button">
+        <button onClick={() => jumpToStep("height")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Weight</dt>
         <dd>{draft.weightKg} kg</dd>
-        <button onClick={() => setStep(5)} type="button">
+        <button onClick={() => jumpToStep("weight")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Mobile number</dt>
         <dd>{draft.mobileNumber}</dd>
-        <button onClick={() => setStep(6)} type="button">
+        <button onClick={() => jumpToStep("mobile")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Blood group</dt>
         <dd>{draft.bloodGroup}</dd>
-        <button onClick={() => setStep(7)} type="button">
+        <button onClick={() => jumpToStep("bloodGroup")} type="button">
           Edit
         </button>
       </div>
       <div>
         <dt>Aadhaar number</dt>
         <dd>{maskedAadhaar(draft.aadhaarNumber.slice(-4)) || "Not provided"}</dd>
-        <button onClick={() => setStep(8)} type="button">
+        <button onClick={() => jumpToStep("aadhaar")} type="button">
           Edit
         </button>
       </div>
-      <div>
-        <dt>Gender identity</dt>
-        <dd>{summaryValue(draft.genderIdentity)}</dd>
-        <button onClick={() => setStep(9)} type="button">
-          Edit
-        </button>
-      </div>
-      <div>
-        <dt>Pregnancy status</dt>
-        <dd>{summaryValue(draft.pregnancyStatus)}</dd>
-        <button onClick={() => setStep(10)} type="button">
-          Edit
-        </button>
-      </div>
-      <div>
-        <dt>Location</dt>
-        <dd>{summaryValue(draft.locationContext)}</dd>
-        <button onClick={() => setStep(11)} type="button">
-          Edit
-        </button>
-      </div>
+      {draft.administrativeSex === "female" ? (
+        <div>
+          <dt>Pregnancy status</dt>
+          <dd>{summaryValue(draft.pregnancyStatus)}</dd>
+          <button onClick={() => jumpToStep("pregnancy")} type="button">
+            Edit
+          </button>
+        </div>
+      ) : null}
     </dl>
   );
 }

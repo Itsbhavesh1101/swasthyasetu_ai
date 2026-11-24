@@ -69,7 +69,7 @@ it("loads and saves the editable patient profile with an optimistic version", as
             administrativeSex: "female",
             genderIdentity: null,
             pregnancyStatus: null,
-            locationContext: "Delhi",
+            locationContext: null,
             heightCm: 165,
             weightKg: 60,
             bmi: 22,
@@ -90,23 +90,52 @@ it("loads and saves the editable patient profile with an optimistic version", as
           preferredLanguage: "hi",
           displayName: "Patient Demo",
           profileComplete: true,
-          demographics: null,
+          demographics: {
+            dateOfBirth: "2000-01-02",
+            administrativeSex: "female",
+            genderIdentity: null,
+            pregnancyStatus: null,
+            locationContext: null,
+            heightCm: 165,
+            weightKg: 60,
+            bmi: 22,
+            mobileNumber: "+919876543210",
+            bloodGroup: "B+",
+            aadhaarLastFour: "2301",
+          },
           updatedAt: "2026-11-03T10:01:00Z",
         },
       }),
     );
   vi.stubGlobal("fetch", fetchSpy);
   render(<ProfilePage />);
-  expect(await screen.findByDisplayValue("Delhi")).toBeVisible();
-  await user.selectOptions(screen.getByLabelText(/preferred language/i), "hi");
+
+  // Initially locked view shows saved details and "Edit details" button
+  expect(await screen.findByRole("heading", { name: "Patient Demo" })).toBeVisible();
+  expect(screen.getByText("•••• •••• 2301")).toBeVisible();
+  const editButton = screen.getByRole("button", { name: /edit details/i });
+  expect(editButton).toBeVisible();
+
+  // Clicking "Edit details" unlocks the form
+  await user.click(editButton);
+
   expect(screen.getByLabelText(/bmi \(calculated\)/i)).toHaveTextContent("22.0");
   expect(screen.getByLabelText(/mobile number/i)).toHaveValue("+919876543210");
   expect(screen.getByLabelText(/blood group/i)).toHaveValue("B+");
   expect(screen.getByLabelText(/replace aadhaar number \(optional\)/i)).toHaveValue("");
   expect(screen.getByText(/current: •••• •••• 2301/i)).toBeVisible();
+  expect(
+    screen.queryByText(/leave blank to keep your current saved aadhaar reference/i),
+  ).not.toBeInTheDocument();
+  expect(screen.queryByLabelText(/gender identity/i)).not.toBeInTheDocument();
+  expect(screen.queryByLabelText(/city or location/i)).not.toBeInTheDocument();
+
+  await user.selectOptions(screen.getByLabelText(/preferred language/i), "hi");
   await user.click(screen.getByRole("button", { name: /save details/i }));
-  expect(await screen.findByText(/profile is ready/i)).toBeVisible();
-  expect(push).toHaveBeenCalledWith("/dashboard");
+
+  expect(await screen.findByText(/profile details have been updated/i)).toBeVisible();
+  expect(screen.getByRole("button", { name: /edit details/i })).toBeVisible();
+
   const submitted = JSON.parse(String(fetchSpy.mock.calls[1]?.[1]?.body)) as Record<
     string,
     unknown
@@ -118,6 +147,8 @@ it("loads and saves the editable patient profile with an optimistic version", as
       mobileNumber: "+919876543210",
       bloodGroup: "B+",
       aadhaarNumber: null,
+      genderIdentity: null,
+      locationContext: null,
     },
   });
   expect(submitted).not.toHaveProperty("patientId");
@@ -146,7 +177,7 @@ it("collects first-login details one tile at a time and submits only after revie
   vi.stubGlobal("fetch", fetchSpy);
   render(<ProfilePage />);
 
-  expect(await screen.findByText("Step 1 of 13")).toBeVisible();
+  expect(await screen.findByText("Step 1 of 10")).toBeVisible();
   expect(screen.getByRole("heading", { name: /what should we call you/i })).toBeVisible();
   expect(screen.queryByLabelText(/mobile number/i)).not.toBeInTheDocument();
   await user.type(screen.getByLabelText(/full name/i), "Asha Demo");
@@ -176,14 +207,11 @@ it("collects first-login details one tile at a time and submits only after revie
   await user.type(screen.getByLabelText(/aadhaar number/i), "123456789012");
   await user.click(screen.getByRole("button", { name: /next/i }));
 
-  await user.click(screen.getByRole("button", { name: /skip/i }));
-  await user.click(screen.getByRole("button", { name: /skip/i }));
-  await user.click(screen.getByRole("button", { name: /back/i }));
+  // Step 10: Pregnancy status (female only)
   expect(screen.getByRole("heading", { name: /pregnancy status/i })).toBeVisible();
   await user.click(screen.getByRole("button", { name: /skip/i }));
-  await user.click(screen.getByRole("button", { name: /skip/i }));
 
-  expect(screen.getByText("Step 13 of 13")).toBeVisible();
+  expect(screen.getByText("Step 11 of 11")).toBeVisible();
   const reviewHeading = screen.getByRole("heading", { name: /review your details/i });
   expect(reviewHeading).toBeVisible();
   const review = reviewHeading.closest("form");
@@ -199,9 +227,9 @@ it("collects first-login details one tile at a time and submits only after revie
   expect(review).toHaveTextContent("•••• •••• 9012");
   expect(review).not.toHaveTextContent("123456789012");
   expect(review).not.toHaveTextContent("DEMO-AADHAAR");
-  expect(review).toHaveTextContent("Gender identityNot provided");
   expect(review).toHaveTextContent("Pregnancy statusNot provided");
-  expect(review).toHaveTextContent("LocationNot provided");
+  expect(review).not.toHaveTextContent("Gender identity");
+  expect(review).not.toHaveTextContent("Location");
   expect(fetchSpy).toHaveBeenCalledTimes(1);
   expect(localStorage).toHaveLength(0);
   expect(sessionStorage).toHaveLength(0);
@@ -218,9 +246,67 @@ it("collects first-login details one tile at a time and submits only after revie
       mobileNumber: "+919876543210",
       bloodGroup: "B+",
       aadhaarNumber: "123456789012",
+      genderIdentity: null,
+      pregnancyStatus: null,
+      locationContext: null,
     },
   });
 }, 15_000);
+
+it("skips pregnancy status step for non-female patients in the first-login wizard", async () => {
+  const user = userEvent.setup();
+  const initialProfile = {
+    patientId,
+    status: "ACTIVE",
+    preferredLanguage: null,
+    displayName: null,
+    profileComplete: false,
+    demographics: null,
+    updatedAt: "2026-11-03T10:00:00Z",
+  };
+  const fetchSpy = vi
+    .fn()
+    .mockResolvedValueOnce(Response.json({ state: "AUTHENTICATED", profile: initialProfile }))
+    .mockResolvedValueOnce(
+      Response.json({
+        state: "AUTHENTICATED",
+        profile: { ...initialProfile, displayName: "Rahul Demo", profileComplete: true },
+      }),
+    );
+  vi.stubGlobal("fetch", fetchSpy);
+  render(<ProfilePage />);
+
+  expect(await screen.findByRole("heading", { name: /what should we call you/i })).toBeVisible();
+  await user.type(screen.getByLabelText(/full name/i), "Rahul Demo");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.selectOptions(screen.getByLabelText(/preferred language/i), "en");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  fireEvent.change(screen.getByLabelText(/date of birth/i), { target: { value: "1995-05-15" } });
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.selectOptions(screen.getByLabelText(/sex recorded for healthcare/i), "male");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.type(screen.getByLabelText(/height/i), "175");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.type(screen.getByLabelText(/weight/i), "70");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.type(screen.getByLabelText(/mobile number/i), "+919876543210");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.selectOptions(screen.getByLabelText(/blood group/i), "O+");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+  await user.type(screen.getByLabelText(/aadhaar number/i), "987654321098");
+  await user.click(screen.getByRole("button", { name: /next/i }));
+
+  // Total steps for male is 10; goes straight to review
+  expect(screen.getByText("Step 10 of 10")).toBeVisible();
+  expect(screen.getByRole("heading", { name: /review your details/i })).toBeVisible();
+  expect(screen.queryByText(/pregnancy status/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/gender identity/i)).not.toBeInTheDocument();
+  expect(screen.queryByText(/location/i)).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole("button", { name: /save and open dashboard/i }));
+  expect(await screen.findByText(/profile is ready/i)).toBeVisible();
+  expect(push).toHaveBeenCalledWith("/dashboard");
+});
 
 it("keeps the first-login wizard on review when the profile changed elsewhere", async () => {
   const user = userEvent.setup();
@@ -255,8 +341,8 @@ it("keeps the first-login wizard on review when the profile changed elsewhere", 
       ),
   );
   render(<ProfilePage />);
-  await screen.findByText("Step 1 of 13");
-  for (let step = 1; step < 13; step += 1) {
+  await screen.findByText("Step 1 of 11");
+  for (let step = 1; step < 11; step += 1) {
     if (screen.queryByLabelText(/aadhaar number/i)) {
       await user.type(screen.getByLabelText(/aadhaar number/i), "123456789012");
     }
