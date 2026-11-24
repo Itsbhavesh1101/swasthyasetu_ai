@@ -46,7 +46,7 @@ export function PatientShell({ children }: Readonly<{ children: ReactNode }>) {
       </a>
       <aside aria-label="Patient workspace" className="patient-sidebar">
         <div className="sidebar-primary">
-          <Link aria-label="SwasthyaSetu patient home" className="brand" href="/">
+          <Link aria-label="SwasthyaSetu patient dashboard" className="brand" href="/dashboard">
             <span aria-hidden="true" className="brand-mark">
               <span>S</span>
             </span>

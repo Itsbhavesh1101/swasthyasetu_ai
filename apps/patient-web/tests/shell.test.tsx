@@ -46,7 +46,6 @@ describe("patient shell", () => {
     );
 
     const navigation = screen.getByRole("navigation", { name: "Patient navigation" });
-    expect(navigation).toHaveTextContent("Home");
     expect(navigation).toHaveTextContent("Dashboard");
     expect(navigation).toHaveTextContent("Profile");
     expect(navigation).toHaveTextContent("History");
@@ -54,6 +53,7 @@ describe("patient shell", () => {
     expect(navigation).toHaveTextContent("Documents");
     expect(navigation).toHaveTextContent("Health journey");
     expect(navigation).toHaveTextContent("Home guidance");
+    expect(screen.queryByRole("link", { name: /^Home$/i })).not.toBeInTheDocument();
     expect(navigation).not.toHaveTextContent("Sign in");
     expect(navigation).not.toHaveTextContent("Results");
     expect(navigation).not.toHaveTextContent("MannSetu");

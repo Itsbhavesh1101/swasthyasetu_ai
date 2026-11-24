@@ -51,9 +51,9 @@ export function AccountForm({ mode }: Readonly<{ mode: "login" | "register" }>) 
     } else {
       setError(
         result?.errorMessage ||
-          (mode === "login"
-            ? "We could not sign you in with those details."
-            : "We could not create your account. Check the details and try again."),
+        (mode === "login"
+          ? "We could not sign you in with those details."
+          : "We could not create your account. Check the details and try again."),
       );
       setBusy(false);
     }
